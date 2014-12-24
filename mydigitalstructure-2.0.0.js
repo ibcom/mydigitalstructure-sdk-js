@@ -161,12 +161,12 @@ mydigitalstructure._util =
 
 					if (mydigitalstructure._objects == undefined)
 					{	
-						mydigitalstructure._util.loadScript('https://mydigitalstructure.com/jscripts/md5-min.js')
+						mydigitalstructure._util.loadScript('/jscripts/md5-min.js')
 
 						$.ajax(
 						{
 							type: 'GET',
-							url: '/site/328/mydigitalstructure.model.objects-1.0.0.json',
+							url: '/jscripts/mydigitalstructure.model.objects-1.0.0.json',
 							dataType: 'json',
 							success: 	function(data)
 										{
@@ -177,14 +177,14 @@ mydigitalstructure._util =
 					}	
 					else
 					{	
-						var callback = mydigitalstructure._util.param.get(oParam, 'callback');
+						var callback = mydigitalstructure._util.param.get(oParam, 'callback').value;
 
 						mydigitalstructure._util.sendToView({status: 'request-start'});
 
 						$.ajax(
 						{
 							type: 'GET',
-							url: ns1blankspace.util.endpointURI('CORE_GET_USER_DETAILS'),
+							url: '/rpc/core/?method=CORE_GET_USER_DETAILS',
 							dataType: 'json',
 							cache: false,
 							global: false,
@@ -220,7 +220,7 @@ mydigitalstructure._util =
 										logon: logon
 									};	
 
-									oData.passwordhash = ns1blankspace._util.hash(logon + password);
+									oData.passwordhash = mydigitalstructure._util.hash(logon + password);
 									
 									mydigitalstructure._util.sendToView({status: 'request-start'});
 										
@@ -248,7 +248,7 @@ mydigitalstructure._util =
 													logon: logon
 												};
 
-												oData.passwordhash = ns1blankspace.util.hash({value: logon + password + mydigitalstructure._scope.logonKey});
+												oData.passwordhash = mydigitalstructure._util.hash({value: logon + password + mydigitalstructure._scope.logonKey});
 
 												mydigitalstructure._util.sendToView({status: 'request-start'});
 
@@ -350,14 +350,14 @@ mydigitalstructure._util =
 	param: 		{
 					get: 		function(oParam, sParam, oOption)
 								{
+									var oReturn = {exists: false};
+
 									if (oParam !== undefined) 
 									{ 
 										var sDefault = mydigitalstructure._util.param.get(oOption, 'default').value;
 										var sSplit = mydigitalstructure._util.param.get(oOption, 'split').value;
 										var iIndex = mydigitalstructure._util.param.get(oOption, 'index').value;
-										var bRemove = mydigitalstructure._util.param.get(oOption, 'remove').value;
-
-										var oReturn = {exists: false};
+										var bRemove = mydigitalstructure._util.param.get(oOption, 'remove').value;	
 									
 										if (oParam.hasOwnProperty(sParam))
 										{
