@@ -172,6 +172,26 @@ mydigitalstructure._util =
 						global: true
 					});
 
+					$(window).on('hashchange', function()
+					{
+ 						mydigitalstructure._util.sendToView(
+						{
+							from: 'myds-init',
+							status: 'uri-changed',
+							message: window.location.hash
+						});
+					});
+
+					var oView = mydigitalstructure._util.view.get(window.location.pathname);
+
+					if (oView != undefined)
+					{	
+						if (oView.controller != undefined)
+						{
+							myApp.controller[oView.controller]();
+						}	
+					}	
+
 					if (mydigitalstructure._objects == undefined)
 					{	
 						mydigitalstructure._util.loadScript('/jscripts/md5-min.js')
@@ -445,6 +465,21 @@ mydigitalstructure._util =
 									return oReturn;
 								}						
 				},
+
+	logoff: 	function ()
+				{
+					$.ajax(
+					{
+						type: 'GET',
+						url: '/rpc/core/?method=CORE_LOGOFF',
+						dataType: 'json',
+						global: false,
+						success: function ()
+						{
+							window.location.href = '/';	
+						}
+					})	
+				},		
 
 	send: 		function(param)
 				{

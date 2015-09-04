@@ -31,13 +31,17 @@ myApp.views =
 	},
 	{
 		uri: '/app'
+	},
+	{
+		uri: '#/people'
 	}
 ]
 
 myApp.init = function ()
 {
-	mydigitalstructure.init(myApp.start, myApp.view.update, myApp.options, myApp.views);
+	mydigitalstructure.init(myApp.start, myApp.update, myApp.options, myApp.views);
 	
+	/*
 	var oView = mydigitalstructure._util.view.get(window.location.pathname);
 
 	if (oView != undefined)
@@ -46,7 +50,8 @@ myApp.init = function ()
 		{
 			myApp.controller[oView.controller]();
 		}	
-	}	
+	}
+	*/	
 }
 
 myApp.start = function (data)
@@ -59,6 +64,32 @@ myApp.start = function (data)
 		{	
 			mydigitalstructure._util.view.render(uriPath);
 		}	
+	}
+}
+
+myApp.update = function (data)
+{
+	if (data)
+	{
+		if (data.from == 'myds-logon-send')
+		{
+			if (data.status == 'error')
+			{	
+				$('#myds-logon-status').html(data.message)
+			}
+			else
+			{
+				$('#myds-logon-status').html('');
+			}	
+		}
+
+		if (data.from == 'myds-init')
+		{
+			if (data.status == 'uri-changed')
+			{	
+				mydigitalstructure._util.view.render(uriPath);
+			}	
+		}
 	}
 }
 
@@ -77,22 +108,3 @@ myApp.controller.auth = function (param)
 	});
 }
 
-myApp.view = {};
-
-myApp.view.update = function (data)
-{
-	if (data)
-	{
-		if (data.from == 'myds-logon-send')
-		{
-			if (data.status == 'error')
-			{	
-				$('#myds-logon-status').html(data.message)
-			}
-			else
-			{
-				$('#myds-logon-status').html('');
-			}	
-		}
-	}
-}
