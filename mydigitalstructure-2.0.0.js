@@ -5,15 +5,19 @@
  * Based on mydigitalstructure.com RPC platform
  */
 
-var mydigitalstructure = {};
+var mydigitalstructure = {_scope: {}};
 
-mydigitalstructure.init = function (callback, callview)
+mydigitalstructure.init = function (callback, callview, options)
 {
 	mydigitalstructure.callview = callview;
+	mydigitalstructure._scope.options = options;
+
+	var assistController = mydigitalstructure._util.param.get(options, 'assistMeWithBehavior').value;
 
 	mydigitalstructure._util.init(
 	{
-		callback: callback
+		callback: callback,
+		controller: assistController
 	});
 }
 
@@ -117,8 +121,6 @@ mydigitalstructure.help = function ()
 	return mydigitalstructure._scope
 }
 
-mydigitalstructure._scope = {}
-
 mydigitalstructure._util =
 {
 	hash: 		function(sValue)
@@ -166,7 +168,7 @@ mydigitalstructure._util =
 						$.ajax(
 						{
 							type: 'GET',
-							url: '/jscripts/mydigitalstructure.model.objects-1.0.0.json',
+							url: '/site/1745/mydigitalstructure.model.objects-1.0.0.json',
 							dataType: 'json',
 							success: 	function(data)
 										{
@@ -174,6 +176,11 @@ mydigitalstructure._util =
 											mydigitalstructure._util.init(oParam)
 										}
 						});
+
+						if (mydigitalstructure._util.param.get(oParam, 'controller', {"default": false}).value)
+						{
+							$(document).on('click', '#myds-logon', function(event) {console.log(event)})
+						}	
 					}	
 					else
 					{	
@@ -204,7 +211,9 @@ mydigitalstructure._util =
 								}		
 							}
 						});	
-					}	
+					}
+
+					
 				},					
 
 	logon: 		{
@@ -212,7 +221,8 @@ mydigitalstructure._util =
 								{
 									var logon = mydigitalstructure._util.param.get(oParam, 'logon').value;
 									var password = mydigitalstructure._util.param.get(oParam, 'password').value;
-									var callback = mydigitalstructure._util.param.get(oParam, 'code').value;
+									var callback = mydigitalstructure._util.param.get(oParam, 'callback').value;
+									var code = mydigitalstructure._util.param.get(oParam, 'code').value;
 
 									var oData = 
 									{
@@ -305,15 +315,15 @@ mydigitalstructure._util =
 
 									if (iAuthenticationLevel == 1)
 									{
-										oData.passwordhash = mydigitalstructure._util.hash({value: logon + password});
+										oData.passwordhash = mydigitalstructure._util.hash(logon + password);
 									}
 									else if (iAuthenticationLevel == 2)
 									{
-										oData.passwordhash = mydigitalstructure._util.hash({value: logon + password + mydigitalstructure._scope.logonKey})
+										oData.passwordhash = mydigitalstructure._util.hash(logon + password + mydigitalstructure._scope.logonKey)
 									}
 									else if (iAuthenticationLevel == 3)
 									{
-										oData.passwordhash = mydigitalstructure._util.hash({value: logon + password + mydigitalstructure._scope.logonKey + code})
+										oData.passwordhash = mydigitalstructure._util.hash(logon + password + mydigitalstructure._scope.logonKey + code)
 									}
 									
 									mydigitalstructure._util.sendToView({status: 'request-start'});
@@ -339,7 +349,8 @@ mydigitalstructure._util =
 											}
 											else 
 											{			
-												mydigitalstructure_scope.sid = data.sid;									
+												mydigitalstructure._scope.sid = data.sid;
+												mydigitalstructure._scope.logonKey = data.logonkey;								
 												mydigitalstructure._util.doCallBack(callback, {status: data.passwordStatus});
 											}
 										}
@@ -383,7 +394,7 @@ mydigitalstructure._util =
 											}
 
 											if (bRemove) {delete oParam[sParam]};
-										}	
+										}
 									}	
 
 									return oReturn;
@@ -413,5 +424,27 @@ mydigitalstructure._util =
 							mydigitalstructure._util.doCallBack(callback, data);
 						}
 					});	
-				}			
+				},
+
+	search:  	{	
+					init: 		function ()
+								{
+									var oCriteria = 
+									{
+										"fields": [],
+										"summaryFields": [],
+										"filters": [],
+										"sorts": [],
+										"options": {},
+										"customoptions": []
+									}
+
+									return oCriteria
+								},
+
+					comparison: function ()
+								{
+									//return comparisons
+								}
+				}										
 }
