@@ -5,42 +5,46 @@
  * Based on mydigitalstructure.com RPC platform
  */
 
-var mydigitalstructure = {_scope: {}};
+var mydigitalstructure = {_scope: {sentToView: []}};
 
-mydigitalstructure.init = function (callback, callview, options)
+mydigitalstructure.init = function (data)
 {
-	mydigitalstructure.callview = callview;
-	mydigitalstructure._scope.options = options;
-
-	var assistController = mydigitalstructure._util.param.get(options, 'assistMeWithBehavior').value;
-
-	mydigitalstructure._util.init(
+	if (typeof arguments[0] != 'object')
 	{
-		callback: callback,
-		controller: assistController
-	});
+		data =
+		{
+			callback: arguments[0],
+			callview: arguments[1],
+			options: arguments[2]
+		}
+	}
+
+	mydigitalstructure.callview = data.callview;
+	mydigitalstructure._scope.options = data.options;
+
+	mydigitalstructure._util.init(data);
 }
 
-mydigitalstructure.auth = function (logon, password, callback, code)
+mydigitalstructure.auth = function (data)
 {
+	if (typeof arguments[0] != 'object')
+	{
+		data =
+		{
+			logon: arguments[0],
+			password: arguments[1],
+			callback: arguments[2],
+			code: arguments[3]
+		}
+	}
+
 	if (mydigitalstructure._scope.logonInitialised)
 	{
-		mydigitalstructure._util.logon.send(
-		{
-			logon: logon,
-			password: password,
-			callback: callback,
-			code: code
-		});
+		mydigitalstructure._util.logon.send(data);
 	}
 	else
 	{
-		mydigitalstructure._util.logon.init(
-		{
-			logon: logon,
-			password: password,
-			callback: callback
-		});
+		mydigitalstructure._util.logon.init(data);
 	}	
 }
 
@@ -123,19 +127,20 @@ mydigitalstructure.help = function ()
 
 mydigitalstructure._util =
 {
-	hash: 		function(sValue)
+	hash: 		function(data)
 				{
 					//requires /jscripts/md5-min.js
 					
-					if (sValue !== undefined)
+					if (data !== undefined)
 					{	
-						return hex_md5(sValue);
+						return hex_md5(data);
 					}	
 				},
 
-	sendToView: function(oParam)
+	sendToView: function(param)
 				{
-					if (mydigitalstructure.callview) {mydigitalstructure.callview(oParam)};
+					mydigitalstructure._scope.sentToView.push(param);
+					if (mydigitalstructure.callview) {mydigitalstructure.callview(param)};
 				},
 
 	doCallBack: function(callback, oParam)
@@ -154,6 +159,12 @@ mydigitalstructure._util =
 
 	init: 		function(oParam)
 				{
+					mydigitalstructure._util.sendToView(
+					{
+						from: 'myds-init',
+						status: 'start'
+					});
+
 					$.ajaxSetup(
 					{
 						cache: false,
@@ -177,16 +188,21 @@ mydigitalstructure._util =
 										}
 						});
 
-						if (mydigitalstructure._util.param.get(oParam, 'controller', {"default": false}).value)
+						if (mydigitalstructure._util.param.get(oParam, 'assistMeWithBehavior', {"default": false}).value)
 						{
-							$(document).on('click', '#myds-logon', function(event) {console.log(event)})
+							$(document).on('click', '#myds-logon', function(event)
+							{
+								mydigitalstructure.auth(
+								{
+									logon: $('#myds-logonname').val(),
+									password: $('#myds-logonpassword').val()
+								})
+							});
 						}	
 					}	
 					else
 					{	
 						var callback = mydigitalstructure._util.param.get(oParam, 'callback').value;
-
-						mydigitalstructure._util.sendToView({status: 'request-start'});
 
 						$.ajax(
 						{
@@ -197,8 +213,12 @@ mydigitalstructure._util =
 							global: false,
 							success: function(data) 
 							{
-								mydigitalstructure._util.sendToView({status: 'request-end'});
-
+								mydigitalstructure._util.sendToView(
+								{
+									from: 'myds-init',
+									status: 'end'
+								});
+								
 								if (data.status === 'ER')
 								{
 									mydigitalstructure._scope.logonKey = data.logonkey;
@@ -211,14 +231,18 @@ mydigitalstructure._util =
 								}		
 							}
 						});	
-					}
-
-					
+					}		
 				},					
 
 	logon: 		{
 					init:		function(oParam)
 								{
+									mydigitalstructure._util.sendToView(
+									{
+										from: 'myds-logon-init',
+										status: 'start'
+									});
+
 									var logon = mydigitalstructure._util.param.get(oParam, 'logon').value;
 									var password = mydigitalstructure._util.param.get(oParam, 'password').value;
 									var callback = mydigitalstructure._util.param.get(oParam, 'callback').value;
@@ -273,20 +297,27 @@ mydigitalstructure._util =
 													{
 														mydigitalstructure._util.sendToView({status: 'request-end'});
 
-														if (data.status == 'OK')
+														if (data.status == 'ER')
 														{	
-															mydigitalstructure._scope.logonInitialised = true;
-															mydigitalstructure._util.doCallBack(callback, {status: 'get2ndFactorCode', codeDelivery: mydigitalstructure._scope.authenticationDelivery});
-														}
-														else
-														{
 															mydigitalstructure._util.sendToView(
 															{
+																from: 'myds-logon-init',
 																status: 'error',
 																message: 'There is an issue with your user account (' + data.error.errornotes + ').'
 															});
 		
 															mydigitalstructure._util.doCallBack(callback, {status: 'error'});
+														}
+														else
+														{
+															mydigitalstructure._util.sendToView(
+															{
+																from: 'myds-logon-init',
+																status: 'end'
+															});
+
+															mydigitalstructure._scope.logonInitialised = true;
+															mydigitalstructure._util.doCallBack(callback, {status: 'get2ndFactorCode', codeDelivery: mydigitalstructure._scope.authenticationDelivery});
 														}	
 													}
 												});		
@@ -301,6 +332,12 @@ mydigitalstructure._util =
 
 					send: 		function (oParam)
 								{
+									mydigitalstructure._util.sendToView(
+									{
+										from: 'myds-logon-send',
+										status: 'start'
+									});
+
 									var iAuthenticationLevel = mydigitalstructure._scope.authenticationLevel;
 									var logon = mydigitalstructure._util.param.get(oParam, 'logon').value;
 									var password = mydigitalstructure._util.param.get(oParam, 'password').value;
@@ -341,6 +378,7 @@ mydigitalstructure._util =
 											{
 												mydigitalstructure._util.sendToView(
 												{
+													from: 'myds-logon-send',
 													status: 'error',
 													message: 'Logon name or password is incorrect.'
 												});
@@ -348,7 +386,13 @@ mydigitalstructure._util =
 												mydigitalstructure._util.doCallBack(callback, {status: 'ER'});
 											}
 											else 
-											{			
+											{		
+												mydigitalstructure._util.sendToView(
+												{
+													from: 'myds-logon-send',
+													status: 'end'
+												});
+
 												mydigitalstructure._scope.sid = data.sid;
 												mydigitalstructure._scope.logonKey = data.logonkey;								
 												mydigitalstructure._util.doCallBack(callback, {status: data.passwordStatus});
@@ -409,7 +453,11 @@ mydigitalstructure._util =
 					var url = mydigitalstructure._util.param.get(oParam, 'url').value;
 					var type = mydigitalstructure._util.param.get(oParam, 'type').value;
 
-					mydigitalstructure._util.sendToView({status: 'request-start'});
+					mydigitalstructure._util.sendToView(
+					{
+						from: 'myds-send',
+						status: 'start'
+					});
 
 					$.ajax(
 					{
@@ -420,7 +468,11 @@ mydigitalstructure._util =
 						data: data,
 						success: function(data) 
 						{
-							mydigitalstructure._util.sendToView({status: 'request-end'});
+							mydigitalstructure._util.sendToView(
+							{
+								from: 'myds-send',
+								status: 'end'
+							});
 							mydigitalstructure._util.doCallBack(callback, data);
 						}
 					});	

@@ -20,40 +20,61 @@ myApp.options =
 {
 	httpsOnly: true,
 	container: '#main',
-	assistMeWithBehavior: true,
+	assistMeWithBehavior: false
 }
 
 myApp.init = function ()
 {
 	mydigitalstructure.init(myApp.start, myApp.view.update, myApp.options);
+	
+	var oView = myApp._util.view.get(window.location.pathname);
+
+	if (oView != undefined)
+	{	
+		if (oView.controller != undefined)
+		{
+			myApp.controller[oView.controller]();
+		}	
+	}	
 }
 
 myApp.start = function (data)
 {
 	if (data)
 	{
-		if (data.islogged)
-		{
-			//show app ie /#/app
-		}
-		else
-		{
-			myApp.view.render('/auth');
-			//show auth ie /#/auth
-		}
+		uriPath = (data.islogged?'/app':'/auth');
+		
+		if (uriPath != window.location.pathname)
+		{	
+			myApp._util.view.render(uriPath);
+		}	
 	}
+}
+
+myApp.controller = {}
+
+myApp.controller.auth = function (param)
+{
+	$('#myds-logon').on('click', function(event)
+	{
+		mydigitalstructure.auth(
+		{
+			logon: $('#myds-logonname').val(),
+			password: $('#myds-logonpassword').val()
+		});
+	});
 }
 
 myApp.view = {};
 
-myApp.view.templates =
+myApp.view.destinations =
 [
 	{
-		uri: '/auth'
+		uri: '/auth',
+		controller: 'auth'
 	},
 	{
-		uri: '/app',
-		html: ''
+		uri: '/app'
 	}
 ]
 
@@ -61,29 +82,46 @@ myApp.view.update = function (data)
 {
 	if (data)
 	{
-		//data.status
-		//data.message
+		if (data.from == 'myds-logon-send')
+		{
+			if (data.status == 'error')
+			{	
+				$('#myds-logon-status').html(data.message)
+			}
+			else
+			{
+				$('#myds-logon-status').html('');
+			}	
+		}
 	}
 }
 
-myApp.view.render = function (data)
+myApp._util = {view: {}}
+
+myApp._util.view.get = function (data)
 {
-	//use templates ie bootstrap and hogon to render.
-	//or render on scroll ie scrollspy
+	var aView = $.grep(myApp.view.destinations, function (view) {return view.uri==data});
+	if (aView.length==1) {return aView[0]}	
+}
 
-	var aView = $.grep(myApp.view.templates, function (view) {return view.uri==data});
-	if (aView.length==1)
+myApp._util.view.render = function (data)
+{
+	var oView = myApp._util.view.get(data);
+
+	if (oView != undefined)
 	{	
-		var oView = aView[0];
-
-		if oView.html != undefined)
+		if (oView.html != undefined)
 		{
 			window.location.hash = data;
 			$(myApp.options.container).html(oView.html);
+			if (oView.controller != undefined)
+			{
+				myApp.controller[oView.controller]();
+			}	
 		}
 		else
 		{
-			window.location.pathName = data;
+			document.location.href = oView.uri;
 		}
 	}
 }
