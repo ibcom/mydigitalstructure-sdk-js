@@ -20,14 +20,25 @@ myApp.options =
 {
 	httpsOnly: true,
 	container: '#main',
-	assistMeWithBehavior: false
+	assistWithBehavior: false
 }
+
+myApp.views =
+[
+	{
+		uri: '/auth',
+		controller: 'auth'
+	},
+	{
+		uri: '/app'
+	}
+]
 
 myApp.init = function ()
 {
-	mydigitalstructure.init(myApp.start, myApp.view.update, myApp.options);
+	mydigitalstructure.init(myApp.start, myApp.view.update, myApp.options, myApp.views);
 	
-	var oView = myApp._util.view.get(window.location.pathname);
+	var oView = mydigitalstructure._util.view.get(window.location.pathname);
 
 	if (oView != undefined)
 	{	
@@ -42,11 +53,11 @@ myApp.start = function (data)
 {
 	if (data)
 	{
-		uriPath = (data.islogged?'/app':'/auth');
+		uriPath = (data.isLoggedOn?'/app':'/auth');
 		
 		if (uriPath != window.location.pathname)
 		{	
-			myApp._util.view.render(uriPath);
+			mydigitalstructure._util.view.render(uriPath);
 		}	
 	}
 }
@@ -60,23 +71,13 @@ myApp.controller.auth = function (param)
 		mydigitalstructure.auth(
 		{
 			logon: $('#myds-logonname').val(),
-			password: $('#myds-logonpassword').val()
+			password: $('#myds-logonpassword').val(),
+			callback: myApp.start
 		});
 	});
 }
 
 myApp.view = {};
-
-myApp.view.destinations =
-[
-	{
-		uri: '/auth',
-		controller: 'auth'
-	},
-	{
-		uri: '/app'
-	}
-]
 
 myApp.view.update = function (data)
 {
@@ -95,34 +96,3 @@ myApp.view.update = function (data)
 		}
 	}
 }
-
-myApp._util = {view: {}}
-
-myApp._util.view.get = function (data)
-{
-	var aView = $.grep(myApp.view.destinations, function (view) {return view.uri==data});
-	if (aView.length==1) {return aView[0]}	
-}
-
-myApp._util.view.render = function (data)
-{
-	var oView = myApp._util.view.get(data);
-
-	if (oView != undefined)
-	{	
-		if (oView.html != undefined)
-		{
-			window.location.hash = data;
-			$(myApp.options.container).html(oView.html);
-			if (oView.controller != undefined)
-			{
-				myApp.controller[oView.controller]();
-			}	
-		}
-		else
-		{
-			document.location.href = oView.uri;
-		}
-	}
-}
-

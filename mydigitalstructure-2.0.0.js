@@ -5,7 +5,7 @@
  * Based on mydigitalstructure.com RPC platform
  */
 
-var mydigitalstructure = {_scope: {sentToView: []}};
+var mydigitalstructure = {_scope: {sentToView: [], viewQueue: {base: []}, session: {}}};
 
 mydigitalstructure.init = function (data)
 {
@@ -13,15 +13,15 @@ mydigitalstructure.init = function (data)
 	{
 		data =
 		{
-			callback: arguments[0],
-			callview: arguments[1],
-			options: arguments[2]
+			viewStart: arguments[0],
+			viewUpdate: arguments[1],
+			options: arguments[2],
+			views: arguments[3]
 		}
 	}
 
-	mydigitalstructure.callview = data.callview;
-	mydigitalstructure._scope.options = data.options;
-
+	mydigitalstructure._scope.app = data;
+	
 	mydigitalstructure._util.init(data);
 }
 
@@ -139,8 +139,8 @@ mydigitalstructure._util =
 
 	sendToView: function(param)
 				{
-					mydigitalstructure._scope.sentToView.push(param);
-					if (mydigitalstructure.callview) {mydigitalstructure.callview(param)};
+					mydigitalstructure._scope.sentToView.unshift(param);
+					if (mydigitalstructure._scope.app.viewUpdate) {mydigitalstructure._scope.app.viewUpdate(param)};
 				},
 
 	doCallBack: function(callback, oParam)
@@ -188,7 +188,7 @@ mydigitalstructure._util =
 										}
 						});
 
-						if (mydigitalstructure._util.param.get(oParam, 'assistMeWithBehavior', {"default": false}).value)
+						if (mydigitalstructure._util.param.get(oParam, 'assistWithBehavior', {"default": false}).value)
 						{
 							$(document).on('click', '#myds-logon', function(event)
 							{
@@ -202,7 +202,7 @@ mydigitalstructure._util =
 					}	
 					else
 					{	
-						var callback = mydigitalstructure._util.param.get(oParam, 'callback').value;
+						var callback = mydigitalstructure._util.param.get(oParam, 'viewStart').value;
 
 						$.ajax(
 						{
@@ -221,7 +221,7 @@ mydigitalstructure._util =
 								
 								if (data.status === 'ER')
 								{
-									mydigitalstructure._scope.logonKey = data.logonkey;
+									mydigitalstructure._scope.session.logonKey = data.logonkey;
 									mydigitalstructure._util.doCallBack(callback, {isLoggedOn: false});
 								}
 								else
@@ -282,7 +282,7 @@ mydigitalstructure._util =
 													logon: logon
 												};
 
-												oData.passwordhash = mydigitalstructure._util.hash({value: logon + password + mydigitalstructure._scope.logonKey});
+												oData.passwordhash = mydigitalstructure._util.hash({value: logon + password + mydigitalstructure._scope.session.logonKey});
 
 												mydigitalstructure._util.sendToView({status: 'request-start'});
 
@@ -356,11 +356,11 @@ mydigitalstructure._util =
 									}
 									else if (iAuthenticationLevel == 2)
 									{
-										oData.passwordhash = mydigitalstructure._util.hash(logon + password + mydigitalstructure._scope.logonKey)
+										oData.passwordhash = mydigitalstructure._util.hash(logon + password + mydigitalstructure._scope.session.logonKey)
 									}
 									else if (iAuthenticationLevel == 3)
 									{
-										oData.passwordhash = mydigitalstructure._util.hash(logon + password + mydigitalstructure._scope.logonKey + code)
+										oData.passwordhash = mydigitalstructure._util.hash(logon + password + mydigitalstructure._scope.session.logonKey + code)
 									}
 									
 									mydigitalstructure._util.sendToView({status: 'request-start'});
@@ -393,9 +393,10 @@ mydigitalstructure._util =
 													status: 'end'
 												});
 
-												mydigitalstructure._scope.sid = data.sid;
-												mydigitalstructure._scope.logonKey = data.logonkey;								
-												mydigitalstructure._util.doCallBack(callback, {status: data.passwordStatus});
+												mydigitalstructure._scope.session = data;
+											
+												if (callback == undefined) {callback = mydigitalstructure._scope.app.viewStart}							
+												mydigitalstructure._util.doCallBack(callback, {status: data.passwordStatus, isLoggedOn: true});
 											}
 										}
 									})
@@ -445,19 +446,22 @@ mydigitalstructure._util =
 								}						
 				},
 
-	send: 		function(oParam)
+	send: 		function(param)
 				{
-					var object = mydigitalstructure._util.param.get(oParam, 'object').value;
-					var data = mydigitalstructure._util.param.get(oParam, 'data').value;
-					var callback = mydigitalstructure._util.param.get(oParam, 'callback').value;
-					var url = mydigitalstructure._util.param.get(oParam, 'url').value;
-					var type = mydigitalstructure._util.param.get(oParam, 'type').value;
+					var object = mydigitalstructure._util.param.get(param, 'object').value;
+					var data = mydigitalstructure._util.param.get(param, 'data', {"default": {}}).value;
+					var callback = mydigitalstructure._util.param.get(param, 'callback').value;
+					var url = mydigitalstructure._util.param.get(param, 'url').value;
+					var type = mydigitalstructure._util.param.get(param, 'type', {"default": 'POST'}).value;
 
 					mydigitalstructure._util.sendToView(
 					{
 						from: 'myds-send',
 						status: 'start'
 					});
+
+					data.sid = mydigitalstructure._scope.session.sid;
+					data.logonkey = mydigitalstructure._scope.session.logonkey;
 
 					$.ajax(
 					{
@@ -473,6 +477,7 @@ mydigitalstructure._util =
 								from: 'myds-send',
 								status: 'end'
 							});
+
 							mydigitalstructure._util.doCallBack(callback, data);
 						}
 					});	
@@ -498,5 +503,101 @@ mydigitalstructure._util =
 								{
 									//return comparisons
 								}
-				}										
+				},
+
+	view: 		{
+					get: 	function (data)
+							{
+								var aView = $.grep(mydigitalstructure._scope.app.views, function (view) {return view.uri==data});
+								if (aView.length==1) {return aView[0]}	
+							},
+
+					render: function (data)
+							{
+								var oView = mydigitalstructure._util.view.get(data);
+
+								if (oView != undefined)
+								{	
+									if (oView.html != undefined)
+									{
+										window.location.hash = data;
+										$(myApp.options.container).html(oView.html);
+										if (oView.controller != undefined)
+										{
+											myApp.controller[oView.controller]();
+										}	
+									}
+									else
+									{
+										document.location.href = oView.uri;
+									}
+								}
+							},
+
+					queue: 	{
+								clear: function (param)
+								{
+									var sType = mydigitalstructure._util.param.get(param, 'type', {"default": 'data'}).value;
+									var sQueueID = mydigitalstructure._util.param.get(param, 'queue', {"default": 'base'}).value;
+									var bPreserve = mydigitalstructure._util.param.get(param, 'preserve', {"default": false}).value;
+									
+									if (!bPreserve) {mydigitalstructure._scope.viewQueue[sType][sQueueID] = []};
+								},
+
+								add: function (sData, param)
+								{
+									var sType = mydigitalstructure._util.param.get(param, 'type', {"default": 'data'}).value;
+									var sQueueID = mydigitalstructure._util.param.get(param, 'queue', {"default": 'base'}).value;
+									var bClear = mydigitalstructure._util.param.get(param, 'clear', {"default": false}).value;
+									
+									if (bClear) {mydigitalstructure._util.view.queue.clear(oParam)}
+									if (mydigitalstructure._scope.viewQueue[sType][sQueueID] == undefined) {mydigitalstructure._scope.viewQueue[sType][sQueueID] = []}
+									mydigitalstructure._scope.viewQueue[sType][sQueueID].push(sData);
+								},
+
+								render: function (sElementSelector, param)
+								{
+									var sType = mydigitalstructure._util.param.get(param, 'type', {"default": 'data'}).value;
+									var sQueueID = mydigitalstructure._util.param.get(param, 'queue', {"default": 'base'}).value;
+
+									if (sElementSelector == undefined)
+									{
+										console.log(mydigitalstructure._scope.viewQueue[sType][sQueueID].join(''));
+									}
+									else
+									{
+										if (mydigitalstructure._scope.viewQueue[sType][sQueueID] != undefined)
+										{	
+											$(sElementSelector).html(mydigitalstructure._scope.viewQueue[sType][sQueueID].join(''));
+										}
+	
+										mydigitalstructure._util.view.queue.clear(oParam);
+									}	
+								},
+
+								get: function (param)
+								{
+									var sType = mydigitalstructure._util.param.get(param, 'type', {"default": 'data'}).value;
+									var sQueueID = mydigitalstructure._util.param.get(param, 'queue', {"default": 'base'}).value;
+									var sReturn = mydigitalstructure._scope.viewQueue[sType][sQueueID].join('');
+									mydigitalstructure._util.view.queue.clear(param);
+
+									return sReturn	
+								},
+
+								show: function (sElementSelector, sData, param)
+								{
+									this.clear(oParam);
+									this.add(sData, oParam);
+									this.render(sElementSelector, param);
+								},
+
+								exists: function (param)
+								{
+									var sType = mydigitalstructure._util.param.get(param, 'type', {"default": 'data'}).value;
+									var sQueueID = mydigitalstructure._util.param.get(param, 'queue', {"default": 'base'}).value;
+									return (mydigitalstructure._scope.viewQueue[sType][sQueueID].length!=0);
+								}
+							}			
+				}		
 }
