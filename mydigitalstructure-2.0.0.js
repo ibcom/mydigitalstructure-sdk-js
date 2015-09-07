@@ -25,6 +25,25 @@ mydigitalstructure.init = function (data)
 	mydigitalstructure._util.init(data);
 }
 
+mydigitalstructure.register = function (data)
+{
+	if (typeof arguments[0] != 'object')
+	{
+		data =
+		{
+			businessname: arguments[0],
+			firstname: arguments[1],
+			surname: arguments[2],
+			email: arguments[3],
+			emaildocument: arguments[4],
+			notes: arguments[5],
+			type: arguments[6] || 'space'
+		}
+	}
+
+	mydigitalstructure._util.register[data.type](data);
+}
+
 mydigitalstructure.auth = function (data)
 {
 	if (typeof arguments[0] != 'object')
@@ -46,6 +65,11 @@ mydigitalstructure.auth = function (data)
 	{
 		mydigitalstructure._util.logon.init(data);
 	}	
+}
+
+mydigitalstructure.deauth = function (data)
+{
+	mydigitalstructure._util.logoff(data);
 }
 
 mydigitalstructure.create = function (object, data, callback)
@@ -81,7 +105,6 @@ mydigitalstructure.retrieve = function (object, data, callback)
 		type: 'GET',
 		url: '/rpc/' + endpoint + '/?method=' + (object).toUpperCase() + '_SEARCH&advanced=1',
 	});
-
 }
 
 mydigitalstructure.update = function (object, data, callback)
@@ -97,7 +120,6 @@ mydigitalstructure.update = function (object, data, callback)
 		type: 'POST',
 		url: '/rpc/' + endpoint + '/?method=' + (object).toUpperCase() + '_MANAGE',
 	});
-
 }
 
 mydigitalstructure.delete = function (object, data, callback)
@@ -634,5 +656,54 @@ mydigitalstructure._util =
 									return (mydigitalstructure._scope.viewQueue[sType][sQueueID].length!=0);
 								}
 							}			
-				}		
+				},
+
+	register: 	{
+					space: 	function (param)
+							{
+								var data = param;
+
+								data.registration_emailapplysystemtemplate = param.registration_emailapplysystemtemplate || 'N';
+								data.registration_emaildocument = param.emaildocument || param.registration_emaildocument;
+								data.registration_notes = param.notes || param.registration_notes;
+								data.registration_trial = param.trial || param.registration_trial;
+								data.contactbusiness_tradename = param.businessname || param.contactbusiness_tradename;
+								data.contactperson_firstname = param.firstname || param.contactperson_firstname;
+								data.contactperson_surname = param.surname || param.contactperson_surname;
+								data.contactperson_email = param.email || param.contactperson_email;
+								data.template_businessname = data.contactbusiness_tradename;
+								data.template_firstname = data.contactperson_firstname;
+								data.template_surname = data.contactperson_surname;
+							
+								console.log(data);
+
+								/*
+								$.ajax(
+								{
+									type: 'POST',
+									url: 'rpc/register/?method=REGISTER_SPACE_MANAGE',
+									dataType: 'json',
+									cache: false,
+									data: data,
+									success: function(data) 
+									{
+										mydigitalstructure._util.sendToView(
+										{
+											from: 'myds-setup-space',
+											status: 'start'
+										});
+
+										mydigitalstructure._util.doCallBack(callback, data);
+									}
+								});	
+								*/	
+
+
+							},
+
+					user: 	function (param)
+							{
+
+							}
+				}					
 }

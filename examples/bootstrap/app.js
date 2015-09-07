@@ -30,7 +30,8 @@ myApp.views =
 		controller: 'auth'
 	},
 	{
-		uri: '/app'
+		uri: '/app',
+		controller: 'app'
 	},
 	{
 		uri: '#/people'
@@ -40,25 +41,13 @@ myApp.views =
 myApp.init = function ()
 {
 	mydigitalstructure.init(myApp.start, myApp.update, myApp.options, myApp.views);
-	
-	/*
-	var oView = mydigitalstructure._util.view.get(window.location.pathname);
-
-	if (oView != undefined)
-	{	
-		if (oView.controller != undefined)
-		{
-			myApp.controller[oView.controller]();
-		}	
-	}
-	*/	
 }
 
 myApp.start = function (data)
 {
 	if (data)
 	{
-		uriPath = (data.isLoggedOn?'/app':'/auth');
+		uriPath = (data.isLoggedOn?'#/app':'/auth');
 		
 		if (uriPath != window.location.pathname)
 		{	
@@ -106,5 +95,15 @@ myApp.controller.auth = function (param)
 			callback: myApp.start
 		});
 	});
+}
+
+myApp.controller.app = function (param)
+{
+	$('#myds-logoff').on('click', function(event)
+	{
+		mydigitalstructure.deauth();
+	});
+
+	userlogonname
 }
 
