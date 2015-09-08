@@ -20,11 +20,16 @@ myApp.options =
 {
 	httpsOnly: true,
 	container: '#main',
-	assistWithBehavior: false
+	assistWithBehavior: false,
+	registerDocument: undefined
 }
 
 myApp.views =
 [
+	{
+		uri: '/register',
+		controller: 'register'
+	},
 	{
 		uri: '/auth',
 		controller: 'auth'
@@ -47,7 +52,7 @@ myApp.start = function (data)
 {
 	if (data)
 	{
-		uriPath = (data.isLoggedOn?'#/app':'/auth');
+		uriPath = (data.isLoggedOn?'/app':'/auth');
 		
 		if (uriPath != window.location.pathname)
 		{	
@@ -84,8 +89,31 @@ myApp.update = function (data)
 
 myApp.controller = {}
 
+myApp.controller.register = function (param)
+{
+	$('#myds-register').off('click');
+	
+	$('#myds-register').on('click', function(event)
+	{
+		mydigitalstructure.register(
+		{
+			businessname: $('#myds-businessname').val(),
+			firstname: $('#myds-businessname').val(),
+			surname: $('#myds-businessname').val(),
+			email: $('#myds-businessname').val(),
+			notes: $('#myds-businessname').val(),
+
+			logon: $('#myds-logonname').val(),
+			password: $('#myds-logonpassword').val(),
+			callback: myApp.start
+		});
+	});
+}
+
 myApp.controller.auth = function (param)
 {
+	$('#myds-logon').off('click');
+
 	$('#myds-logon').on('click', function(event)
 	{
 		mydigitalstructure.auth(
@@ -103,7 +131,5 @@ myApp.controller.app = function (param)
 	{
 		mydigitalstructure.deauth();
 	});
-
-	userlogonname
 }
 
