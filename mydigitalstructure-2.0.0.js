@@ -329,16 +329,6 @@ mydigitalstructure._util =
 						});
 					});
 
-					var view = mydigitalstructure._util.view.get(window.location.pathname);
-
-					if (view != undefined)
-					{	
-						if (view.controller != undefined)
-						{
-							myApp.controller[view.controller]();
-						}	
-					}	
-
 					if (mydigitalstructure._objects == undefined && mydigitalstructure._scope.app.options.objects)
 					{	
 						mydigitalstructure._util.loadScript('/jscripts/md5-min.js')
@@ -400,6 +390,8 @@ mydigitalstructure._util =
 					}	
 					else
 					{	
+						mydigitalstructure._scope.app.objects = mydigitalstructure._objects;
+
 						var callback = mydigitalstructure._util.param.get(param, 'viewStart').value;
 
 						$.ajax(

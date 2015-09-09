@@ -1,5 +1,7 @@
 /*!
- * Template for your own app code
+ * Example app UI (view/controller) code to build an bootstrap app.
+ * You can use an UI framework.
+ * http://mydigitalstructure.com/community_uxd_web_frameworks
  */
 
 $(function()
@@ -57,6 +59,18 @@ myApp.start = function (data)
 		if (uriPath != window.location.pathname)
 		{	
 			mydigitalstructure._util.view.render(uriPath);
+		}
+		else
+		{
+			var view = mydigitalstructure._util.view.get(uriPath);
+
+			if (view != undefined)
+			{	
+				if (view.controller != undefined)
+				{
+					myApp.controller[view.controller]();
+				}	
+			}	
 		}	
 	}
 }
@@ -127,5 +141,12 @@ myApp.controller.app = function (param)
 	{
 		mydigitalstructure.deauth();
 	});
+
+	$.each(mydigitalstructure._scope.app.objects, function (o, object)
+	{
+		$('#sidebar ul').append('<li><a class="list-group-item" href="/app#' + object.name + '"><i class="icon-home icon-1x"></i>' + object.name + '</a></li>')
+	});
+
+	//Bind to to myds class to then do a search for the object
 }
 
