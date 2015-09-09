@@ -5,7 +5,7 @@
  * Based on mydigitalstructure.com RPC platform
  */
 
-var mydigitalstructure = {_scope: {sentToView: [], viewQueue: {base: []}, session: {}}};
+var mydigitalstructure = {_scope: {app: {options: {}}, sentToView: [], viewQueue: {base: []}, session: {}}};
 
 mydigitalstructure.init = function (data)
 {
@@ -22,6 +22,7 @@ mydigitalstructure.init = function (data)
 	}
 
 	data.site = data.site || mydigitalstructureSiteId;
+	data.options.objects = data.options.objects || true;
 
 	mydigitalstructure._scope.app = data;
 	
@@ -34,7 +35,7 @@ mydigitalstructure.register = function (param)
 	{
 		param =
 		{
-			businessname: arguments[0],
+			spacename: arguments[0],
 			firstname: arguments[1],
 			surname: arguments[2],
 			email: arguments[3],
@@ -47,7 +48,7 @@ mydigitalstructure.register = function (param)
 
 	param.emaildocument = param.emaildocument || mydigitalstructure._scope.app.options.registerDocument;
 
-	mydigitalstructure._util.register[param.type](param);
+	mydigitalstructure._util.register.space(param);
 }
 
 mydigitalstructure.reset = function (param)
@@ -153,23 +154,41 @@ mydigitalstructure.retrieve = function (param)
 		}
 	}
 
-	param.endpoint = param.object.split('_')[0];	
-
-	if (typeof param.data != 'object')
+	if (param.object == undefined)
 	{
-		data = {id: param.data}
-
-		//get all parameters from model json
+		mydigitalstructure._util.sendToView(
+		{
+			from: 'myds-retrieve',
+			status: 'error-internal',
+			message: 'No object'
+		});
 	}
-
-	mydigitalstructure._util.send(
+	else
 	{
-		object: param.object,
-		data: param.data,
-		callback: param.callback,
-		type: 'GET',
-		url: '/rpc/' + param.endpoint + '/?method=' + (object).toUpperCase() + '_SEARCH&advanced=1',
-	});
+		param.endpoint = param.object.split('_')[0];	
+
+		if (typeof param.data != 'object')
+		{
+			var id = param.data;
+
+			param.data = {criteria: mydigitalstructure._util.search.init()};
+
+			var object = $.grep(mydigitalstructure._objects, function (object) {return object.name == param.object})[0];
+			if (object) {param.data.criteria.fields = $.map(object.properties, function (property) {return {name: property.name}})}
+
+			param.data.criteria.filters.push(
+			{
+				name: 'id',
+				comparison: 'EQUAL_TO',
+				value1: id
+			});
+		}
+
+		param.type = 'POST';
+		param.url = '/rpc/' + param.endpoint + '/?method=' + (param.object).toUpperCase() + '_SEARCH';
+
+		mydigitalstructure._util.send(param);
+	}	
 }
 
 mydigitalstructure.update = function (object, data, callback)
@@ -252,23 +271,25 @@ mydigitalstructure._util =
 
 	doCallBack: function()
 				{
-					var param, callback;
+					var param, callback, data;
 
 					if (typeof arguments[0] == 'function')
 					{
 						callback = arguments[0]
 						param = arguments[1] || {};
+						data = arguments[2]
 					}
 					else
 					{
 						param = arguments[0] || {};
 						callback = param.callback;
+						data = arguments[1];
 						delete param.callback;
 					}
 
 					if (callback)
 					{
-						callback(param)
+						callback(param, data)
 					};
 				},
 
@@ -288,6 +309,8 @@ mydigitalstructure._util =
 						from: 'myds-init',
 						status: 'start'
 					});
+
+					mydigitalstructure._scope.app.site = mydigitalstructureSiteId;
 
 					$.ajaxSetup(
 					{
@@ -316,19 +339,44 @@ mydigitalstructure._util =
 						}	
 					}	
 
-					if (mydigitalstructure._objects == undefined)
+					if (mydigitalstructure._objects == undefined && mydigitalstructure._scope.app.options.objects)
 					{	
 						mydigitalstructure._util.loadScript('/jscripts/md5-min.js')
 
 						$.ajax(
 						{
 							type: 'GET',
-							url: '/site/1745/mydigitalstructure.model.objects-1.0.0.json',
+							url: '/site/' + mydigitalstructure._scope.app.site  + '/mydigitalstructure.model.objects-1.0.0.json',
 							dataType: 'json',
 							success: 	function(data)
 										{
 											mydigitalstructure._objects = data.objects;
-											mydigitalstructure._util.init(param);
+
+											$.ajax(
+											{
+												type: 'GET',
+												url: '/site/' + mydigitalstructure._scope.app.site  + '/mydigitalstructure.model.objects.properties-1.0.0.json',
+												dataType: 'json',
+												success: 	function(data)
+															{
+																$.each(data.objects, function (po, propertyobject)
+																{
+																	var object = $.grep(mydigitalstructure._objects, function (object) {return object.name == propertyobject.name})[0];
+
+																	if (object)
+																	{
+																		object.properties = propertyobject.properties;
+																	}
+																});
+
+																mydigitalstructure._util.init(param);
+															},
+
+												error: 		function(data)
+															{
+																mydigitalstructure._util.init(param);
+															}						
+											});					
 										},
 
 							error: 		function(data)
@@ -662,15 +710,16 @@ mydigitalstructure._util =
 
 					data.sid = mydigitalstructure._scope.session.sid;
 					data.logonkey = mydigitalstructure._scope.session.logonkey;
+					data.criteria = JSON.stringify(data.criteria);
 
 					$.ajax(
 					{
 						type: type,
-						url: url,
+						url: url + '&advanced=1',
 						dataType: 'json',
 						cache: false,
 						data: data,
-						success: function(data) 
+						success: function(response) 
 						{
 							mydigitalstructure._util.sendToView(
 							{
@@ -678,7 +727,7 @@ mydigitalstructure._util =
 								status: 'end'
 							});
 
-							mydigitalstructure._util.doCallBack(callback, data);
+							mydigitalstructure._util.doCallBack(param, response);
 						}
 					});	
 				},
@@ -824,7 +873,7 @@ mydigitalstructure._util =
 				},
 
 	register: 	{
-					space: 	function (param, callback)
+					space: 	function (param)
 							{
 								mydigitalstructure._util.sendToView(
 								{
@@ -832,13 +881,14 @@ mydigitalstructure._util =
 									status: 'start'
 								});
 
-								var data = param;
+								var data = $.extend(true, {}, param);
+								delete data.callback;
 
 								data.registration_emailapplysystemtemplate = param.registration_emailapplysystemtemplate || 'N';
 								data.registration_emaildocument = param.emaildocument || param.registration_emaildocument;
 								data.registration_notes = param.notes || param.registration_notes;
 								data.registration_trial = param.trial || param.registration_trial;
-								data.contactbusiness_tradename = param.businessname || param.contactbusiness_tradename;
+								data.registration_spacename = param.spacename || data.registration_spacename;
 								data.contactperson_firstname = param.firstname || param.contactperson_firstname;
 								data.contactperson_surname = param.surname || param.contactperson_surname;
 								data.contactperson_email = param.email || param.contactperson_email;
@@ -855,7 +905,7 @@ mydigitalstructure._util =
 									dataType: 'json',
 									cache: false,
 									data: data,
-									success: function(data) 
+									success: function(response) 
 									{
 										mydigitalstructure._util.sendToView(
 										{
@@ -863,7 +913,7 @@ mydigitalstructure._util =
 											status: 'end'
 										});
 
-										mydigitalstructure._util.doCallBack(callback, data);
+										mydigitalstructure._util.doCallBack(param, response);
 									}
 								});	
 							}

@@ -21,7 +21,7 @@ myApp.options =
 	httpsOnly: true,
 	container: '#main',
 	assistWithBehavior: false,
-	registerDocument: undefined
+	registerDocument: 6144
 }
 
 myApp.views =
@@ -92,21 +92,17 @@ myApp.controller = {}
 myApp.controller.register = function (param)
 {
 	$('#myds-register').off('click');
-	
+
 	$('#myds-register').on('click', function(event)
 	{
 		mydigitalstructure.register(
 		{
-			businessname: $('#myds-businessname').val(),
-			firstname: $('#myds-businessname').val(),
-			surname: $('#myds-businessname').val(),
-			email: $('#myds-businessname').val(),
-			notes: $('#myds-businessname').val(),
-
-			logon: $('#myds-logonname').val(),
-			password: $('#myds-logonpassword').val(),
-			callback: myApp.start
-		});
+			spacename: $('#myds-spacename').val(),
+			firstname: $('#myds-firstname').val(),
+			surname: $('#myds-surname').val(),
+			email: $('#myds-email').val(),
+			notes: $('#myds-notes').val()
+		});	
 	});
 }
 
