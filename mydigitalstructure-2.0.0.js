@@ -5,7 +5,7 @@
  * Based on mydigitalstructure.com RPC platform
  */
 
-var mydigitalstructure = {_scope: {app: {options: {}}, sentToView: [], viewQueue: {base: []}, session: {}}};
+var mydigitalstructure = {_scope: {app: {options: {}}, sentToView: [], viewQueue: {content: {}}, session: {}}};
 
 mydigitalstructure.init = function (data)
 {
@@ -22,7 +22,7 @@ mydigitalstructure.init = function (data)
 	}
 
 	data.site = data.site || mydigitalstructureSiteId;
-	data.options.objects = data.options.objects || true;
+	data.options.objects = (data.options.objects!=undefined?data.options.objects:true);
 
 	mydigitalstructure._scope.app = data;
 	
@@ -421,7 +421,9 @@ mydigitalstructure._util =
 								}		
 							}
 						});	
-					}		
+					}
+
+					mydigitalstructure._util.location.get()			
 				},					
 
 	logon: 		{
@@ -629,43 +631,42 @@ mydigitalstructure._util =
 	param: 		{
 					get: 		function(param, name, options)
 								{
-									var data = {exists: false};
+									if (param == undefined) {param = {}}
+									if (options == undefined) {options = {}}
+							
+									var data = {exists: false, value: options.default};
 
-									if (param !== undefined) 
-									{ 
-										var defaultValue = mydigitalstructure._util.param.get(options, 'default').value;
-										var split = mydigitalstructure._util.param.get(options, 'split').value;
-										var index = mydigitalstructure._util.param.get(options, 'index').value;
-										var remove = mydigitalstructure._util.param.get(options, 'remove').value;	
-										var set = mydigitalstructure._util.param.get(options, 'set').value;
-									
-										if (param.hasOwnProperty(name))
+									var split = options.split;
+									var index = options.index;
+									var remove = options.remove;	
+									var set = options.set;
+								
+									if (param.hasOwnProperty(name))
+									{
+										data.value = param[name];
+										data.exists = true;
+
+										if (index !== undefined && split === undefined) {split = '-'}
+
+										if (split !== undefined)
 										{
-											data.value = param[name];
-											data.exists = true;
+											if (param[name] !== undefined)
+											{	
+												data.values = param[namem].split(split);
 
-											if (index !== undefined && split === undefined) {split = '-'}
-
-											if (split !== undefined)
-											{
-												if (param[name] !== undefined)
-												{	
-													data.values = param[namem].split(split);
-
-													if (index !== undefined)
+												if (index !== undefined)
+												{
+													if (index < data.values.length)
 													{
-														if (index < data.values.length)
-														{
-															data.value = data.values[index];
-														}
+														data.value = data.values[index];
 													}
-												}	
-											}
-
-											if (remove) {delete param[name]};
-											if (set) {param[name] = data.value};
+												}
+											}	
 										}
-									}	
+
+										if (remove) {delete param[name]};
+										if (set) {param[name] = data.value};
+									}
 
 									return data;
 								}						
@@ -690,7 +691,6 @@ mydigitalstructure._util =
 				{
 					var object = mydigitalstructure._util.param.get(param, 'object').value;
 					var data = mydigitalstructure._util.param.get(param, 'data', {"default": {}}).value;
-					var callback = mydigitalstructure._util.param.get(param, 'callback').value;
 					var url = mydigitalstructure._util.param.get(param, 'url').value;
 					var type = mydigitalstructure._util.param.get(param, 'type', {"default": 'POST'}).value;
 
@@ -702,12 +702,17 @@ mydigitalstructure._util =
 
 					data.sid = mydigitalstructure._scope.session.sid;
 					data.logonkey = mydigitalstructure._scope.session.logonkey;
-					data.criteria = JSON.stringify(data.criteria);
+
+					if (data.criteria != undefined)
+					{	
+						data.criteria = JSON.stringify(data.criteria);
+						url = url + '&advanced=1';
+					}	
 
 					$.ajax(
 					{
 						type: type,
-						url: url + '&advanced=1',
+						url: url,
 						dataType: 'json',
 						cache: false,
 						data: data,
@@ -800,10 +805,28 @@ mydigitalstructure._util =
 									var type = mydigitalstructure._util.param.get(param, 'type', {"default": 'content'}).value;
 									var queue = mydigitalstructure._util.param.get(param, 'queue', {"default": 'base'}).value;
 									var clear = mydigitalstructure._util.param.get(param, 'clear', {"default": false}).value;
+									var useTemplate = mydigitalstructure._util.param.get(param, 'useTemplate', {"default": false}).value;
 									
 									if (clear) {mydigitalstructure._util.view.queue.clear(param)}
 									if (mydigitalstructure._scope.viewQueue[type][queue] == undefined) {mydigitalstructure._scope.viewQueue[type][queue] = []}
-									mydigitalstructure._scope.viewQueue[type][queue].push(content);
+
+									if (useTemplate && type == 'content')
+									{
+										var data = $.extend(true, {}, content);
+										content = mydigitalstructure._util.view.queue.get({type: 'template', queue: param.queue});
+										
+										for (var key in data)
+								  		{
+								     		if (data.hasOwnProperty(key))
+								     		{
+								     			content.replace('{{' + key + '}}', data[key]);
+								     		}
+								     	}
+									}	
+									else
+									{
+										mydigitalstructure._scope.viewQueue[type][queue].push(content);
+									}	
 								},
 
 								render: function (selector, param)
@@ -943,5 +966,53 @@ mydigitalstructure._util =
 									}
 								});	
 							}
-				}						
-}
+				},
+
+	location: 	{
+					get: 	function ()
+							{
+							    if (navigator.geolocation)
+							    {
+							        navigator.geolocation.getCurrentPosition(mydigitalstructure._util.location.process);
+							    }
+							    else
+							    {
+        							mydigitalstructure._util.location.process();
+        						}
+        					},
+
+        			process: 	
+        					function (position)
+							{
+							    if (position != undefined)
+							    {
+							       	var data =
+							       	{
+							       		available: true,
+							       		coords:
+								       	{
+								       		latitude: position.coords.latitude,
+	    									longitude: position.coords.longitude
+	    								}
+    								}	
+							    }
+							    else
+							    {
+        							var data =
+							       	{
+							       		available: false
+    								}	
+        						}
+
+        						mydigitalstructure._scope.location = data;
+
+        							mydigitalstructure._util.sendToView(
+									{
+										from: 'myds-util-location',
+										status: 'end',
+										message: data
+									});
+
+        					}
+				}									
+}	
