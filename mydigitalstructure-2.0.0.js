@@ -973,7 +973,12 @@ mydigitalstructure._util =
 							{
 							    if (navigator.geolocation)
 							    {
-							        navigator.geolocation.getCurrentPosition(mydigitalstructure._util.location.process);
+							        navigator.geolocation.getCurrentPosition(
+							        				mydigitalstructure._util.location.process,
+							        				mydigitalstructure._util.location.process,
+							        				{
+														enableHighAccuracy: true
+							        				});
 							    }
 							    else
 							    {
