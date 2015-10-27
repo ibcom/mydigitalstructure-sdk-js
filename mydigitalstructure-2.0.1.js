@@ -25,12 +25,17 @@ mydigitalstructure.init = function (data)
 	data.options.objects = (data.options.objects!=undefined?data.options.objects:true);
 
 	mydigitalstructure._scope.app = data;
+
+	if (mydigitalstructure._scope.app.options.auth == undefined)
+		{mydigitalstructure._scope.app.options.auth = true}
 	
 	mydigitalstructure._util.init(data);
 }
 
 mydigitalstructure.register = function (param)
 {
+	//object: space|website
+
 	if (typeof arguments[0] != 'object')
 	{
 		param =
@@ -42,13 +47,15 @@ mydigitalstructure.register = function (param)
 			emaildocument: arguments[4],
 			notes: arguments[5],
 			type: arguments[6] || 'space',
-			callback: arguments[7]
+			callback: arguments[7],
+			object: (arguments[8]!=undefined?arguments[8]:'space')
 		}
 	}
 
-	param.emaildocument = param.emaildocument || mydigitalstructure._scope.app.options.registerDocument;
+	if (param.object==undefined) {param.object = 'space'}
+	param.emaildocument = (param.emaildocument!=undefined?param.emaildocument:mydigitalstructure._scope.app.options.registerDocument);
 
-	mydigitalstructure._util.register.space(param);
+	mydigitalstructure._util.register[param.object].create(param);
 }
 
 mydigitalstructure.reset = function (param)
@@ -422,7 +429,8 @@ mydigitalstructure._util =
 										mydigitalstructure._util.doCallBack(callback, {isLoggedOn: true});
 									}		
 								}
-							});	
+							});
+						}	
 						else
 						{
 							mydigitalstructure._util.doCallBack(callback);
@@ -712,12 +720,18 @@ mydigitalstructure._util =
 					data.sid = mydigitalstructure._scope.session.sid;
 					data.logonkey = mydigitalstructure._scope.session.logonkey;
 
+					if (data.criteria == undefined && url.toLowerCase().indexOf('_search') != -1)
+					{
+						data.criteria = mydigitalstructure._util.search.init();
+						data.criteria.fields.push({name: 'id'});
+					}
+
 					if (data.criteria != undefined)
 					{	
 						data.criteria = JSON.stringify(data.criteria);
 						url = url + '&advanced=1';
 					}	
-
+				
 					$.ajax(
 					{
 						type: type,
@@ -897,67 +911,81 @@ mydigitalstructure._util =
 				},
 
 	register: 	{
-					space: 	function (param)
-							{
-								mydigitalstructure._util.sendToView(
+					space:
+					{
+						create: function (param)
 								{
-									from: 'myds-register-space',
-									status: 'start'
-								});
-
-								var data = $.extend(true, {}, param);
-								delete data.callback;
-
-								data.registration_emailapplysystemtemplate = param.registration_emailapplysystemtemplate || 'N';
-								data.registration_emaildocument = param.emaildocument || param.registration_emaildocument;
-								data.registration_notes = param.notes || param.registration_notes;
-								data.registration_trial = param.trial || param.registration_trial;
-								data.registration_spacename = param.spacename || data.registration_spacename;
-								data.contactperson_firstname = param.firstname || param.contactperson_firstname;
-								data.contactperson_surname = param.surname || param.contactperson_surname;
-								data.contactperson_email = param.email || param.contactperson_email;
-								data.template_businessname = data.contactbusiness_tradename;
-								data.template_firstname = data.contactperson_firstname;
-								data.template_surname = data.contactperson_surname;
-
-								data.site = data.site || mydigitalstructureSiteId;
-							
-								$.ajax(
-								{
-									type: 'POST',
-									url: '/rpc/register/?method=REGISTER_SPACE_MANAGE',
-									dataType: 'json',
-									cache: false,
-									data: data,
-									success: function(response) 
+									mydigitalstructure._util.sendToView(
 									{
-										mydigitalstructure._util.sendToView(
+										from: 'myds-register-space',
+										status: 'start'
+									});
+
+									var data = $.extend(true, {}, param);
+									delete data.callback;
+
+									data.registration_emailapplysystemtemplate = param.registration_emailapplysystemtemplate || 'N';
+									data.registration_emaildocument = param.emaildocument || param.registration_emaildocument;
+									data.registration_notes = param.notes || param.registration_notes;
+									data.registration_trial = param.trial || param.registration_trial;
+									data.registration_spacename = param.spacename || data.registration_spacename;
+									data.contactperson_firstname = param.firstname || param.contactperson_firstname;
+									data.contactperson_surname = param.surname || param.contactperson_surname;
+									data.contactperson_email = param.email || param.contactperson_email;
+									data.template_businessname = data.contactbusiness_tradename;
+									data.template_firstname = data.contactperson_firstname;
+									data.template_surname = data.contactperson_surname;
+
+									data.site = data.site || mydigitalstructureSiteId;
+								
+									$.ajax(
+									{
+										type: 'POST',
+										url: '/rpc/register/?method=REGISTER_SPACE_MANAGE',
+										dataType: 'json',
+										cache: false,
+										data: data,
+										success: function(response) 
 										{
-											from: 'myds-register-space',
-											status: 'end'
-										});
+											mydigitalstructure._util.sendToView(
+											{
+												from: 'myds-register-space',
+												status: 'end'
+											});
 
-										mydigitalstructure._util.doCallBack(param, response);
-									}
-								});	
-							},
+											mydigitalstructure._util.doCallBack(param, response);
+										}
+									});	
+								}
+							},	
 
-					app:	{		
+					website:	
+							{		
 								templates:
 										function (param, response)
 										{
-											if (mydigitalstructure._scope.register.app.templates == undefined)
+											if (mydigitalstructure._scope.register ==  undefined)
+												{mydigitalstructure._scope.register = {website: {}}}
+
+											if (mydigitalstructure._scope.register.website.templates == undefined)
 											{
+												var siteID = mydigitalstructureSiteId;
+
+												if (mydigitalstructure._scope.user != undefined)
+												{	
+													siteID = mydigitalstructure._scope.user.site;
+												}	
+
 												$.ajax(
 												{
 													type: 'GET',
-													url: '/site/1716/mydigitalstructure.framework.templates-1.0.0.json',
+													url: '/site/' + siteID + '/mydigitalstructure.framework.templates-1.0.0.json',
 													dataType: 'json',
 													global: false,
 													success: function(data)
 													{
-														mydigitalstructure._scope.register.app.templates = data.templates;
-														mydigitalstructure._util.register.app.templates(param);
+														mydigitalstructure._scope.register.website.templates = data.templates;
+														mydigitalstructure._util.register.website.templates(param);
 													},
 													error: function(data) {}
 												});
@@ -967,8 +995,10 @@ mydigitalstructure._util =
 												mydigitalstructure._util.sendToView(
 												{
 													from: 'myds-register-templates',
-													status: 'initalised'
+													status: 'initialised'
 												});
+
+												mydigitalstructure._util.doCallBack(param);
 											}
 										},		
 
@@ -981,8 +1011,10 @@ mydigitalstructure._util =
 
 											//Get the default site and update as required.
 
+											var templateName = mydigitalstructure._util.param.get(param, 'templateName').value;
+
 											if (mydigitalstructure._scope.register ==  undefined)
-												{mydigitalstructure._scope.register = {app: {}}}
+												{mydigitalstructure._scope.register = {website: {}}}
 
 											mydigitalstructure._util.sendToView(
 											{
@@ -990,42 +1022,83 @@ mydigitalstructure._util =
 												status: 'start'
 											});
 
-											var paramSend =
+											var paramSend = $.extend(true, param,
 											{
-												data: {criteria: mydigitalstructure._util.search.init()}
-											};
+												url: '/rpc/setup/?method=SETUP_SITE_SEARCH',
+												callback: mydigitalstructure._util.register.website.process
+											});
 
-											paramSend.data.criteria.fields = {name: 'id'}
-											paramSend.url = '/rpc/setup/?method=SETUP_SITE_SEARCH';
-											paramSend.callback = mydigitalstructure._util.register.app.update;
-
-											mydigitalstructure._util.send(param);
+											mydigitalstructure._util.send(paramSend);
 										},
 
-								update: function (param, response)
+								process:
+										function (param, response)
 										{
-											var paramSend =
-											{	
-												url: '/rpc/setup/?method=SETUP_SITE_MANAGE';
-												data: {}
-											};
+											var templateName = mydigitalstructure._util.param.get(param, 'templateName').value;
 
-											if (response.data.rows.length != 0) {paramSend.data.id}
+											if (response.data.rows.length != 0)
+											{
+												param.siteID = response.data.rows[0].id;
+											}	
 
 											if (templateName != undefined)
 											{
-												paramSend.callback = mydigitalstructure._util.register.app.headers;
+												param.callback = mydigitalstructure._util.register.website.update;
+												mydigitalstructure._util.register.website.templates(param);
 											}
 											else
 											{
-												paramSend.callback = mydigitalstructure._util.register.app.complete;
+												mydigitalstructure._util.doCallBack(param)
 											}
+										},	
+
+								update: function (param, response)
+										{
+											var siteID = mydigitalstructure._util.param.get(param, 'siteID').value;
+											var templateName = mydigitalstructure._util.param.get(param, 'templateName').value;
+											var template;
+
+											var paramSend =
+											{	
+												url: '/rpc/setup/?method=SETUP_SITE_MANAGE',
+												data: (param.data!=undefined?param.data:{})
+											};
+
+											if (siteID != undefined)
+											{	
+												paramSend.data.id = siteID;
+											}	
+
+											if (templateName != undefined && siteID == undefined)
+											{
+												template = $.grep(mydigitalstructure._scope.register.website.templates, function (template)
+																		{return template.name == templateName})[0];
+											
+												paramSend.data = $.extend(true, paramSend.data, template.data);
+												
+												for (var key in paramSend.data)
+										  		{
+										     		if (paramSend.data.hasOwnProperty(key))
+										     		{
+										     			paramSend.data[key] = _.escape(paramSend.data[key]);
+										     		}
+										     	}
+
+												paramSend.callback = mydigitalstructure._util.register.website.headers;
+											}
+											else
+											{
+												paramSend.callback = mydigitalstructure._util.register.website.complete;
+											}
+
+											mydigitalstructure._util.send(paramSend);
 										},
 
 								headers: 
 										function (param)
 										{
-											paramSend.callback = mydigitalstructure._util.register.app.complete;
+											//Create headers
+											mydigitalstructure._util.register.website.complete(param);
 										},
 
 								complete:
@@ -1034,7 +1107,7 @@ mydigitalstructure._util =
 											mydigitalstructure._util.sendToView(
 											{
 												from: 'myds-register-app',
-												status: 'start'
+												status: 'end'
 											});
 										}					
 							}			
