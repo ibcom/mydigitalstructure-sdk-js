@@ -669,7 +669,7 @@ mydigitalstructure._util =
 										{
 											if (param[name] !== undefined)
 											{	
-												data.values = param[namem].split(split);
+												data.values = param[name].split(split);
 
 												if (index !== undefined)
 												{
@@ -1110,8 +1110,7 @@ mydigitalstructure._util =
 												status: 'end'
 											});
 										}					
-							}			
-		
+							}
 				},
 
 	user: 		{
@@ -1199,5 +1198,62 @@ mydigitalstructure._util =
 									});
 
         					}
-				}									
+				},
+
+	object:  	{
+					get: 	function (param)
+							{
+								var objectTitle = mydigitalstructure._util.param.get(param, 'context', {index: 2, split: '/'}).value;
+								if (objectTitle == undefined) {var objectTitle = mydigitalstructure._util.param.get(param, 'objectTitle').value}
+
+								var includeProperties = mydigitalstructure._util.param.get(param, 'includeProperties').value;
+
+								mydigitalstructure.retrieve(
+								{
+									object: 'setup_method',
+									data:
+									{
+										criteria:
+										{
+											fields:
+											[
+												{name: 'object'},
+												{name: 'objecttext'},
+												{name: 'endpointtext'},
+												{name: 'title'},
+												{name: 'method.property.datalength'},
+												{name: 'method.property.datatype'},
+												{name: 'method.property.datatypetext'},
+												{name: 'method.property.mandatory'},
+												{name: 'method.property.notes'},
+												{name: 'method.property.searchendpoint'},
+												{name: 'method.property.searchmethod'},
+												{name: 'method.property.searchrelatedproperty'},
+												{name: 'method.property.title'}
+											],
+											filters:
+											[
+												{
+													name: 'objecttext',
+													comparison: 'EQUAL_TO',
+													value1: objectTitle
+												}
+											],
+											options: {rows: 1000}
+										}
+									},
+									callback: mydigitalstructure._util.object.properties
+								});	
+							},		
+
+					properties:
+							function (param, response)
+							{
+								console.log(response)
+							},	
+								
+					methods:
+							function (param)
+							{}
+				}														
 }	
