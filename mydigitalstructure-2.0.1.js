@@ -1206,6 +1206,51 @@ mydigitalstructure._util =
 								var objectTitle = mydigitalstructure._util.param.get(param, 'context', {index: 2, split: '/'}).value;
 								if (objectTitle == undefined) {var objectTitle = mydigitalstructure._util.param.get(param, 'objectTitle').value}
 
+								mydigitalstructure.retrieve(
+								{
+									object: 'setup_method',
+									data:
+									{
+										criteria:
+										{
+											fields:
+											[
+												{name: 'object'},
+												{name: 'objecttext'},
+												{name: 'endpoint'},
+												{name: 'endpointtext'},
+												{name: 'title'},
+												{name: 'notes'},
+												{name: 'removeavailable'},
+												{name: 'addavailable'},
+												{name: 'unrestrictedaccess'},
+												{name: 'unrestrictedloggedonaccess'},
+												{name: 'updateavailable'},
+												{name: 'useavailable'}
+											],
+											filters:
+											[
+												{
+													name: 'objecttext',
+													comparison: 'EQUAL_TO',
+													value1: objectTitle
+												}
+											],
+											options: {rows: 1000}
+										}
+									},
+									callback: mydigitalstructure._util.object.properties
+								});	
+							},		
+
+					properties:
+							function (param, response)
+							{
+								console.log(response)
+
+								var objectTitle = mydigitalstructure._util.param.get(param, 'context', {index: 2, split: '/'}).value;
+								if (objectTitle == undefined) {var objectTitle = mydigitalstructure._util.param.get(param, 'objectTitle').value}
+
 								var includeProperties = mydigitalstructure._util.param.get(param, 'includeProperties').value;
 
 								mydigitalstructure.retrieve(
@@ -1243,13 +1288,7 @@ mydigitalstructure._util =
 										}
 									},
 									callback: mydigitalstructure._util.object.properties
-								});	
-							},		
-
-					properties:
-							function (param, response)
-							{
-								console.log(response)
+								});
 							},	
 								
 					methods:
