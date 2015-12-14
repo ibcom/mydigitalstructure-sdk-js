@@ -26,6 +26,8 @@ myApp.options =
 	registerDocument: 6144
 }
 
+myApp.view = mydigitalstructure._util.view;
+
 myApp.views =
 [
 	{
@@ -95,7 +97,7 @@ myApp.update = function (data)
 		{
 			if (data.status == 'uri-changed')
 			{	
-				mydigitalstructure._util.view.render(uriPath);
+				mydigitalstructure._util.view.render({uriContext: data.message);
 			}	
 		}
 	}
@@ -137,7 +139,7 @@ myApp.controller.auth = function (param)
 
 myApp.controller.app = function (param)
 {
-	$('#myds-logoff').on('click', function(event)
+	$('.myds-logoff').on('click', function(event)
 	{
 		mydigitalstructure.deauth();
 	});

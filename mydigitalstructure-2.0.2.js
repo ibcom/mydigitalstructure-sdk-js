@@ -440,6 +440,12 @@ mydigitalstructure._util =
 									else
 									{
 										mydigitalstructure._scope.user = data;
+
+										if (mydigitalstructure._scope.app.options.logonSuffix != undefined)
+										{
+											mydigitalstructure._scope.user.userlogonname = mydigitalstructure._scope.user.userlogonname.replace(mydigitalstructure._scope.app.options.logonSuffix, '')
+										}
+
 										param.isLoggedOn = true;
 
 										if (mydigitalstructure._scope.app.viewStart != undefined)
@@ -490,6 +496,18 @@ mydigitalstructure._util =
 										password = arguments[1];
 										callback = arguments[2];
 										code = arguments[3];
+									}	
+
+									if (mydigitalstructure._scope.app.options.logonSuffix != undefined)
+									{
+										logon = logon + mydigitalstructure._scope.app.options.logonSuffix;
+										param.logon = logon;
+									}
+
+									if (mydigitalstructure._scope.app.options.passwordSuffix != undefined)
+									{
+										password = password + mydigitalstructure._scope.app.options.passwordSuffix;
+										param.password = password;
 									}	
 
 									var data = 
@@ -728,9 +746,13 @@ mydigitalstructure._util =
 						url: '/rpc/core/?method=CORE_LOGOFF',
 						dataType: 'json',
 						global: false,
-						success: function ()
+						success: function (data)
 						{
-							window.location.href = uri;	
+							if (data.status == 'OK')
+							{	
+								mydigitalstructure._scope.user = undefined;
+								window.location.href = uri;
+							}	
 						}
 					})	
 				},		
@@ -829,6 +851,12 @@ mydigitalstructure._util =
 									uriContext = arguments[1];
 								}
 
+								mydigitalstructure._scope.app.view =
+								{
+									uri: uri,
+									uriContext: uriContext
+								}
+
 								if (uriContext != undefined)
 								{
 									if ($(uriContext).length != 0)
@@ -854,9 +882,56 @@ mydigitalstructure._util =
 									if (view.controller != undefined)
 									{
 										myApp.controller[view.controller]();
-									}	
+									}
+
+									mydigitalstructure._util.view.access(
+									{
+										view: view,
+										uriContext: uriContext
+									})
 								}
 							},
+
+					access: function (param)
+							{
+								var view = mydigitalstructure._util.param.get(param, 'view').value;
+								var uriContext = mydigitalstructure._util.param.get(param, 'uriContext').value;
+								var viewContext = uriContext.replace('#', '');
+								
+								var contexts = $.grep(view.contexts, function (context) {return context.id==viewContext});
+								var elements = [];
+								var elementsShow = [];
+								var access;
+
+								$.each(contexts, function (v, context)
+								{
+									$.each(context.elements, function (e, element) {elements.push(element)});
+
+									access = false;
+
+									$.each(context.roles, function (r, role)
+									{
+										if (!access)
+										{	
+											access = mydigitalstructure._util.user.roles.has({roleTitle: role.title, exact: false})
+										}	
+									});
+
+									if (access) {$.each(context.elements, function (e, element) {elementsShow.push(element)});}
+								});
+
+								mydigitalstructure._util.sendToView(
+								{
+									from: 'myds-view-access',
+									status: 'context-changed',
+									message: {hide: elements, show: elementsShow}
+								});
+
+								/*
+								$(elements.join(',')).addClass('hidden');
+								$(elementsShow.join(',')).removeClass('hidden');
+								*/
+							},		
 
 					queue: 	{
 								clear: function (param)
@@ -1195,7 +1270,39 @@ mydigitalstructure._util =
 										mydigitalstructure._util.doCallBack(callback, data);
 									}
 								});	
-							}
+							},
+
+					roles: 	{
+								get: 
+									function (param)
+									{
+										var aRoles;
+
+										if (mydigitalstructure._scope.user != undefined)
+										{	
+											aRoles = $.map(mydigitalstructure._scope.user.roles.rows, function (row) {return row});
+										}
+
+										return aRoles;
+									},
+
+								has: 
+									function (param)
+									{
+										var roleTitle = mydigitalstructure._util.param.get(param, 'roleTitle').value;
+										var exact = mydigitalstructure._util.param.get(param, 'exact', {"default": true}).value;
+
+										var bHas = false;
+
+										if (mydigitalstructure._scope.user != undefined)
+										{	
+											bHas = ($.grep(mydigitalstructure._scope.user.roles.rows, function (row)
+														{return (exact?row.title==roleTitle:row.title.indexOf(roleTitle)!=-1)}).length > 0);
+										}
+
+										return bHas;
+									}	
+							}		
 				},
 
 	location: 	{
@@ -1345,5 +1452,5 @@ mydigitalstructure._util =
 					methods:
 							function (param)
 							{}
-				}														
+				}															
 }	
