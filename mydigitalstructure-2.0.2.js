@@ -447,7 +447,7 @@ mydigitalstructure._util =
 										}
 
 										param.isLoggedOn = true;
-
+									
 										if (mydigitalstructure._scope.app.viewStart != undefined)
 										{
 											mydigitalstructure._scope.app.viewStart(param)
@@ -683,6 +683,9 @@ mydigitalstructure._util =
 
 												mydigitalstructure._scope.session = data;
 											
+												param.uri = mydigitalstructure._scope.app.options.startURI;
+												param.uriContext = mydigitalstructure._scope.app.options.startURIContext;
+
 												mydigitalstructure._util.init(param);
 												//if (callback == undefined) {callback = mydigitalstructure._scope.app.viewStart}							
 												//mydigitalstructure._util.doCallBack(callback, {status: data.passwordStatus, isLoggedOn: true});
@@ -898,39 +901,37 @@ mydigitalstructure._util =
 								var uriContext = mydigitalstructure._util.param.get(param, 'uriContext').value;
 								var viewContext = uriContext.replace('#', '');
 								
-								var contexts = $.grep(view.contexts, function (context) {return context.id==viewContext});
-								var elements = [];
-								var elementsShow = [];
-								var access;
+								if (view.contexts != undefined)
+								{	
+									var contexts = $.grep(view.contexts, function (context) {return context.id==viewContext});
+									var elements = [];
+									var elementsShow = [];
+									var access;
 
-								$.each(contexts, function (v, context)
-								{
-									$.each(context.elements, function (e, element) {elements.push(element)});
-
-									access = false;
-
-									$.each(context.roles, function (r, role)
+									$.each(contexts, function (v, context)
 									{
-										if (!access)
-										{	
-											access = mydigitalstructure._util.user.roles.has({roleTitle: role.title, exact: false})
-										}	
+										$.each(context.elements, function (e, element) {elements.push(element)});
+
+										access = false;
+
+										$.each(context.roles, function (r, role)
+										{
+											if (!access)
+											{	
+												access = mydigitalstructure._util.user.roles.has({roleTitle: role.title, exact: false})
+											}	
+										});
+
+										if (access) {$.each(context.elements, function (e, element) {elementsShow.push(element)});}
 									});
 
-									if (access) {$.each(context.elements, function (e, element) {elementsShow.push(element)});}
-								});
-
-								mydigitalstructure._util.sendToView(
-								{
-									from: 'myds-view-access',
-									status: 'context-changed',
-									message: {hide: elements, show: elementsShow}
-								});
-
-								/*
-								$(elements.join(',')).addClass('hidden');
-								$(elementsShow.join(',')).removeClass('hidden');
-								*/
+									mydigitalstructure._util.sendToView(
+									{
+										from: 'myds-view-access',
+										status: 'context-changed',
+										message: {hide: elements, show: elementsShow}
+									});
+								}
 							},		
 
 					queue: 	{
