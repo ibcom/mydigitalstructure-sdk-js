@@ -864,7 +864,7 @@ mydigitalstructure._util =
 								{
 									if ($(uriContext).length != 0)
 									{
-										$(myApp.options.container).html($(uriContext).clone().html());
+										$(mydigitalstructure._scope.app.options.container).html($(uriContext).html());
 									}
 								}
 
@@ -874,7 +874,7 @@ mydigitalstructure._util =
 								{	
 									if (view.html != undefined)
 									{
-										$(myApp.options.container).html(view.html);	
+										$(mydigitalstructure._scope.app.options.container).html(view.html);	
 									}
 									else if (view.selector != undefined)
 									{
@@ -884,7 +884,7 @@ mydigitalstructure._util =
 
 									if (view.controller != undefined)
 									{
-										myApp.controller[view.controller]();
+										app.controller[view.controller]();
 									}
 
 									mydigitalstructure._util.view.access(
