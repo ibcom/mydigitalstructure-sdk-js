@@ -5,6 +5,8 @@
  * Based on mydigitalstructure.com RPC platform
  */
 
+ "use strict";
+
 var mydigitalstructure = {_scope: {app: {options: {}}, sentToView: [], viewQueue: {content: {}}, session: {}}};
 
 mydigitalstructure.init = function (data)
@@ -857,11 +859,9 @@ mydigitalstructure._util =
 									uriContext = arguments[1];
 								}
 
-								mydigitalstructure._scope.app.view =
-								{
-									uri: uri,
-									uriContext: uriContext
-								}
+								if (mydigitalstructure._scope.app.view == undefined) {mydigitalstructure._scope.app.view = {}}
+								if (uri != undefined) {mydigitalstructure._scope.app.view.uri = uri}
+								if (uriContext != undefined) {mydigitalstructure._scope.app.view.uriContext = uriContext}
 
 								if (uriContext != undefined)
 								{
@@ -875,6 +875,8 @@ mydigitalstructure._util =
 
 								if (view != undefined)
 								{	
+									mydigitalstructure._scope.app.view.data = view;
+
 									if (view.html != undefined)
 									{
 										$(mydigitalstructure._scope.app.options.container).html(view.html);	
@@ -889,13 +891,25 @@ mydigitalstructure._util =
 									{
 										app.controller[view.controller]();
 									}
-
-									mydigitalstructure._util.view.access(
-									{
-										view: view,
-										uriContext: uriContext
-									});
 								}
+								else
+								{
+									if (uri != undefined)
+									{	
+										var uriController = uri.replace('/', '');
+										
+										if (app.controller[uriController] != undefined)
+										{
+											app.controller[uriController]()
+										}
+									}	
+								}
+
+								mydigitalstructure._util.view.access(
+								{
+									view: mydigitalstructure._scope.app.view.data,
+									uriContext: uriContext
+								});
 							},
 
 					access: function (param)

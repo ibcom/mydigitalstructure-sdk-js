@@ -5,7 +5,9 @@
  * Based on mydigitalstructure.com RPC platform
  */
 
-var mydigitalstructure = {_scope: {app: {options: {}}, sentToView: [], viewQueue: {content: {}}, session: {}}};
+ "use strict";
+
+var mydigitalstructure = {_scope: {app: {options: {}}, sentToView: [], viewQueue: {content: {}, template: {}}, session: {}}};
 
 mydigitalstructure.init = function (data)
 {
@@ -857,11 +859,9 @@ mydigitalstructure._util =
 									uriContext = arguments[1];
 								}
 
-								mydigitalstructure._scope.app.view =
-								{
-									uri: uri,
-									uriContext: uriContext
-								}
+								if (mydigitalstructure._scope.app.view == undefined) {mydigitalstructure._scope.app.view = {}}
+								if (uri != undefined) {mydigitalstructure._scope.app.view.uri = uri}
+								if (uriContext != undefined) {mydigitalstructure._scope.app.view.uriContext = uriContext}
 
 								if (uriContext != undefined)
 								{
@@ -875,6 +875,8 @@ mydigitalstructure._util =
 
 								if (view != undefined)
 								{	
+									mydigitalstructure._scope.app.view.data = view;
+
 									if (view.html != undefined)
 									{
 										$(mydigitalstructure._scope.app.options.container).html(view.html);	
@@ -889,13 +891,25 @@ mydigitalstructure._util =
 									{
 										app.controller[view.controller]();
 									}
-
-									mydigitalstructure._util.view.access(
-									{
-										view: view,
-										uriContext: uriContext
-									});
 								}
+								else
+								{
+									if (uri != undefined)
+									{	
+										var uriController = uri.replace('/', '');
+										
+										if (app.controller[uriController] != undefined)
+										{
+											app.controller[uriController]()
+										}
+									}	
+								}
+
+								mydigitalstructure._util.view.access(
+								{
+									view: mydigitalstructure._scope.app.view.data,
+									uriContext: uriContext
+								});
 							},
 
 					access: function (param)
@@ -904,37 +918,40 @@ mydigitalstructure._util =
 								var uriContext = mydigitalstructure._util.param.get(param, 'uriContext').value;
 								var viewContext = uriContext.replace('#', '');
 								
-								if (view.contexts != undefined)
+								if (view != undefined)
 								{	
-									var contexts = $.grep(view.contexts, function (context) {return context.id==viewContext});
-									var elements = [];
-									var elementsShow = [];
-									var access;
+									if (view.contexts != undefined)
+									{	
+										var contexts = $.grep(view.contexts, function (context) {return context.id==viewContext});
+										var elements = [];
+										var elementsShow = [];
+										var access;
 
-									$.each(contexts, function (v, context)
-									{
-										$.each(context.elements, function (e, element) {elements.push(element)});
-
-										access = false;
-
-										$.each(context.roles, function (r, role)
+										$.each(contexts, function (v, context)
 										{
-											if (!access)
-											{	
-												access = mydigitalstructure._util.user.roles.has({roleTitle: role.title, exact: false})
-											}	
+											$.each(context.elements, function (e, element) {elements.push(element)});
+
+											access = false;
+
+											$.each(context.roles, function (r, role)
+											{
+												if (!access)
+												{	
+													access = mydigitalstructure._util.user.roles.has({roleTitle: role.title, exact: false})
+												}	
+											});
+
+											if (access) {$.each(context.elements, function (e, element) {elementsShow.push(element)});}
 										});
 
-										if (access) {$.each(context.elements, function (e, element) {elementsShow.push(element)});}
-									});
-
-									mydigitalstructure._util.sendToView(
-									{
-										from: 'myds-view-access',
-										status: 'context-changed',
-										message: {hide: elements, show: elementsShow}
-									});
-								}
+										mydigitalstructure._util.sendToView(
+										{
+											from: 'myds-view-access',
+											status: 'context-changed',
+											message: {hide: elements, show: elementsShow}
+										});
+									}
+								}	
 							},		
 
 					queue: 	{

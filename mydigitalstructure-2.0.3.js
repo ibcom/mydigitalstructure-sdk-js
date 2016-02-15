@@ -5,6 +5,8 @@
  * Based on mydigitalstructure.com RPC platform
  */
 
+ "use strict";
+
 var mydigitalstructure = {_scope: {app: {options: {}}, sentToView: [], viewQueue: {content: {}}, session: {}}};
 
 mydigitalstructure.init = function (data)
@@ -895,6 +897,18 @@ mydigitalstructure._util =
 										view: view,
 										uriContext: uriContext
 									});
+								}
+								else
+								{
+									if (uri != undefined)
+									{	
+										var uriController = uri.replace('/', '');
+										
+										if (app.controller[uriController] != undefined)
+										{
+											app.controller[uriController]()
+										}
+									}	
 								}
 							},
 
