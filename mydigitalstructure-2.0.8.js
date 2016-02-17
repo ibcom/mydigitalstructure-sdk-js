@@ -1049,7 +1049,7 @@ mydigitalstructure._util =
 									}
 
 									this.clear(param);
-									this.add(sData, param);
+									this.add(content, param);
 									this.render(sElementSelector, param);
 								},
 
