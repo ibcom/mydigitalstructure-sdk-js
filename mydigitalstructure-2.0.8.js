@@ -1050,7 +1050,7 @@ mydigitalstructure._util =
 
 									this.clear(param);
 									this.add(content, param);
-									this.render(sElementSelector, param);
+									this.render(selector, param);
 								},
 
 								exists: function (param)
