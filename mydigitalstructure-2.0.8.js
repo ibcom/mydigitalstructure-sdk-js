@@ -977,7 +977,7 @@ mydigitalstructure._util =
 									var clear = mydigitalstructure._util.param.get(param, 'clear', {"default": false}).value;
 									var useTemplate = mydigitalstructure._util.param.get(param, 'useTemplate', {"default": false}).value;
 									
-									if (clear) {mydigitalstructure._util.view.queue.clear(param)}
+									if (clear || type == 'template') {mydigitalstructure._util.view.queue.clear(param)}
 									if (mydigitalstructure._scope.viewQueue[type][queue] == undefined) {mydigitalstructure._scope.viewQueue[type][queue] = []}
 
 									if (useTemplate && type == 'content')
@@ -1048,8 +1048,8 @@ mydigitalstructure._util =
 										selector = (arguments.length>1?arguments[1]:param.selector);
 									}
 
-									this.clear(oParam);
-									this.add(sData, oParam);
+									this.clear(param);
+									this.add(sData, param);
 									this.render(sElementSelector, param);
 								},
 
