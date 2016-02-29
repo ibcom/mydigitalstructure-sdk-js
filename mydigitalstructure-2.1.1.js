@@ -147,7 +147,8 @@ mydigitalstructure.create = function (param)
 		{
 			object: arguments[0],
 			data: arguments[1],
-			callback: arguments[2]
+			callback: arguments[2],
+			mode: arguments[3]
 		}
 	}
 
@@ -158,6 +159,7 @@ mydigitalstructure.create = function (param)
 		object: param.object,
 		data: param.data,
 		callback: param.callback,
+		mode: param.mode,
 		type: 'POST',
 		url: '/rpc/' + endpoint + '/?method=' + (param.object).toUpperCase() + '_MANAGE',
 	});
@@ -220,7 +222,8 @@ mydigitalstructure.update = function (param, data, callback)
 		{
 			object: arguments[0],
 			data: arguments[1],
-			callback: arguments[2]
+			callback: arguments[2],
+			mode: arguments[3]
 		}
 	}
 
@@ -231,6 +234,7 @@ mydigitalstructure.update = function (param, data, callback)
 		object: param.object,
 		data: param.data,
 		callback: param.callback,
+		mode: param.mode,
 		type: 'POST',
 		url: '/rpc/' + param.endpoint + '/?method=' + (param.object).toUpperCase() + '_MANAGE',
 	});
@@ -689,8 +693,6 @@ mydigitalstructure._util =
 												param.uriContext = mydigitalstructure._scope.app.options.startURIContext;
 
 												mydigitalstructure._util.init(param);
-												//if (callback == undefined) {callback = mydigitalstructure._scope.app.viewStart}							
-												//mydigitalstructure._util.doCallBack(callback, {status: data.passwordStatus, isLoggedOn: true});
 											}
 										}
 									})
@@ -712,7 +714,7 @@ mydigitalstructure._util =
 								
 									if (param.hasOwnProperty(name))
 									{
-										data.value = param[name];
+										if (param[name] != undefined) {data.value = param[name]};
 										data.exists = true;
 
 										if (index !== undefined && split === undefined) {split = '-'}
@@ -814,8 +816,7 @@ mydigitalstructure._util =
 					}
 					else
 					{
-						console.log(url);
-						console.log(data);
+						mydigitalstructure._util.doCallBack(param);
 					}	
 				},
 
@@ -1003,6 +1004,7 @@ mydigitalstructure._util =
 								     		{
 								     			regex = new RegExp('{{' + key + '}}', "gi");
 								     			content = content.replace(regex, data[key]);
+								     			if (s != undefined) {content = s.unescapeHTML(content)}
 								     		}
 								     	}
 

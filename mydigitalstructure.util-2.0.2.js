@@ -38,26 +38,52 @@ $(document).off('keypress', '#myds-logonname, #myds-logonpassword')
 $(document).off('click', '.myds')
 .on('click', '.myds', function (event)
 {
-	var id = event.target.id;
+	var id = $(this).data('id');
+	var controller = $(this).data('controller');
 
-	if (id != '')
-	{	
-		if (app.controller[id] != undefined)
+	if (controller != undefined)
+	{
+		var param = {context: (mydigitalstructure._scope.app.uriContext).replace('#', '')}
+		param.dataContext = $(this).data();
+		app.data[controller] = $(this).data();
+		if (app.data[controller] == undefined) {app.data[controller] = {}}
+		app.controller[controller](param);
+	}
+	else
+	{
+		if (id != '')
 		{	
-			var param = {context: (mydigitalstructure._scope.app.uriContext).replace('#', '')}
-			param.dataContext = $(this).data();
-			app.controller[id](param);
-		}
-		else
-		{
-			var controller = $(this).data('controller');
-
-			if (controller != undefined)
-			{
+			if (app.controller[id] != undefined)
+			{	
 				var param = {context: (mydigitalstructure._scope.app.uriContext).replace('#', '')}
 				param.dataContext = $(this).data();
-				app.controller[controller](param);
+				app.data[controller] = $(this).data();
+				if (app.data[controller] == undefined) {app.data[controller] = {}}
+				app.controller[id](param);
 			}
+		}
+	}	
+});
+
+$(document).off('click', '.myds-check')
+.on('click', '.myds-check', function (event)
+{
+	var controller = $(this).data('controller');
+	var context = $(this).data('context');
+
+	if (controller != undefined && context != undefined)
+	{	
+ 		var checked = $('input.myds-check[data-controller="' + controller + '"]:checked')
+ 		var ids = $.map(checked, function (c) {return $(c).data('id')});
+
+ 		if (app.data[controller] == undefined) {app.data[controller] = {}}
+
+ 		app.data[controller][context] = (ids.length==0?'':ids.join(','));
+
+		if (app.controller[controller] != undefined)
+		{	
+			var param = {dataContext: app.data[controller][context]}
+			app.controller[controller](param);
 		}
 	}		
 });
@@ -86,7 +112,8 @@ if (typeof $.fn.tab == 'function')
 
 		if (app.controller[uriContext] != undefined)
 		{
-			app.controller[uriContext]()
+			if (app.data[uriContext] == undefined) {app.data[uriContext] = {}};
+			app.controller[uriContext]();
 		}
 		else
 		{
@@ -94,6 +121,7 @@ if (typeof $.fn.tab == 'function')
 
 			if (app.controller[uriContext[0]] != undefined)
 			{
+				if (app.data[uriContext[0]] == undefined) {app.data[uriContext[0]] = {}};
 				app.controller[uriContext[0]]({context: uriContext[1]})
 			}
 		}	
@@ -115,12 +143,14 @@ if (typeof $.fn.modal == 'function')
 				if (event.relatedTarget != undefined)
 				{
 					param.dataContext = $(event.relatedTarget).data();
+					$(event.target.id).data('context', param.dataContext);
 				}
 				else if (mydigitalstructure._scope.app.dataContext != undefined)
 				{
 					param = $.extend(true, param, {dataContext: mydigitalstructure._scope.app.dataContext})
 				}
 
+				if (app.data[id] == undefined) {app.data[id] = {}};
 				app.controller[id](param);
 			}
 		}	
@@ -146,6 +176,7 @@ if (typeof $.fn.collapse == 'function')
 		{	
 			if (app.controller[id] != undefined)
 			{
+				if (app.data[id] == undefined) {app.data[id] = {}};
 				app.controller[id]({status: 'hidden'});
 			}
 		}	
@@ -174,6 +205,7 @@ if (typeof $.fn.popover == 'function')
 
 			if (app.controller[id] != undefined)
 			{
+				if (app.data[id] == undefined) {app.data[id] = {}};
 				app.controller[id](param);
 			}
 		}	
@@ -203,6 +235,7 @@ if (typeof $.fn.carousel == 'function')
 
 			if (app.controller[id] != undefined)
 			{
+				if (app.data[id] == undefined) {app.data[id] = {}};
 				app.controller[id](param);
 			}
 		}	
