@@ -65,6 +65,48 @@ $(document).off('click', '.myds')
 	}	
 });
 
+$(document).off('click', '.myds-dropdown')
+.on('click', '.myds-dropdown', function (event)
+{
+	var id = $(this).attr('id');
+	var controller = $(this).data('controller');
+	var context = $(this).data('context');
+	var html = $(this).html()
+	var button = $(this).parents(".btn-group").find('.btn');
+
+	button.html(html + ' <span class="caret"></span>');
+
+	if (controller != undefined)
+	{
+		var param = {}
+		param.dataContext = $(this).data();
+		
+		if (app.data[controller] == undefined) {app.data[controller] = {}}
+		app.data[controller].dataContext = $(this).data();
+
+		if (context != undefined)
+		{
+			app.data[controller][context] = $(this).data('id');
+			app.data[controller]['_' + context] = [$(this).data('id')];
+		}	
+
+		app.controller[controller](param);
+	}
+	else
+	{
+		if (id != '')
+		{	
+			if (app.controller[id] != undefined)
+			{	
+				var param = {}
+				param.dataContext = $(this).data();
+				if (app.data[controller] == undefined) {app.data[controller] = {}}
+				app.controller[id](param);
+			}
+		}
+	}	
+});
+
 $(document).off('click', '.myds-check')
 .on('click', '.myds-check', function (event)
 {
@@ -73,7 +115,7 @@ $(document).off('click', '.myds-check')
 
 	if (controller != undefined && context != undefined)
 	{	
- 		var checked = $('input.myds-check[data-controller="' + controller + '"][data-context="' + context + '"]:checked')
+ 		var checked = $('input.myds-check[data-controller="' + controller + '"][data-context="' + context + '"]:checked:visible')
  		var ids = $.map(checked, function (c) {return $(c).data('id')});
 
  		if (app.data[controller] == undefined) {app.data[controller] = {}}
@@ -83,7 +125,13 @@ $(document).off('click', '.myds-check')
 
 		if (app.controller[controller] != undefined)
 		{	
-			var param = {dataContext: app.data[controller][context]}
+			var param =
+			{
+				selected: $(this).prop('checked'),
+				dataID: $(this).data('id'),
+				dataContext: app.data[controller][context]
+			}
+
 			app.controller[controller](param);
 		}
 	}		
@@ -108,6 +156,49 @@ $(document).off('keyup', '.myds-text')
 			app.controller[controller](param);
 		}
 	}		
+});
+
+$(document).off('change', '.myds-text')
+.on('change', '.myds-text', function (event)
+{
+	var controller = $(this).data('controller');
+	var context = $(this).data('context');
+
+	if (controller != undefined && context != undefined)
+	{	
+ 		if (app.data[controller] == undefined) {app.data[controller] = {}}
+
+ 		app.data[controller][context] = $(this).val();
+ 		app.data[controller]['_' + context] = $(this).data();
+
+		if (app.controller[controller] != undefined)
+		{	
+			var param = {dataContext: app.data[controller][context]}
+			app.controller[controller](param);
+		}
+	}		
+});
+
+$(document).off('dp.change').on('dp.change', function(event)
+{
+	var element = $(event.target).children('input');
+
+	var controller = element.data('controller');
+	var context = element.data('context');
+
+	if (controller != undefined && context != undefined)
+	{	
+ 		if (app.data[controller] == undefined) {app.data[controller] = {}}
+
+ 		app.data[controller][context] = element.val();
+ 		app.data[controller]['_' + context] = element.data();
+
+		if (app.controller[controller] != undefined)
+		{	
+			var param = {dataContext: app.data[controller][context]}
+			app.controller[controller](param);
+		}
+	}
 });
 
 if (typeof $.fn.tab == 'function')
@@ -208,6 +299,7 @@ if (typeof $.fn.collapse == 'function')
 			if (app.controller[id] != undefined)
 			{
 				if (app.data[id] == undefined) {app.data[id] = {}};
+				app.data[id].viewStatus = 'hidden';
 				app.controller[id]({status: 'hidden'});
 			}
 		}	
@@ -232,6 +324,7 @@ if (typeof $.fn.collapse == 'function')
 			if (app.controller[id] != undefined)
 			{
 				if (app.data[id] == undefined) {app.data[id] = {}};
+				app.data[id].viewStatus = 'shown';
 				app.controller[id]({status: 'shown'});
 			}
 		}	
@@ -269,8 +362,8 @@ if (typeof $.fn.popover == 'function')
 
 if (typeof $.fn.carousel == 'function')
 { 
-    $(document).off('slide.bs.carousel')
-    .on('slide.bs.carousel', function (event)
+    $(document).off('slide.bs.carousel', 'myds-slide')
+    .on('slide.bs.carousel', 'myds-slide', function (event)
 	{
 		if (event.relatedTarget != undefined)
 		{
@@ -279,7 +372,37 @@ if (typeof $.fn.carousel == 'function')
 
 			if (id != '')
 			{	
-				var param = {status: 'shown', context: (mydigitalstructure._scope.app.uriContext).replace('#', '')}
+				var param = {status: 'slide', context: (mydigitalstructure._scope.app.uriContext).replace('#', '')}
+
+				param.dataContext = 
+				{
+					id: $(event.relatedTarget).attr('data-id'),
+					reference: $(event.relatedTarget).attr('data-reference'),
+				}
+			}	
+
+			if (app.controller[id] != undefined)
+			{
+				if (app.data[id] == undefined) {app.data[id] = {}};
+				app.controller[id](param);
+			}
+		}	
+	});
+}
+
+if (typeof $.fn.carousel == 'function')
+{ 
+    $(document).off('slid.bs.carousel')
+    .on('slid.bs.carousel', function (event)
+	{
+		if (event.relatedTarget != undefined)
+		{
+			var id = event.relatedTarget.id;
+			if (id == '') {id = $(event.relatedTarget).attr('data-controller')}
+
+			if (id != '')
+			{	
+				var param = {status: 'slid', context: (mydigitalstructure._scope.app.uriContext).replace('#', '')}
 
 				param.dataContext = 
 				{

@@ -65,6 +65,48 @@ $(document).off('click', '.myds')
 	}	
 });
 
+$(document).off('click', '.myds-dropdown')
+.on('click', '.myds-dropdown', function (event)
+{
+	var id = $(this).attr('id');
+	var controller = $(this).data('controller');
+	var context = $(this).data('context');
+	var html = $(this).html()
+	var button = $(this).parents(".btn-group").find('.btn');
+
+	button.html(html + ' <span class="caret"></span>');
+
+	if (controller != undefined)
+	{
+		var param = {}
+		param.dataContext = $(this).data();
+		
+		if (app.data[controller] == undefined) {app.data[controller] = {}}
+		app.data[controller].dataContext = $(this).data();
+
+		if (context != undefined)
+		{
+			app.data[controller][context] = $(this).data('id');
+			app.data[controller]['_' + context] = [$(this).data('id')];
+		}	
+
+		app.controller[controller](param);
+	}
+	else
+	{
+		if (id != '')
+		{	
+			if (app.controller[id] != undefined)
+			{	
+				var param = {}
+				param.dataContext = $(this).data();
+				if (app.data[controller] == undefined) {app.data[controller] = {}}
+				app.controller[id](param);
+			}
+		}
+	}	
+});
+
 $(document).off('click', '.myds-check')
 .on('click', '.myds-check', function (event)
 {
@@ -73,7 +115,7 @@ $(document).off('click', '.myds-check')
 
 	if (controller != undefined && context != undefined)
 	{	
- 		var checked = $('input.myds-check[data-controller="' + controller + '"][data-context="' + context + '"]:checked')
+ 		var checked = $('input.myds-check[data-controller="' + controller + '"][data-context="' + context + '"]:checked:visible')
  		var ids = $.map(checked, function (c) {return $(c).data('id')});
 
  		if (app.data[controller] == undefined) {app.data[controller] = {}}
@@ -83,7 +125,13 @@ $(document).off('click', '.myds-check')
 
 		if (app.controller[controller] != undefined)
 		{	
-			var param = {dataContext: app.data[controller][context]}
+			var param =
+			{
+				selected: $(this).prop('checked'),
+				dataID: $(this).data('id'),
+				dataContext: app.data[controller][context]
+			}
+
 			app.controller[controller](param);
 		}
 	}		
@@ -208,6 +256,7 @@ if (typeof $.fn.collapse == 'function')
 			if (app.controller[id] != undefined)
 			{
 				if (app.data[id] == undefined) {app.data[id] = {}};
+				app.data[id].viewStatus = 'hidden';
 				app.controller[id]({status: 'hidden'});
 			}
 		}	
@@ -232,6 +281,7 @@ if (typeof $.fn.collapse == 'function')
 			if (app.controller[id] != undefined)
 			{
 				if (app.data[id] == undefined) {app.data[id] = {}};
+				app.data[id].viewStatus = 'shown';
 				app.controller[id]({status: 'shown'});
 			}
 		}	
