@@ -7,6 +7,9 @@
 
  "use strict";
 
+mydigitalstructure.compatible = (typeof document.addEventListener == 'function');
+mydigitalstructure.ie = (navigator.appVersion.indexOf('MSIE') != -1)
+
 $(document).off('click', '.myds-logoff').on('click', '.myds-logoff', function(event)
 {
 	mydigitalstructure.deauth({uri: '/app/#auth'});
@@ -104,7 +107,10 @@ $(document).off('click', '.myds-dropdown')
 			app.data[controller]['_' + context] = [$(this).data('id')];
 		}	
 
-		app.controller[controller](param);
+		if (app.controller[controller] != undefined)
+		{	
+			app.controller[controller](param);
+		}	
 	}
 	else
 	{

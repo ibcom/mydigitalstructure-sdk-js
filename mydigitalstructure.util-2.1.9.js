@@ -104,7 +104,10 @@ $(document).off('click', '.myds-dropdown')
 			app.data[controller]['_' + context] = [$(this).data('id')];
 		}	
 
-		app.controller[controller](param);
+		if (app.controller[controller] != undefined)
+		{	
+			app.controller[controller](param);
+		}	
 	}
 	else
 	{
