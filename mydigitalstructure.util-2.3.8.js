@@ -236,7 +236,7 @@ $(document).off('keyup', '.myds-text')
 
 	if (event.which == '13' && enter == 'stop')
 	{
-        event.preventDefault();
+		event.preventDefault();
 		returnValue = false;
     }
 	
