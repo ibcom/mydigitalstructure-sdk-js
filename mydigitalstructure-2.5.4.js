@@ -479,6 +479,34 @@ mydigitalstructure._util =
 					};
 				},
 
+	onComplete: function (param)
+				{
+					if (mydigitalstructure._util.param.get(param, 'onComplete').exists)
+					{
+						var onComplete = mydigitalstructure._util.param.get(param, 'onComplete').value;
+	
+						if (mydigitalstructure._util.param.get(param, 'onCompleteWhenCan').exists)
+						{
+							param.onComplete = param.onCompleteWhenCan;
+							delete param.onCompleteWhenCan;
+						}	
+						else
+						{
+							delete param.onComplete;
+						}
+
+						onComplete(param);
+					}
+					else if (mydigitalstructure._util.param.get(param, 'onCompleteWhenCan').exists)
+					{
+						var onCompleteWhenCan = mydigitalstructure._util.param.get(param, 'onCompleteWhenCan').value;
+
+						delete param.onCompleteWhenCan;
+					
+						onCompleteWhenCan(param);
+					}
+				},			
+
 	loadScript: function (script)
 				{
 					var xhtmlHeadID = document.getElementsByTagName("head")[0]; 
