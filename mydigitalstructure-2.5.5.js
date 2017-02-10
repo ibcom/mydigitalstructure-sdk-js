@@ -2138,12 +2138,18 @@ mydigitalstructure._util.svgToImage = function (param)
 	}
 	else	
 	{ 
-		var html = '<svg viewBox="0 0 ' + boxWidth + ' ' + boxHeight + '" version="1.1" xmlns="http://www.w3.org/2000/svg" width="' + width + '" height="' + height + '" style="width:' + width + 'px; height:' + height + 'px;">' +
-				styles + 
-				$('#' + elementSVGContainerID)
+		
+		var svg = $('#' + elementSVGContainerID);
+
+   	var svgHTML = svg
 				.attr("version", 1.1)
 				.attr("xmlns", "http://www.w3.org/2000/svg")
-				.html() + '</svg>';
+				.html();
+
+		var html = '<svg viewBox="0 0 ' + boxWidth + ' ' + boxHeight + '" version="1.1" xmlns="http://www.w3.org/2000/svg" width="' + width + '" height="' + height + '" style="width:' + width + 'px; height:' + height + 'px;">' +
+				styles + 
+				svgHTML
+				 + '</svg>';
 
 		var imgsrc = 'data:image/svg+xml;base64,'+ btoa(html);
 	       	
