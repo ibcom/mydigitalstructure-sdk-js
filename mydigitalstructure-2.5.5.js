@@ -398,7 +398,6 @@ mydigitalstructure.delete = function (param)
 		type: 'POST',
 		url: '/rpc/' + param.endpoint + '/?method=' + (param.object).toUpperCase() + '_MANAGE',
 	});
-
 }
 
 mydigitalstructure.help = function ()
