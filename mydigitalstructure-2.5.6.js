@@ -445,7 +445,7 @@ mydigitalstructure.setting = function (param)
 
 mydigitalstructure._util =
 {
-	hash: 		function(data)
+	hash: 	function(data)
 				{
 					//requires /jscripts/md5-min.js
 					
@@ -1045,7 +1045,7 @@ mydigitalstructure._util =
 								mydigitalstructure._util.doCallBack(param, response);
 							},
 							_managed: this.managed,
-		_rf: this.rf
+							_rf: this.rf
 						});
 					}
 					else
@@ -1554,7 +1554,8 @@ mydigitalstructure._util =
 							}			
 				},
 
-	register: 	{
+	register: 
+				{
 					space:
 					{
 						create: function (param)
@@ -1757,7 +1758,7 @@ mydigitalstructure._util =
 							}
 				},
 
-	user: 		{
+	user: 	{
 					password: 	
 							function (param, callback)
 							{
@@ -1885,7 +1886,7 @@ mydigitalstructure._util =
         					}
 				},
 
-	object:  	{
+	object:  {
 					get: 	function (param)
 							{
 								var objectTitle = mydigitalstructure._util.param.get(param, 'context', {index: 2, split: '/'}).value;
@@ -2014,15 +2015,15 @@ mydigitalstructure._util =
 						                '</div>'
 						              '</form>';
 
-						        html = s.replaceAll(html, '{{context}}', context);
-						        html = s.replaceAll(html, '{{title}}', title);
-						        html = s.replaceAll(html, '{{object}}', object);
-						        html = s.replaceAll(html, '{{objectcontext}}', objectcontext);
-						        html = s.replaceAll(html, '{{maxfiles}}', maxfiles);
+								html = s.replaceAll(html, '{{context}}', context);
+								html = s.replaceAll(html, '{{title}}', title);
+								html = s.replaceAll(html, '{{object}}', object);
+								html = s.replaceAll(html, '{{objectcontext}}', objectcontext);
+								html = s.replaceAll(html, '{{maxfiles}}', maxfiles);
 								html = s.replaceAll(html, '{{controller}}', controller);
 
-						        return html   
-						    },        
+								return html   
+							},        
 
 					upload:	
 							function (param)
