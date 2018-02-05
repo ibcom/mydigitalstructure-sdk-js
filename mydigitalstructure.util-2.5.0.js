@@ -504,6 +504,19 @@ $(document).off('change.bs.fileinput').on('change.bs.fileinput', function(event)
 	}
 });
 
+if (typeof $.fn.metisMenu == 'function')
+{ 
+	$(document).off('click', '.myds-menu a')
+	.on('click', '.myds-menu a', function (e)
+	{
+		console.log(e)
+		console.log(this)
+		//e.preventDefault()
+		$(this).parent().parent().children().removeClass('active');
+		$(this).parent().addClass('active');
+	});
+}	
+
 if (typeof $.fn.tab == 'function')
 { 
 	$(document).off('click', '.app-tab a')
