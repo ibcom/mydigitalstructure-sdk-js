@@ -265,6 +265,40 @@ $(document).off('keyup', '.myds-text')
 	return returnValue
 });
 
+$(document).off('changeDate clearDate', '.myds-date')
+.on('changeDate clearDate', '.myds-date', function (event)
+{
+	var controller = $(this).data('controller');
+	var context = $(this).data('context');
+	var enter = $(this).data('enter');
+	var returnValue;
+
+	if (event.which == '13' && enter == 'stop')
+	{
+		event.preventDefault();
+		returnValue = false;
+    }
+	
+	if (controller != undefined && context != undefined)
+	{	
+ 		if (app.data[controller] == undefined) {app.data[controller] = {}}
+
+ 		app.data[controller][context] = event.format();
+ 		app.data[controller]['_' + context] = event;
+
+		if (app.controller[controller] != undefined)
+		{	
+			if (app.data[controller].timerText != 0) {clearTimeout(app.data[controller].timerText)};
+			
+			var param = JSON.stringify({dataContext: app.data[controller][context]});
+
+			app.data[controller].timerText = setTimeout('app.controller["' + controller + '"](' + param + ')', 500);
+		}
+	}
+	
+	return returnValue
+});
+
 $(document).off('keypress', '.myds-text')
 .on('keypress', '.myds-text', function (event)
 {
@@ -509,9 +543,6 @@ if (typeof $.fn.metisMenu == 'function')
 	$(document).off('click', '.myds-menu a')
 	.on('click', '.myds-menu a', function (e)
 	{
-		console.log(e)
-		console.log(this)
-		//e.preventDefault()
 		$(this).parent().parent().children().removeClass('active');
 		$(this).parent().addClass('active');
 	});
@@ -546,6 +577,11 @@ if (typeof $.fn.tab == 'function')
 	{
 		var uriContext = $(event.target).attr('href').replace('#', '');
 		var controller = $(event.target).attr('data-controller');
+
+		if (controller == undefined)
+		{
+			controller = $(event.target).parent().parent().attr('data-controller');
+		}
 
 		mydigitalstructure._util.view.track(
 		{
@@ -702,8 +738,8 @@ if (typeof $.fn.collapse == 'function')
 		}	
     });
 
-    $(document).off('shown.bs.collapse')
-	.on('shown.bs.collapse', function (event)
+    $(document).off('shown.bs.collapse', '.myds-collapse, .myds')
+	.on('shown.bs.collapse', '.myds-collapse, .myds', function (event)
 	{
 		var id = event.target.id;
 		if ($(event.target).attr('data-controller') != undefined)
@@ -739,8 +775,8 @@ if (typeof $.fn.collapse == 'function')
 		}	
     });
 	
-	$(document).off('show.bs.collapse')
-	.on('show.bs.collapse', function (event)
+	$(document).off('show.bs.collapse', '.myds-collapse, .myds')
+	.on('show.bs.collapse', '.myds-collapse, .myds', function (event)
 	{
 		var id = event.target.id;
 		if ($(event.target).attr('data-controller') != undefined)

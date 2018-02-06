@@ -2248,12 +2248,15 @@ mydigitalstructure._util.reset = function (param)
 		app._util.data.reset(param)	
 	}
 	
-	$('#' + controller + ' .myds-text').val('');
-	$('#' + controller + ' .myds-check').attr('checked', false);
-	$('#' + controller + ' .myds-data').html('...');
-	$('#' + controller + ' .myds-data-view').html(mydigitalstructure._scope.app.options.working);
-	$('#' + controller + ' .myds-text-select').val('');
-	$('#' + controller + ' .myds-text-select').removeAttr('data-id');
+	if (controller != '' && controller != undefined)
+	{
+		$('#' + controller + ' .myds-text').val('');
+		$('#' + controller + ' .myds-check').attr('checked', false);
+		$('#' + controller + ' .myds-data').html('...');
+		$('#' + controller + ' .myds-data-view').html(mydigitalstructure._scope.app.options.working);
+		$('#' + controller + ' .myds-text-select').val('');
+		$('#' + controller + ' .myds-text-select').removeAttr('data-id');
+	}	
 }
 
 mydigitalstructure._util.convert =
