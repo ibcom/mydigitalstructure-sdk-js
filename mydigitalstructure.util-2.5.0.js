@@ -57,8 +57,8 @@ $(document).off('keypress', '#myds-logonname, #myds-logonpassword')
     }
 });
 
-$(document).off('click', '.myds')
-.on('click', '.myds', function (event)
+$(document).off('click', '.myds-click')
+.on('click', '.myds-click', function (event)
 {
 	var id = $(this).attr('id');
 	var controller = $(this).data('controller');
@@ -265,24 +265,35 @@ $(document).off('keyup', '.myds-text')
 	return returnValue
 });
 
-$(document).off('changeDate clearDate', '.myds-date')
-.on('changeDate clearDate', '.myds-date', function (event)
+$(document).off('changeDate clearDate', '.date')
+.on('changeDate clearDate', '.date', function (event)
 {
 	var controller = $(this).data('controller');
 	var context = $(this).data('context');
 	var enter = $(this).data('enter');
 	var returnValue;
 
+	if (controller == undefined)
+	{
+		controller = $(this).children('input').data('controller');
+	}
+
+	if (context == undefined)
+	{
+		context = $(this).children('input').data('context');
+	}
+
 	if (event.which == '13' && enter == 'stop')
 	{
 		event.preventDefault();
 		returnValue = false;
-    }
+   }
 	
 	if (controller != undefined && context != undefined)
 	{	
  		if (app.data[controller] == undefined) {app.data[controller] = {}}
 
+ 		//app.data[controller].dataContext = $(this).children('input').data();
  		app.data[controller][context] = event.format();
  		app.data[controller]['_' + context] = event;
 
@@ -290,9 +301,14 @@ $(document).off('changeDate clearDate', '.myds-date')
 		{	
 			if (app.data[controller].timerText != 0) {clearTimeout(app.data[controller].timerText)};
 			
-			var param = JSON.stringify({dataContext: app.data[controller][context]});
+			var param = {dataContext: $(this).children('input').data()};
 
-			app.data[controller].timerText = setTimeout('app.controller["' + controller + '"](' + param + ')', 500);
+			if (context != undefined)
+			{
+				param[context] = app.data[controller][context];
+			}
+
+			app.data[controller].timerText = setTimeout('app.controller["' + controller + '"](' + JSON.stringify(param) + ')', 500);
 		}
 	}
 	
@@ -711,8 +727,8 @@ if (typeof $.fn.modal == 'function')
 
 if (typeof $.fn.collapse == 'function')
 {
-	$(document).off('hidden.bs.collapse')
-	.on('hidden.bs.collapse', function (event)
+	$(document).off('hidden.bs.collapse', '.myds-collapse')
+	.on('hidden.bs.collapse', '.myds-collapse', function (event)
 	{
 		var id = event.target.id;
 		if (id != '')
@@ -738,8 +754,8 @@ if (typeof $.fn.collapse == 'function')
 		}	
     });
 
-    $(document).off('shown.bs.collapse', '.myds-collapse, .myds')
-	.on('shown.bs.collapse', '.myds-collapse, .myds', function (event)
+    $(document).off('shown.bs.collapse', '.myds-collapse')
+	.on('shown.bs.collapse', '.myds-collapse', function (event)
 	{
 		var id = event.target.id;
 		if ($(event.target).attr('data-controller') != undefined)
@@ -775,8 +791,8 @@ if (typeof $.fn.collapse == 'function')
 		}	
     });
 	
-	$(document).off('show.bs.collapse', '.myds-collapse, .myds')
-	.on('show.bs.collapse', '.myds-collapse, .myds', function (event)
+	$(document).off('show.bs.collapse', '.myds-collapse')
+	.on('show.bs.collapse', '.myds-collapse', function (event)
 	{
 		var id = event.target.id;
 		if ($(event.target).attr('data-controller') != undefined)
