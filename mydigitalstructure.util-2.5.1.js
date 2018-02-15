@@ -243,7 +243,7 @@ $(document).off('keyup', '.myds-text')
 	{
 		event.preventDefault();
 		returnValue = false;
-    }
+	}
 	
 	if (controller != undefined && context != undefined)
 	{	
@@ -257,7 +257,7 @@ $(document).off('keyup', '.myds-text')
 		{	
 			if (app.data[controller].timerText != 0) {clearTimeout(app.data[controller].timerText)};
 			
-			var param = JSON.stringify({dataContext: app.data[controller][context]});
+			var param = JSON.stringify({dataContext: app.data[controller][context], _type: 'keyup'});
 
 			app.data[controller].timerText = setTimeout('app.controller["' + controller + '"](' + param + ')', 500);
 		}
@@ -306,7 +306,8 @@ $(document).off('changeDate clearDate', '.date')
 
 			if (context != undefined)
 			{
-				param[context] = app.data[controller][context];
+				param.dataContext[context] = event.format();
+				param._type = 'dateChange'
 			}
 
 			app.data[controller].timerText = setTimeout('app.controller["' + controller + '"](' + JSON.stringify(param) + ')', 500);
@@ -366,10 +367,12 @@ $(document).off('focusout', '.myds-text')
 		app.data[controller][context] = $(this).val();
  		app.data[controller]['_' + context] = $(this).data();
  		app.data[controller]['_' + context]._type = 'focusout';
+ 		app.data[controller]['_' + context][context] = $(this).val();
+ 		app.data[controller]['_' + context]._value = $(this).val();
  	
 		if (app.controller[controller] != undefined)
 		{	
-			app.controller[controller]({dataContext: app.data[controller]['_' + context]});
+			app.controller[controller]({dataContext: app.data[controller]['_' + context], _type: 'focusout'});
 		}
 	}		
 });
