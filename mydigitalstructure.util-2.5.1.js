@@ -307,6 +307,7 @@ $(document).off('changeDate clearDate', '.date')
 			if (context != undefined)
 			{
 				param.dataContext[context] = event.format();
+				param.dataContext._value = event.format();
 				param._type = 'dateChange'
 			}
 
@@ -372,7 +373,13 @@ $(document).off('focusout', '.myds-text')
  	
 		if (app.controller[controller] != undefined)
 		{	
-			app.controller[controller]({dataContext: app.data[controller]['_' + context], _type: 'focusout'});
+			app.controller[controller](
+			{
+				dataContext: app.data[controller]['_' + context],
+				_type: 'focusout',
+				_class: 'myds-text',
+				_xhtmlElementID: $(this).attr('id')
+			});
 		}
 	}		
 });
@@ -383,6 +390,11 @@ $(document).off('change', '.myds-text-select')
 	var controller = $(this).data('controller');
 	var scope = $(this).data('scope');
 	var context = $(this).data('context');
+
+	if (scope == undefined)
+	{
+		scope = controller;
+	}
 	
 	if (scope != undefined && context != undefined)
 	{
@@ -395,8 +407,12 @@ $(document).off('change', '.myds-text-select')
 		}
 		else
 		{
- 			app.data[controller][context] = $(this).val();
- 			app.data[controller]['_' + context] = $(this).data();
+ 			app.data[scope][context] = $(this).val();
+ 			$(this).attr('data-id', $(this).val());
+ 			app.data[scope]['_' + context] = $(this).data();
+ 			app.data[scope]['_' + context]._type = 'change';
+ 			app.data[scope]['_' + context][context] = $(this).val();
+ 			app.data[scope]['_' + context]._value = $(this).val();
  		}	
 	}
 
@@ -425,15 +441,23 @@ $(document).off('change', '.myds-text-select')
 		{
  			app.data[controller][context] = $(this).val();
  			app.data[controller]['_' + context] = $(this).data();
+ 			delete app.data[controller]['_' + context].chosen;
+ 			app.data[controller]['_' + context]._type = 'focusout';
+ 			app.data[controller]['_' + context][context] = $(this).val();
+ 			app.data[controller]['_' + context]._value = $(this).val();
  		}	
 
 		if (app.controller[controller] != undefined)
-		{	
-			if (app.data[controller].timerText != 0) {clearTimeout(app.data[controller].timerText)};
-			
-			var param = JSON.stringify({dataContext: app.data[controller][context]});
+		{				
+			var param =
+			{
+				dataContext: app.data[controller]['_' + context],
+				_type: 'change',
+				_class: 'myds-text-select',
+				_xhtmlElementID: $(this).attr('id')
+			}
 
-			app.data[controller].timerText = setTimeout('app.controller["' + controller + '"](' + param + ')', 500);
+			app.controller[controller](param);
 		}
 	}		
 });
