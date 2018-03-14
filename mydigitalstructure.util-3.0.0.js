@@ -10,6 +10,26 @@
 mydigitalstructure.compatible = (typeof document.addEventListener == 'function');
 mydigitalstructure.ie = (navigator.appVersion.indexOf('MSIE') != -1)
 
+if (_.isFunction(window.sprintf))
+{
+	_.mixin({format: window.sprintf})
+}
+
+if (_.isFunction(window.format))
+{
+	_.mixin({format: window.format})
+}
+
+if (_.startsWith(_.VERSION, '4'))
+{	
+	_.pluck = _.map;
+	_.contains = _.includes;
+}
+
+_.replaceAll = function (str, from, to) {
+  return str.replace(new RegExp(from, 'g'), to);
+}
+
 try
 {
     mydigitalstructure.saveAs = !!new Blob;
@@ -1667,7 +1687,7 @@ mydigitalstructure._util.access =
 }
 
 
-app._util.working =
+mydigitalstructure._util.working =
 {
 	start: function ()
 	{
@@ -1680,7 +1700,7 @@ app._util.working =
 	}
 }
 
-app._util.notify = function (param)
+mydigitalstructure._util.notify = function (param)
 {
 	var message = mydigitalstructure._util.param.get(param, 'message').value;
 	var type = mydigitalstructure._util.param.get(param, 'class', {"default": 'info'}).value;
@@ -1739,7 +1759,7 @@ app._util.notify = function (param)
 	}	
 }	
 
-app._util.data = 
+mydigitalstructure._util.data = 
 {
 	reset: 	function (param)
 			{
@@ -2139,7 +2159,28 @@ mydigitalstructure._util.factory = function (param)
 		}
 	}
 
+	_.mixin(
+	{
+		VERSION: app.options.version,
+		appInvoke: app._util.controller.invoke,
+		appParamSet: app._util.param.set,
+		appParamGet: app._util.param.get
+	});
+
+	if (_.isObject(s))
+	{
+		if (_.isFunction(s.unescapeHTML))
+		{
+			_.unescapeHTML = s.unescapeHTML;
+		}
+	}		
 }
+
+
+
+
+
+
 
 
 
