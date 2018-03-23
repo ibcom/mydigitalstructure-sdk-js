@@ -2138,7 +2138,6 @@ mydigitalstructure._util.factory = function (param)
 			}
 		}
 	}
-
 }
 
 
