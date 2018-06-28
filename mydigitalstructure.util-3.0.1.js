@@ -32,8 +32,12 @@ _.replaceAll = function (str, from, to) {
 
 try
 {
-    mydigitalstructure.saveAs = !!new Blob;
-} catch (e) {mydigitalstructure.saveAs = false}
+	mydigitalstructure.saveAs = !!new Blob;
+}
+catch (e)
+{
+	mydigitalstructure.saveAs = false
+}
 
 $(document).off('click', '.myds-logoff').on('click', '.myds-logoff', function(event)
 {
@@ -77,8 +81,8 @@ $(document).off('keypress', '#myds-logonname, #myds-logonpassword')
     }
 });
 
-$(document).off('click', '.myds-click')
-.on('click', '.myds-click', function (event)
+$(document).off('click', '.myds-click', '.myds')
+.on('click', '.myds-click', '.myds', function (event)
 {
 	var id = $(this).attr('id');
 	var controller = $(this).data('controller');
@@ -988,7 +992,7 @@ if (typeof $.fn.carousel == 'function')
 
 if (typeof $.fn.dropdown == 'function')
 { 
-    $(document).off('show.bs.dropdownl')
+    $(document).off('show.bs.dropdown')
     .on('show.bs.dropdown', function (event)
 	{
 		if (event.relatedTarget != undefined)
@@ -1194,6 +1198,9 @@ mydigitalstructure._util.view.moreSearch = function (param)
 }
 
 //CHECK
+
+if (mydigitalstructure._util.data == undefined) {mydigitalstructure._util.data = {}}
+
 mydigitalstructure._util.data.find = function (param)
 {
 	var controller = mydigitalstructure._util.param.get(param, 'controller').value; 
@@ -1269,106 +1276,91 @@ mydigitalstructure._util.data.find = function (param)
 	return returnValue;
 }
 
-//CHECK
-mydigitalstructure._util.view =
-{ 
-	set: function (param)
-	{
-		var controller = mydigitalstructure._util.param.get(param, 'controller').value; 
-		var context = mydigitalstructure._util.param.get(param, 'context').value;
-		var value = mydigitalstructure._util.param.get(param, 'value').value;
-		var id = mydigitalstructure._util.param.get(param, 'id').value;
-		var contexts = mydigitalstructure._util.param.get(param, 'contexts', {"default": []}).value;
+mydigitalstructure._util.view.set = function (param)
+{
+	var controller = mydigitalstructure._util.param.get(param, 'controller').value; 
+	var context = mydigitalstructure._util.param.get(param, 'context').value;
+	var value = mydigitalstructure._util.param.get(param, 'value').value;
+	var id = mydigitalstructure._util.param.get(param, 'id').value;
+	var contexts = mydigitalstructure._util.param.get(param, 'contexts', {"default": []}).value;
 
-		if (_.isEmpty(contexts))
+	if (_.isEmpty(contexts))
+	{
+		contexts.push(
 		{
-			contexts.push(
+			name: context,
+			value: value
+		});
+	}
+
+	_.each(contexts, function (context)
+	{
+		var element = $('[data-controller="' + controller + '"][data-context="' + context.name + '"]');
+
+		if (!_.isEmpty(element))
+		{
+			if (_.isUndefined(context.value)) {context.value = ''};
+			context.value = he.decode(context.value);
+
+			if (element.hasClass('myds-text') || element.hasClass('myds-select'))
 			{
-				name: context,
-				value: value
+				element.val(context.value);
+			}
+			else if (element.hasClass('myds-text-select'))
+			{
+				element.val(context.value);
+				element.attr('data-id', context.id);
+			}
+			else if (element.hasClass('myds-check'))
+			{
+				element.filter('[value="' + context.value + '"]').prop('checked', true);
+			}
+			else
+			{
+				element.val(context.value);
+				element.html(context.value);
+			}
+
+			app._util.data.set(
+			{
+				controller: controller,
+				context: context.name,
+				value: (_.isUndefined(context.id)?context.value:context.id)
 			});
 		}
-
-		_.each(contexts, function (context)
-		{
-			var element = $('[data-controller="' + controller + '"][data-context="' + context.name + '"]');
-
-			if (!_.isEmpty(element))
-			{
-				if (_.isUndefined(context.value)) {context.value = ''};
-				context.value = he.decode(context.value);
-
-				if (element.hasClass('myds-text') || element.hasClass('myds-select'))
-				{
-					element.val(context.value);
-				}
-				else if (element.hasClass('myds-text-select'))
-				{
-					element.val(context.value);
-					element.attr('data-id', context.id);
-				}
-				else if (element.hasClass('myds-check'))
-				{
-					element.filter('[value="' + context.value + '"]').prop('checked', true);
-				}
-				else
-				{
-					element.val(context.value);
-					element.html(context.value);
-				}
-
-				app._util.data.set(
-				{
-					controller: controller,
-					context: context.name,
-					value: (_.isUndefined(context.id)?context.value:context.id)
-				});
-			}
-		});
-	},
-
-	datepicker: function (param)
-	{
-		var selector = mydigitalstructure._util.param.get(param, 'selector').value;
-		var format = mydigitalstructure._util.param.get(param, 'format', {"default": 'D MMM YYYY'}).value;  
-		var datepicker = $(selector).data("DateTimePicker");
-
-		if (_.isObject(datepicker))
-		{
-			datepicker.destroy();
-		}
-
-		$(selector).datetimepicker(
-		{
-			format: format,
-			icons:
-			{
-				previous: 'icon icon-chevron-left',
-				next: 'icon icon-chevron-right'
-			}    
-		});
-	}
+	});
 }
 
-//CHECK
-mydigitalstructure._util.reset = function (param)
+mydigitalstructure._util.view.datepicker = function (param)
 {
-	var controller = mydigitalstructure._util.param.get(param, 'controller').value;
-	var data = mydigitalstructure._util.param.get(param, 'data').value;
-	
-	if (data)
+	var selector = mydigitalstructure._util.param.get(param, 'selector').value;
+	var format = mydigitalstructure._util.param.get(param, 'format', {"default": 'D MMM YYYY'}).value;  
+	var datepicker = $(selector).data("DateTimePicker");
+
+	if (_.isObject(datepicker))
 	{
-		app._util.data.reset(param)	
+		datepicker.destroy();
 	}
-	
-	$('#' + controller + ' .myds-text').val('');
-	$('#' + controller + ' .myds-check').attr('checked', false);
-	$('#' + controller + ' .myds-data').html('...');
-	$('#' + controller + ' .myds-data-view').html(app.options.working);
+
+	$(selector).datetimepicker(
+	{
+		format: format,
+		icons:
+		{
+			previous: 'icon icon-chevron-left',
+			next: 'icon icon-chevron-right'
+		}    
+	});
 }
 
+
 //CHECK
-mydigitalstructure._util.param = 
+if (mydigitalstructure._util.data == undefined)
+{
+	mydigitalstructure._util.data = {}
+}
+
+mydigitalstructure._util.data.param = 
 {
 	set: function (controller, param)
 	{
@@ -1402,7 +1394,6 @@ mydigitalstructure._util.param =
 	}
 }
 
-//CHECK
 mydigitalstructure._util.controller = 
 {
 	invoke: function (param)
@@ -1425,7 +1416,6 @@ mydigitalstructure._util.controller =
 	}
 }
 
-//CHECK
 mydigitalstructure._util.access =
 {
 	has: function (param)
@@ -1517,6 +1507,7 @@ mydigitalstructure._util.access =
 		
 		return access;	
 	},
+
 	data:
 	{
 		set: function(param)
@@ -1934,7 +1925,7 @@ mydigitalstructure._util.factory = function (param)
 {
 	var namespace = mydigitalstructure._scope.app.options.namespace;
 	if (_.isUndefined(namespace)) {namespace = 'app'}
-	_namespace = window[namespace];
+	var _namespace = window[namespace];
 
 	app.vq = mydigitalstructure._util.view.queue;
 
@@ -2158,8 +2149,6 @@ mydigitalstructure._util.factory = function (param)
 			}
 		}
 	}
-<<<<<<< HEAD
-=======
 
 	_.mixin(
 	{
@@ -2176,7 +2165,7 @@ mydigitalstructure._util.factory = function (param)
 			_.unescapeHTML = s.unescapeHTML;
 		}
 	}		
->>>>>>> origin/master
+
 }
 
 

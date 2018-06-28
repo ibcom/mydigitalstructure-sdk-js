@@ -12,8 +12,12 @@ mydigitalstructure.ie = (navigator.appVersion.indexOf('MSIE') != -1)
 
 try
 {
-    mydigitalstructure.saveAs = !!new Blob;
-} catch (e) {mydigitalstructure.saveAs = false}
+	mydigitalstructure.saveAs = !!new Blob;
+} 
+catch (e)
+{
+	mydigitalstructure.saveAs = false
+}
 
 $(document).off('click', '.myds-logoff').on('click', '.myds-logoff', function(event)
 {
@@ -848,7 +852,7 @@ if (typeof $.fn.carousel == 'function')
 
 if (typeof $.fn.dropdown == 'function')
 { 
-    $(document).off('show.bs.dropdownl')
+    $(document).off('show.bs.dropdown')
     .on('show.bs.dropdown', function (event)
 	{
 		if (event.relatedTarget != undefined)
