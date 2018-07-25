@@ -7,7 +7,8 @@
 
  "use strict";
 
-var mydigitalstructure = {_scope: {app: {options: {}}, sentToView: [], viewQueue: {content: {}, template: {}}, session: {}, data: {}}};
+var mydigitalstructure =
+{_scope: {app: {options: {}}, sentToView: [], viewQueue: {content: {}, template: {}}, session: {}, data: {defaultQueue: 'base'}}};
 
 mydigitalstructure.init = function (data)
 {
@@ -487,6 +488,7 @@ mydigitalstructure._util =
 
 					if (callback)
 					{
+						if (param.callbackParam != undefined) {param = param.callbackParam}
 						callback(param, data)
 					};
 				},
@@ -1387,9 +1389,19 @@ mydigitalstructure._util =
 								clear: function (param)
 								{
 									var type = mydigitalstructure._util.param.get(param, 'type', {"default": 'content'}).value;
-									var queue = mydigitalstructure._util.param.get(param, 'queue', {"default": 'base'}).value;
+									var queue = mydigitalstructure._util.param.get(param, 'queue', {"default": mydigitalstructure._scope.data.defaultQueue}).value;
 									var preserve = mydigitalstructure._util.param.get(param, 'preserve', {"default": false}).value;
+									var setDefault = mydigitalstructure._util.param.get(param, 'setDefault', {"default": false}).value;
 									
+									if (setDefault)
+									{
+										mydigitalstructure._scope.data.defaultQueue = queue;
+									}
+									else
+									{
+										mydigitalstructure._scope.data.defaultQueue = 'base';
+									}
+										
 									if (!preserve) {mydigitalstructure._scope.viewQueue[type][queue] = []};
 								},
 
@@ -1419,7 +1431,7 @@ mydigitalstructure._util =
 
 									if (queue == undefined)
 									{
-										queue = 'base';
+										queue = mydigitalstructure._scope.data.defaultQueue;
 									}
 
 									param = mydigitalstructure._util.param.set(param, 'queue', queue);
@@ -1458,8 +1470,6 @@ mydigitalstructure._util =
 								  		{
 								     		if (data.hasOwnProperty(key))
 								     		{
-								     			//regex = new RegExp('{{' + key + '}}', "gi");
-								     			//content = content.replace(regex, data[key]);
 								     			content = s.replaceAll(content, '{{' + key.toLowerCase() + '}}', data[key]);
 								     			if (s != undefined) {content = s.unescapeHTML(content)}
 								     		}
@@ -1527,7 +1537,7 @@ mydigitalstructure._util =
 
 										if (queue == undefined)
 										{
-											queue = mydigitalstructure._util.param.get(param, 'controller', {"default": 'base'}).value;
+											queue = mydigitalstructure._util.param.get(param, 'controller', {"default": mydigitalstructure._scope.data.defaultQueue}).value;
 										}
 											
 										if (selector == undefined)
@@ -1587,7 +1597,7 @@ mydigitalstructure._util =
 
 									if (param.queue == undefined)
 									{
-										param.queue = mydigitalstructure._util.param.get(param, 'controller', {"default": 'base'}).value;
+										param.queue = mydigitalstructure._util.param.get(param, 'controller', {"default": mydigitalstructure._scope.data.defaultQueue}).value;
 									}
 
 									if (useTemplate)
@@ -1595,7 +1605,7 @@ mydigitalstructure._util =
 										var data = $.extend(true, {}, content);
 										content = mydigitalstructure._util.view.queue.get({type: 'template', queue: param.queue});
 										if (_.isUndefined(id)) {id = data.id}
-											
+
 										var regex;
 
 										for (var key in data)
@@ -1623,7 +1633,7 @@ mydigitalstructure._util =
 									
 									if (param.queue == undefined)
 									{
-										param.queue = mydigitalstructure._util.param.get(param, 'controller', {"default": 'base'}).value;
+										param.queue = mydigitalstructure._util.param.get(param, 'controller', {"default": mydigitalstructure._scope.data.defaultQueue}).value;
 									}
 
 									var content = mydigitalstructure._scope.viewQueue[type][queue];
@@ -1658,7 +1668,7 @@ mydigitalstructure._util =
 
 									if (param.queue == undefined)
 									{
-										param.queue = mydigitalstructure._util.param.get(param, 'controller', {"default": 'base'}).value;
+										param.queue = mydigitalstructure._util.param.get(param, 'controller', {"default": mydigitalstructure._scope.data.defaultQueue}).value;
 									}
 
 									return (mydigitalstructure._scope.viewQueue[type][queue].length!=0);
