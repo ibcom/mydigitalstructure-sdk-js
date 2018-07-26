@@ -1373,6 +1373,14 @@ mydigitalstructure._util =
 									var type = mydigitalstructure._util.param.get(param, 'type', {"default": 'content'}).value;
 									var disableSelector = mydigitalstructure._util.param.get(param, 'disable').value;
 									var enableSelector = mydigitalstructure._util.param.get(param, 'enabler').value;
+									var queue = mydigitalstructure._util.param.get(param, 'queue', {"default": mydigitalstructure._scope.data.defaultQueue}).value;
+									var setDefault = mydigitalstructure._util.param.get(param, 'setDefault', {"default": false}).value;
+
+									if (setDefault)
+									{
+										mydigitalstructure._scope.data.defaultQueue = queue;
+									}
+
 									var html = '';
 									
 									if (selector != undefined)
@@ -1384,24 +1392,27 @@ mydigitalstructure._util =
 									if (clear) {mydigitalstructure._util.view.queue.clear(param)};
 									if (disableSelector) {mydigitalstructure._util.view.queue._util.disable(disableSelector, param)};
 									if (enableSelector) {mydigitalstructure._util.view.queue._util.enable(enableSelector, param)};
-								},		
+								},
+
+								reset: function (param)
+								{
+									param = mydigitalstructure._util.param.set(param, 'clearDefault', true);
+									mydigitalstructure._util.view.queue.clear(param)
+								},
 
 								clear: function (param)
 								{
 									var type = mydigitalstructure._util.param.get(param, 'type', {"default": 'content'}).value;
 									var queue = mydigitalstructure._util.param.get(param, 'queue', {"default": mydigitalstructure._scope.data.defaultQueue}).value;
 									var preserve = mydigitalstructure._util.param.get(param, 'preserve', {"default": false}).value;
-									var setDefault = mydigitalstructure._util.param.get(param, 'setDefault', {"default": false}).value;
-									
-									if (setDefault)
+									var clearDefault = mydigitalstructure._util.param.get(param, 'clearDefault', {"default": false}).value;
+								
+									if (clearDefault)
 									{
-										mydigitalstructure._scope.data.defaultQueue = queue;
-									}
-									else
-									{
+										delete param.clearDefault;
 										mydigitalstructure._scope.data.defaultQueue = 'base';
 									}
-										
+
 									if (!preserve) {mydigitalstructure._scope.viewQueue[type][queue] = []};
 								},
 
@@ -1457,7 +1468,11 @@ mydigitalstructure._util =
 										}
 									}	
 									
-									if (clear || type == 'template') {mydigitalstructure._util.view.queue.clear(param)}
+									if (clear || type == 'template')
+									{
+										mydigitalstructure._util.view.queue.clear(param)
+									}
+
 									if (mydigitalstructure._scope.viewQueue[type][queue] == undefined) {mydigitalstructure._scope.viewQueue[type][queue] = []}
 
 									if (useTemplate && type == 'content')
@@ -1511,7 +1526,7 @@ mydigitalstructure._util =
 										}
 									}
 
-									mydigitalstructure._util.view.queue.clear(param)
+									mydigitalstructure._util.view.queue.reset(param)
 									app.vq.add(template, {queue: param.queue, type: 'template'});
 									app.vq.add({queue: param.queue, useTemplate: true}, data);
 									app.vq.render(selector, {queue: param.queue});
@@ -1573,7 +1588,7 @@ mydigitalstructure._util =
 												}	
 											}
 		
-											mydigitalstructure._util.view.queue.clear(param);
+											mydigitalstructure._util.view.queue.reset(param);
 										}
 									}	
 								},
