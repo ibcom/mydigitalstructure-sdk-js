@@ -1549,6 +1549,7 @@ mydigitalstructure._util =
 										var type = mydigitalstructure._util.param.get(param, 'type', {"default": 'content'}).value;
 										var queue = mydigitalstructure._util.param.get(param, 'queue').value;
 										var append = mydigitalstructure._util.param.get(param, 'append', {"default": false}).value;
+										var appendSelector = mydigitalstructure._util.param.get(param, 'appendSelector', {"default": 'table tr:last'}).value;
 
 										if (queue == undefined)
 										{
@@ -1569,10 +1570,10 @@ mydigitalstructure._util =
 													{
 														$(selector).after(mydigitalstructure._scope.viewQueue[type][queue].join(''));
 													}
-													else
+													else if ($(selector + ' ' + appendSelector).length != 0 )
 													{
-														$(selector + ' table tr:last').after(mydigitalstructure._scope.viewQueue[type][queue].join(''));
-													}	
+														$(selector + ' ' + appendSelector).after(mydigitalstructure._scope.viewQueue[type][queue].join(''));
+													}
 												}
 												else
 												{
