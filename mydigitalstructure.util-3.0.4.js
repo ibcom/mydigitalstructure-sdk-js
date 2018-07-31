@@ -2532,7 +2532,7 @@ mydigitalstructure._util.factory = function (param)
 
 					var captions = $.map(format.columns, function (column)
 					{
-						return (column.caption!=undefined ? {name: column.caption, class: column.class} : undefined)
+						return (column.caption!=undefined ? {name: column.caption, class: column.class, sortBy: column.sortBy, param: column.param} : undefined)
 					});
 
 					if (init || options.orientation == 'horizontal')
@@ -2621,9 +2621,31 @@ mydigitalstructure._util.factory = function (param)
 
 							app.vq.add('>', {queue: context});
 
+							var captionClass;
+							var captionData;
+
 							$.each(captions, function (c, caption)
 							{
-								app.vq.add('<th class="' + caption.class + '">' + caption.name + '</th>', {queue: context});
+								captionClass = '';
+								captionData = ''
+
+								if (caption.class != undefined)
+								{
+									captionClass = caption.class
+								}
+
+								if (caption.sortBy)
+								{
+									captionClass = captionClass + ' myds-sort';
+									captionData = 'data-sort-direction="asc" data-sort="' + caption.param + '"';
+								}
+
+								if (captionClass != '')
+								{
+									captionClass = 'class="' + captionClass + '"';
+								}
+
+								app.vq.add('<th ' + captionClass + ' ' + captionData + '>' + caption.name + '</th>', {queue: context});
 							});
 
 							app.vq.add('</tr></head>', {queue: context});	
