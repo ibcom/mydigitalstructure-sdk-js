@@ -2432,6 +2432,21 @@ mydigitalstructure._util.factory = function (param)
 
 		if (param != undefined)
 		{
+			var dataSort = app._util.data.get(
+			{
+				controller: controller,
+				context: '_table-' + controller,
+				valueDefault: {}
+			});
+
+			if (dataSort.direction != undefined)
+			{
+				var columnSort = $.grep(format.columns, function (column) {return column.param == dataSort.name})[0];
+				columnSort.sortDirection = dataSort.direction;
+
+				sorts = [dataSort]
+			}
+
 			if (response == undefined)
 			{
 				app._util.data.set(
@@ -2498,6 +2513,15 @@ mydigitalstructure._util.factory = function (param)
 
 				if (init)
 				{
+					if (format.row != undefined)
+					{
+						$.each(format.columns, function (c, column)
+						{
+							if (column.class == undefined) {column.class = format.row.class}
+							if (column.data == undefined) {column.data = format.row.data}
+						})
+					}
+
 					app._util.data.set(
 					{
 						controller: '_table-' + controller,
@@ -2532,7 +2556,7 @@ mydigitalstructure._util.factory = function (param)
 
 					var captions = $.map(format.columns, function (column)
 					{
-						return (column.caption!=undefined ? {name: column.caption, class: column.class, sortBy: column.sortBy, param: column.param} : undefined)
+						return (column.caption!=undefined ? {name: column.caption, class: column.class, sortBy: column.sortBy, param: column.param, sortDirection: column.sortDirection} : undefined)
 					});
 
 					if (init || options.orientation == 'horizontal')
@@ -2569,7 +2593,14 @@ mydigitalstructure._util.factory = function (param)
 							else
 							{
 								var name = (column.name!=undefined ? column.name : column.param);
-								html.push('<td class="' + column.class + '">{{' + name + '}}</td>');
+								html.push('<td class="' + column.class + '"')
+
+								if (column.data != undefined)
+								{
+									html.push(' ' + column.data);
+								}
+
+								html.push('>{{' + name + '}}</td>');
 							}	
 						});
 
@@ -2601,7 +2632,7 @@ mydigitalstructure._util.factory = function (param)
 						var pagesTotal = parseInt(_.toNumber(rowsCurrent) / _.toNumber(pageRows));
 						var startRow = response.startrow;
 						var currentPage = parseInt((_.toNumber(startRow) + _.toNumber(pageRows)) / _.toNumber(pageRows));
-						var class = (options.class!=undefined?options.class:'table-hover');
+						var tableClass = (options.class!=undefined?options.class:'table-hover');
 						
 						app.vq.add('<div class="myds-page-view" data-page="' + currentPage + '">', {queue: context});
 						app.vq.add('<table class="table ' + tableClass + ' m-b-0"><thead>', {queue: context});
@@ -2638,7 +2669,8 @@ mydigitalstructure._util.factory = function (param)
 								if (caption.sortBy)
 								{
 									captionClass = captionClass + ' myds-sort';
-									captionData = 'data-sort-direction="asc" data-sort="' + caption.param + '"';
+									captionData = 'data-sort-direction="' +
+														(caption.sortDirection!=undefined?caption.sortDirection:'asc') + '" data-sort="' + caption.param + '"';
 								}
 
 								if (captionClass != '')
