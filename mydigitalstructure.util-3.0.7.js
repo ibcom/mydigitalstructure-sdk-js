@@ -1244,7 +1244,7 @@ mydigitalstructure._util.view.more = function (response, param)
 		{
 			if (data._param.options != undefined)
 			{
-				showPagesMaximum = data._param.options.showPagesMaximum
+				showPagesMaximum = data._param.options.countPagesAtStart
 			}
 		}
 
