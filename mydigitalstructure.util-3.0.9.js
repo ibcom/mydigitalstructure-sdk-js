@@ -2595,16 +2595,9 @@ mydigitalstructure._util.factory = function (param)
 			}
 			else // render
 			{
-				if (response.status == 'ER')
+				if (response.status == 'ER' && _.isFunction(options.onError))
 				{
-					if (_.isFunction(options.onError))
-					{
-						options.onError(response.error)
-					}
-					else
-					{
-						console.log(response.error)
-					}
+					options.onError(response.error)
 				}
 				else
 				{
