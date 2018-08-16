@@ -646,8 +646,13 @@ if (typeof $.fn.metisMenu == 'function')
 	$(document).off('click', '.myds-menu a')
 	.on('click', '.myds-menu a', function (e)
 	{
-		$(this).parent().parent().children().removeClass('active');
-		$(this).parent().addClass('active');
+		$(this).parent().siblings().removeClass('active')
+
+		if ($(this).attr('href') != '#')
+		{
+			$(this).parent().addClass('active');
+			$(this).parent().siblings().find('ul').removeClass('in')
+		}	
 	});
 }	
 
