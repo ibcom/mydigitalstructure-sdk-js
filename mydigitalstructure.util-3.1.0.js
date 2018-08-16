@@ -2555,7 +2555,11 @@ mydigitalstructure._util.factory = function (param)
 
 		var format = mydigitalstructure._util.param.get(param, 'format').value;
 		var filters = mydigitalstructure._util.param.get(param, 'filters').value;
-		var customoptions = mydigitalstructure._util.param.get(param, 'customOptions').value;
+		var customOptions = mydigitalstructure._util.param.get(param, 'customOptions').value;
+		if (customOptions == undefined)
+		{
+			customOptions = mydigitalstructure._util.param.get(param, 'customoptions').value;
+		}
 		var sorts = mydigitalstructure._util.param.get(param, 'sorts').value;
 		var options = mydigitalstructure._util.param.get(param, 'options').value;
 		var object = mydigitalstructure._util.param.get(param, 'object').value;
@@ -2628,7 +2632,7 @@ mydigitalstructure._util.factory = function (param)
 					{
 						fields: fields,
 						filters: filters,
-						customoptions: customoptions,
+						customoptions: customOptions,
 						options:
 						{
 							rows: options.rows
