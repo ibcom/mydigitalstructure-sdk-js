@@ -1176,6 +1176,7 @@ mydigitalstructure._util.view.more = function (response, param)
 	var pageRows = mydigitalstructure._util.param.get(param, 'rows', {"default": mydigitalstructure._scope.app.options.rows}).value;
 	var progressive = mydigitalstructure._util.param.get(param, 'progressive', {"default": true}).value;
 	var containerID = mydigitalstructure._util.param.get(param, 'containerID').value;
+	var showAlways = mydigitalstructure._util.param.get(param, 'showAlways', {"default": false}).value;
 
 	if (scope == undefined) {scope = queue}
 
@@ -1449,7 +1450,10 @@ mydigitalstructure._util.view.more = function (response, param)
 
 	if (containerID != undefined)
 	{
-		app.vq.render('#' + containerID, param);
+		if (showAlways || allPagesTotal != 1)
+		{
+			app.vq.render('#' + containerID, param);
+		}	
 	}
 }
 
@@ -2953,7 +2957,8 @@ mydigitalstructure._util.factory = function (param)
 							orientation: options.orientation,
 							rows: options.rows,
 							progressive: options.progressive,
-							containerID: controller + '-navigation'
+							containerID: controller + '-navigation',
+							showAlways: options.showAlways
 						});
 					}
 				}
