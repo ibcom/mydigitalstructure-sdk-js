@@ -61,6 +61,19 @@ $(document).off('click', '#myds-logon')
 	});
 });
 
+$(document).off('click', '#myds-register')
+.on('click', '#myds-register', function(event)
+{
+	mydigitalstructure.register(
+	{
+		spacename: $('#myds-spacename').val(),
+		firstname: $('#myds-firstname').val(),
+		surname: $('#myds-surname').val(),
+		email: $('#myds-email').val(),
+		notes: $('#myds-notes').val()
+	});	
+});
+
 $(document).off('keypress', '#myds-logonname, #myds-logonpassword')
 .on('keypress', '#myds-logonname, #myds-logonpassword', function(e)
 {
@@ -1760,22 +1773,58 @@ mydigitalstructure._util.data.param =
 
 mydigitalstructure._util.controller = 
 {
-	invoke: function (param)
+	invoke: function (param, controllerParam)
 	{
-		var controller = mydigitalstructure._util.param.get(param, 'controller').value;
+		var name = mydigitalstructure._util.param.get(param, 'name').value;
 
-		if (controller != undefined && param != undefined)
+		var namespace = mydigitalstructure._util.param.get(param, 'namespace').value;
+		if (namespace == undefined) {namespace = mydigitalstructure._scope.app.options.namespace};
+		if (namespace == undefined) {namespace = window.app}
+
+		if (name != undefined)
 		{
-			app._util.data.set(
+			mydigitalstructure._util.data.set(
 			{
-				controller: controller,
+				controller: name,
 				context: '_param',
-				value: param
+				value: controllerParam
 			});
 
-			delete param.controller;
+			namespace.controller[name](controllerParam);
+		}
+	},
 
-			app.controller[controller](param);
+	add: function(param)
+	{
+		if (app.controller == undefined) {app.controller = {}}
+
+		if (_.isArray(param))
+		{
+			var namespace;
+
+			_.each(param, function(controller)
+			{
+				if (controller.name != undefined)
+				{
+					namespace = controller.namespace;
+					if (namespace == undefined) {namespace = mydigitalstructure._scope.app.options.namespace};
+					if (namespace == undefined) {namespace = window.app}
+					namespace.controller[controller.name] = controller.code;
+				}
+			});
+		}
+		else
+		{
+			var name = mydigitalstructure._util.param.get(param, 'name').value;
+			var code = mydigitalstructure._util.param.get(param, 'code').value;
+			var namespace = mydigitalstructure._util.param.get(param, 'namespace').value;
+			if (namespace == undefined) {namespace = mydigitalstructure._scope.app.options.namespace};
+			if (namespace == undefined) {namespace = window.app}
+
+			if (name != undefined)
+			{
+				namespace.controller[name] = code;
+			}
 		}
 	}
 }
@@ -2306,6 +2355,81 @@ mydigitalstructure._util.data =
 				}
 
 				return value
+			},
+
+	find: function (param)
+			{
+				var controller = mydigitalstructure._util.param.get(param, 'controller').value; 
+				var context = mydigitalstructure._util.param.get(param, 'context').value;
+				
+				var dataController = mydigitalstructure._util.param.get(param, 'dataController', {'default': 'setup'}).value;
+				var dataContext = mydigitalstructure._util.param.get(param, 'dataContext').value; 
+				
+				if (dataContext == undefined && dataController == 'setup')
+				{
+					dataContext = context;
+				}
+					
+				var name = mydigitalstructure._util.param.get(param, 'name').value;
+				var id = mydigitalstructure._util.param.get(param, 'id').value;
+				var returnValue = mydigitalstructure._util.param.get(param, 'valueDefault').value;
+				
+				if (context != undefined)
+				{
+					if (id == undefined && controller != undefined)
+					{
+						id = app._util.data.get(
+						{
+							controller: controller,
+							context: context
+						});
+					}
+					
+					var data = app._util.data.get(
+					{
+						controller: dataController,
+						context: dataContext
+					});
+					
+					if (data != undefined)
+					{
+						var _id = id;
+							
+						if (!_.isArray(_id))
+						{	
+							_id = _.split(id, ',');
+						}
+						
+						if  (_.size(_id) == 1)
+						{
+							var value = _.find(data, function (d) {return d.id == _id[0]})
+
+							if (name != undefined && value != undefined)
+							{
+								returnValue = value[name]
+							}
+						}
+						else
+						{
+							var _values = [];
+							var _value;
+							
+							_.each(_id, function (id)
+							{
+								_value = _.find(data, function (d) {return d.id == id})
+
+								if (name != undefined && _value != undefined)
+								{
+									_values.push(_value[name]);
+								}
+							})
+							
+							returnValue = _.join(_values, ', ');
+						}
+					}
+				}
+				
+				return returnValue;
 			}		
 }
 
@@ -2316,6 +2440,22 @@ mydigitalstructure._util.factory = function (param)
 	var _namespace = window[namespace];
 
 	app.vq = mydigitalstructure._util.view.queue;
+
+	app.controller['util-view-reset'] = function (param)
+	{
+		var controller = mydigitalstructure._util.param.get(param, 'controller').value;
+		var data = mydigitalstructure._util.param.get(param, 'data').value;
+		
+		if (data)
+		{
+			app._util.data.reset(param)	
+		}
+		
+		$('#' + controller + ' .myds-text').val('');
+		$('#' + controller + ' .myds-check').attr('checked', false);
+		$('#' + controller + ' .myds-data').html('...');
+		$('#' + controller + ' .myds-data-view').html(app.options.working);
+	}
 
 	app.controller['util-attachment-check'] = function (param)
 	{
@@ -2984,10 +3124,11 @@ mydigitalstructure._util.factory = function (param)
 
 	_.mixin(
 	{
-		VERSION: app.options.version,
-		appInvoke: app._util.controller.invoke,
-		appParamSet: app._util.param.set,
-		appParamGet: app._util.param.get
+		VERSION: mydigitalstructure._scope.app.options.version,
+		appInvoke: mydigitalstructure._util.controller.invoke,
+		appAdd: mydigitalstructure._util.controller.add,
+		appParamSet: mydigitalstructure._util.param.set,
+		appParamGet: mydigitalstructure._util.param.get
 	});
 
 	if (_.isObject(s))
