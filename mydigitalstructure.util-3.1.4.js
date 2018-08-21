@@ -1201,7 +1201,7 @@ mydigitalstructure._util.view.more = function (response, param)
 	{
 		if (response.morerows == 'true' && !_.isUndefined(scope))
 		{
-			app.vq.add('<div class="text-center m-b">' +
+			app.vq.add('<div class="text-center m-b m-t">' +
       					'<button class="' + buttonClass + ' myds-more" data-id="' + response.moreid + '"' +
       					' data-start="' + (_.toNumber(response.startrow) + _.toNumber(response.rows)) + '"' +
       					' data-rows="' + response.rows + '"' +
@@ -1230,7 +1230,7 @@ mydigitalstructure._util.view.more = function (response, param)
 		}
 		else
 		{
-			app.vq.add('<div class="text-center m-b small text-muted">' +
+			app.vq.add('<div class="text-center m-b m-t small text-muted">' +
 									'All ' + app.data[scope].count + ' shown</div>', param);		
 		}
 	}
@@ -2797,7 +2797,7 @@ mydigitalstructure._util.factory = function (param)
 							{
 								html.push('<tr id="' + options.containerController + '-{{id}}-container" class="collapse myds-collapse" data-id="{{id}}"' +
 								' data-controller="' + options.containerController + '">' +
-								'<td colspan="' + captions.length + '"></td></tr>')
+								'<td colspan="' + captions.length + '" id="' + options.containerController + '-{{id}}-container-view"></td></tr>')
 							}
 
 							app.vq.add(html.join(''), {type: 'template', queue: context});
