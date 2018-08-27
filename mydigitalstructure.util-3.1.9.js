@@ -124,6 +124,32 @@ $(document).off('click', '.myds-click, .myds')
 	}	
 });
 
+$(document).off('click', '.myds-navigate, .myds')
+.on('click', '.myds-navigate, .myds', function (event)
+{
+	var id = $(this).attr('id');
+	var controller = $(this).data('controller');
+	var target = $(this).data('target');
+
+	if (controller == undefined && target != undefined)
+	{
+		controller = target.replace('#', '')
+	}
+
+	if (controller != undefined)
+	{
+		var param =
+		{
+			context: (mydigitalstructure._scope.app.uriContext).replace('#', '')
+		}
+
+		param.dataContext = $(this).data();
+		app.data[controller] = $(this).data();
+
+		window.location.hash = '#' + controller;
+	}
+});
+
 $(document).off('click', '.myds-dropdown')
 .on('click', '.myds-dropdown', function (event)
 {
@@ -148,7 +174,7 @@ $(document).off('click', '.myds-dropdown')
 		if (app.data[controller] == undefined) {app.data[controller] = {}}
 		app.data[controller].dataContext = $(this).data();
 
-		if (context != undefined)
+		if (context != undefined && $(this).data('id') != undefined)
 		{
 			app.data[controller][context] = $(this).data('id');
 			app.data[controller]['_' + context] = [$(this).data('id')];
@@ -157,7 +183,16 @@ $(document).off('click', '.myds-dropdown')
 		if (app.controller[controller] != undefined)
 		{	
 			app.controller[controller](param);
-		}	
+		}
+		else
+		{
+			mydigitalstructure._util.log.add(
+			{
+				message: 'Controller not defined',
+				controller: controller,
+				param: param
+			});
+		}
 	}
 	else
 	{
