@@ -2891,7 +2891,6 @@ mydigitalstructure._util.factory = function (param)
 
 						if (format.row != undefined)
 						{
-
 							if (_.isFunction(format.row.method))
 		                     {             
 								_.each(response.data.rows, function (row)

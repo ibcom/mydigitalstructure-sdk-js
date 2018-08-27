@@ -1492,6 +1492,7 @@ mydigitalstructure._util =
 								     		if (data.hasOwnProperty(key))
 								     		{
 								     			content = s.replaceAll(content, '{{' + key.toLowerCase() + '}}', data[key]);
+								     			content = s.replaceAll(content, '{{' + key + '}}', data[key]);
 								     			if (s != undefined) {content = s.unescapeHTML(content)}
 								     		}
 								     	}
