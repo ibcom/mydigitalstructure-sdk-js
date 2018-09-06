@@ -8,93 +8,12 @@
 
 mydigitalstructure._util.factory.export = function (param)
 {
-	app.controller['util-export'] = function (param)
-	{
-		$('#util-export-download').removeClass('disabled');
-		$('#util-export-download').text('Download');
-
-		var context = mydigitalstructure._util.param.get(param.dataContext, 'context').value;
-		var dataContext = mydigitalstructure._util.param.get(param.dataContext, 'context').value;
-		var message = mydigitalstructure._util.param.get(param.dataContext, 'message').value;
-
-		if (context != undefined)
-		{
-			if (app.controller['util-export-' + context] != undefined)
-			{
-				app.controller['util-export-' + context]();
-			}
-		}
-
-		if (message != undefined)
-		{
-			app.vq.show('#util-export-message', message);
-		}
-
-		var dataSource = mydigitalstructure._util.param.get(param.dataContext, 'source').value;
-
-		var data = app._util.data.get(
-		{
-			controller: dataSource
-		});
-
-		$('#util-export-reduced-container').addClass('hidden');
-		$('#util-export-all-container').addClass('hidden');
-		$('#util-export-select').addClass('hidden');
-
-		if (data != undefined)
-		{
-			if (data.all != undefined)
-			{
-				app.vq.show('#util-export-all-count', _.size(data.all));
-			
-				if (data.reduced != undefined)
-				{
-					if (_.size(data.reduced) != _.size(data.all))
-					{
-						$('#util-export-select').removeClass('hidden');
-						$('#util-export-all-container').removeClass('hidden');
-						$('#util-export-reduced-container').removeClass('hidden');
-						app.vq.show('#util-export-reduced-count', _.size(data.reduced));
-					}	
-				}
-			}
-		}
-
-		app._util.data.set(
-		{
-			controller: 'util-export-0',
-			context: 'type',
-			value: 'all'
-		});
-
-		if (param.dataContext != undefined)
-		{
-			app._util.data.set(
-			{
-				controller: 'util-export-0',
-				context: 'controller',
-				value: param.dataContext.controller
-			});
-		
-			app._util.data.set(
-			{
-				controller: 'util-export-0',
-				context: 'source',
-				value: param.dataContext.source
-			});
-		
-			app._util.data.set(
-			{
-				controller: 'util-export-0',
-				context: 'filename',
-				value: param.dataContext.filename
-			});
-		}	
-	}
-
 	app.controller['util-export-table'] = function (param, response)
 	{
 		var context = mydigitalstructure._util.param.get(param, 'context').value;
+		var container = mydigitalstructure._util.param.get(param, 'container').value;
+
+		if (context == undefined) {context = container}
 
 		if (context != undefined)
 		{
@@ -111,10 +30,11 @@ mydigitalstructure._util.factory.export = function (param)
 					return ((column.param != undefined || column.name != undefined) && (column.caption != undefined))
 				});
 
-				$.each(captions, function(caption)
+				$.each(captions, function(c, caption)
 				{
 					caption.source = caption.param;
-					if (caption.source = undefined) {caption.source = caption.name}
+					caption.text = caption.caption;
+					if (caption.source == undefined) {caption.source = caption.name}
 				});
 
 				app._util.data.set(
@@ -165,47 +85,13 @@ mydigitalstructure._util.factory.export = function (param)
 		$('.myds-export[data-context="' + source + '"]').addClass('disabled');
 		$('.myds-export[data-context="' + source + '"]').text('Downloading...');
 
-	/*	var exportData = app._util.data.get(
-		{
-			controller: 'util-export'
-		});
-
-		if (exportData != undefined)
-		{
-			if (source == undefined)
-			{
-				source = exportData.source
-			}
-
-			if (filename == undefined)
-			{
-				filename = exportData.filename
-			}
-		}*/
-
 		if (param == undefined) {param = {}}
-		//param.fileName = data.filename;
-		//param.source = data.source;
 
 		var exportParam = app._util.data.get(
 		{
 			controller: source,
 			context: 'export'
 		});
-
-	/*	var controller = data.controller;
-
-		if (_.isUndefined(controller))
-		{
-			controller = exportParam.controller
-		}
-
-		app._util.data.set(
-		{
-			controller: 'util-export-0',
-			context: 'filedata',
-			value: app.data[data.source][data.type]
-		});*/
 
 		var dataSource = app._util.data.get(
 		{
@@ -258,39 +144,21 @@ mydigitalstructure._util.factory.export = function (param)
 				id: _retrieve.moreid,
 				startrow: _.size(dataSource['all']),
 				rows: (_.toNumber(dataSource.count) - _.toNumber(_.size(dataSource['all']))),
-				controller: 'util-export-download'
+				controller: 'util-export-download',
+				controllerParam: param
 			})
 		}
 		else
 		{
-			if (controller != undefined)
-			{
-				if (_.isFunction(controller))
-				{
-					controller(param);
-				}
-				else if (_.isFunction(app.controller[controller]))
-				{
-					app.controller[controller](param);
-				}
-			}
-			else
-			{
-				param.fileData = app.data[source]['all'];	
-				//app.controller['util-export-data-to-csv'](param);
-			}	
+			param.fileData = app.data[source]['all'];	
+			app.controller['util-export-data-to-csv'](param);
 		}	
 	}
 
 	app.controller['util-export-data-to-csv'] = function (param, data)
 	{
-		var source = app._util.data.get(
-		{
-			controller: 'util-export',
-			context: 'dataContext',
-			name: 'source'
-		});
-
+		var source = mydigitalstructure._util.param.get(param, 'source').value;
+		
 		var exportParam = app._util.data.get(
 		{
 			controller: source,
@@ -332,9 +200,9 @@ mydigitalstructure._util.factory.export = function (param)
 			fileData = exportParam.fileData;	
 		}
 
-		if (param.fileName == undefined)
+		if (param.filename == undefined)
 		{
-			param.fileName = exportParam.fileName;	
+			param.filename = exportParam.filename;	
 		}
 		
 		var sources;
@@ -388,11 +256,11 @@ mydigitalstructure._util.factory.export = function (param)
 							});
 
 							findValue = _.join(_.map(contents, function (content)
-														{
-															var r;
-															if (_.trim(content.data) != '') {r = content.data}		
-															return r
-														}), '; ')
+							{
+								var r;
+								if (_.trim(content.data) != '') {r = content.data}		
+								return r
+							}), '; ')
 
 							rowData.push('"' + (row[source]==undefined?'':_.replaceAll(findValue,'"','\'')) + '"');
 						}	
@@ -422,7 +290,7 @@ mydigitalstructure._util.factory.export = function (param)
 	app.controller['util-export-to-file'] = function (param)
 	{
 		var fileData = mydigitalstructure._util.param.get(param, 'data').value;
-		var fileName = mydigitalstructure._util.param.get(param, 'fileName').value;
+		var filename = mydigitalstructure._util.param.get(param, 'filename').value;
 		var filenamePrefix = mydigitalstructure._util.param.get(param, 'filenamePrefix').value;
 		var controller = mydigitalstructure._util.param.get(param, 'controller').value;
 		var source = mydigitalstructure._util.param.get(param, 'source').value;
@@ -437,7 +305,7 @@ mydigitalstructure._util.factory.export = function (param)
 			});
 		}	
 
-		if (_.isUndefined(fileName))
+		if (_.isUndefined(filename))
 		{
 			if (_.isUndefined(filenamePrefix))
 			{
@@ -454,9 +322,9 @@ mydigitalstructure._util.factory.export = function (param)
 			useLocal = false;
 		}
 		
-		if (useLocal)
+		if (useLocal && window.saveAs != undefined)
 		{
-			var file = new File([fileData], fileName, {type: "text/plain;charset=utf-8"});
+			var file = new File([fileData], filename, {type: "text/plain;charset=utf-8"});
 			saveAs(file);
 			$('#util-export').modal('hide');
 		}
@@ -465,7 +333,7 @@ mydigitalstructure._util.factory.export = function (param)
 			var data =
 			{
 				filedata: fileData,
-				filename: fileName
+				filename: filename
 			}
 
 			$.ajax(

@@ -176,10 +176,18 @@ $(document).off('click', '.myds-show, .myds')
 	}
 });
 
-$(document).off('click', '.myds-download')
-.on('click', '.myds-download', function(event)
+$(document).off('click', '.myds-export')
+.on('click', '.myds-export', function(event)
 {
-	
+	var context = $(this).data('context');
+	var container = $(this).data('container');
+	var filename = $(this).data('filename');
+
+	app.controller['util-export-table'](
+	{
+		context: context,
+		filename: filename
+	})
 });
 
 $(document).off('click', '.myds-dropdown')
@@ -1635,6 +1643,8 @@ mydigitalstructure._util.view.showPage = function (param)
 mydigitalstructure._util.view.moreSearch = function (param)
 {
 	var controller = mydigitalstructure._util.param.get(param, 'controller').value;
+	var controllerParam = mydigitalstructure._util.param.get(param, 'controllerParam').value;
+
 	var queue = mydigitalstructure._util.param.get(param, 'queue').value;
 
 	if (!_.isUndefined(controller))
@@ -1650,6 +1660,7 @@ mydigitalstructure._util.view.moreSearch = function (param)
 			{
 				data: param,
 				callback: controller,
+				callbackParam: controllerParam,
 				type: 'POST',
 				url: '/rpc/core/?method=CORE_SEARCH_MORE',
 			});
