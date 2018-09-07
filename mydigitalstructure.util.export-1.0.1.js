@@ -316,19 +316,12 @@ mydigitalstructure._util.factory.export = function (param)
 		}
 
 		var useLocal = mydigitalstructure.saveAs;
-
-		if (_.contains(window.navigator.vendor, 'Apple'))
-		{
-			useLocal = false;
-		}
-		
+	
 		if (useLocal && window.saveAs != undefined)
 		{
 			var blob = new Blob([fileData], {type: "text/plain;charset=utf-8"});
 			saveAs(blob, filename);
 
-			//var file = new File([fileData], filename, {type: "text/plain;charset=utf-8"});
-			//saveAs(file);
 			$('#util-export').modal('hide');
 		}
 		else
