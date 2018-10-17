@@ -2673,52 +2673,7 @@ mydigitalstructure._util.factory = function (param)
 									uriContext: uriContext
 								})
 
-								/*mydigitalstructure._scope.app.uri = uri;
-
-								var _uriContext = _.first(_.split(uriContext, '|'));
 								
-								mydigitalstructure._scope.app.uriContext = _uriContext.split('/')[0]; // _
-								mydigitalstructure._scope.app.dataContext = _uriContext.split('/')[1]; // _
-								var controller = mydigitalstructure._scope.app.uriContext.replace('#', '');
-
-								if (app.data[controller] == undefined) {app.data[controller] = {}}
-
-								app.data[controller].uriContext = 
-									decodeURI(mydigitalstructure._scope.app.dataContext);
-
-								if (!_.isError(_.attempt(JSON.parse.bind(null, app.data[controller].uriContext))))
-								{
-									app.data[controller].dataContext = _.assign(app.data[controller].dataContext,
-										_.attempt(JSON.parse.bind(null, app.data[controller].uriContext)));
-								}
-								else
-								{
-									app.data[controller].dataContext = app.data[controller].uriContext
-								}
-
-								uriContext = mydigitalstructure._scope.app.uriContext;
-
-								mydigitalstructure._util.view.render(uri, uriContext);
-
-								app.controller['app-navigation']();
-
-								if (_.isObject(app.view))
-								{
-									if (app.view[uriContext.replace('#', '')] != undefined)
-									{
-										app.view[uriContext.replace('#', '')]();
-									}
-								}
-
-								if (_.isObject(app.controller))
-								{
-									if (app.controller[uriContext.replace('#', '')] != undefined)
-									{
-										app.controller[uriContext.replace('#', '')]();
-									}
-								}
-
-								$('a[href="' + uriContext + '-' + mydigitalstructure._scope.app.dataContext + '"]').click();*/
 							}	
 						}	
 					}	
