@@ -2688,25 +2688,36 @@ mydigitalstructure._util.factory = function (param)
 				mydigitalstructure._scope.app.uri = uri;
 
 				var _uriContext = _.first(_.split(uriContext, '|'));
-				
-				mydigitalstructure._scope.app.uriContext = _uriContext.split('/')[0]; // _
-				mydigitalstructure._scope.app.dataContext = _uriContext.split('/')[1]; // _
+				var _uriContexts = _uriContext.split('/');
+
+				mydigitalstructure._scope.app.uriContext = _uriContexts[0];
+				mydigitalstructure._scope.app.dataContext = undefined;
+
+				if (_uriContexts.length > 1)
+				{
+					mydigitalstructure._scope.app.dataContext = _uriContexts[1];
+				}
+					
 				var controller = mydigitalstructure._scope.app.uriContext.replace('#', '');
 
 				if (app.data[controller] == undefined) {app.data[controller] = {}}
+				app.data[controller].uriContext = undefined
 
-				app.data[controller].uriContext = 
-					decodeURI(mydigitalstructure._scope.app.dataContext);
+				if (mydigitalstructure._scope.app.dataContext != undefined)
+				{
+					app.data[controller].uriContext = 
+						decodeURI(mydigitalstructure._scope.app.dataContext);
 
-				if (!_.isError(_.attempt(JSON.parse.bind(null, app.data[controller].uriContext))))
-				{
-					app.data[controller].dataContext = _.assign(app.data[controller].dataContext,
-						_.attempt(JSON.parse.bind(null, app.data[controller].uriContext)));
-				}
-				else
-				{
-					app.data[controller].dataContext = app.data[controller].uriContext
-				}
+					if (!_.isError(_.attempt(JSON.parse.bind(null, app.data[controller].uriContext))))
+					{
+						app.data[controller].dataContext = _.assign(app.data[controller].dataContext,
+							_.attempt(JSON.parse.bind(null, app.data[controller].uriContext)));
+					}
+					else
+					{
+						app.data[controller].dataContext = app.data[controller].uriContext
+					}
+				}	
 
 				uriContext = mydigitalstructure._scope.app.uriContext;
 
@@ -2714,40 +2725,73 @@ mydigitalstructure._util.factory = function (param)
 
 				if (mydigitalstructure._scope.app.options.routing != undefined)
 				{
+					var isReLoad = (window.performance.navigation.type == 1)
+
+					console.log(isReLoad)
+
+					console.log(window.performance.navigation.type)
+
+					if (!isReLoad)
+					{
+						isReLoad = (_.isEmpty(document.referrer));
+					}	
+
 					var routingInstruction;
 
-					if (mydigitalstructure._scope.app.options.routing.toPage != undefined)
+					if (mydigitalstructure._scope.app.options.routing.toURI != undefined)
 					{
-						routingInstruction = _.find(mydigitalstructure._scope.app.options.routing.toPage, function (instruction)
+						routingInstruction = _.find(mydigitalstructure._scope.app.options.routing.toURI, function (instruction)
 						{
 							var instructionMatch = (instruction.uri == uri && _.includes(instruction.uriContext, uriContext))
 
 							if (instructionMatch)
 							{
-								if (instruction.onlyDoIfURIDataContextNotEmpty)
+								if (instruction.onlyApplyIfURIDataContextNotEmpty)
 								{
 									instructionMatch = !_.isEmpty(mydigitalstructure._scope.app.dataContext)
-								}	
+								}
+
+								if (instructionMatch && instruction.onlyApplyIfDataIsEmpty)
+								{
+									instructionMatch = _.isEmpty(app.data[controller])
+								}
+
+								if (instructionMatch && !instruction.applyEvenIfReload)
+								{
+									instructionMatch = isReLoad
+								}
 							}
 
 							return instructionMatch
 						});
 					}	
 
-					if (_.isEmpty(routeInstruction))
+					if (_.isEmpty(routingInstruction))
 					{
 						if (mydigitalstructure._scope.app.options.routing.toStart != undefined)
 						{
 							var routingInstruction = _.find(mydigitalstructure._scope.app.options.routing.toStart, function (instruction)
 							{
-								var instructionMatch = (instruction.uri == uri && _.includes(instruction.uriContext, uriContext))
+								var instructionMatch = 
+								((instruction.uri == uri || instruction.uri == '*')
+									&& (_.includes(instruction.uriContext, '*') || _.includes(instruction.uriContext, uriContext)))
 
 								if (instructionMatch)
 								{
-									if (instruction.onlyDoIfURIDataContextNotEmpty)
+									if (instruction.onlyApplyIfURIDataContextNotEmpty)
 									{
 										instructionMatch = !_.isEmpty(mydigitalstructure._scope.app.dataContext)
-									}	
+									}
+
+									if (instructionMatch && !instruction.applyEvenIfDataIsEmpty)
+									{
+										instructionMatch = _.isEmpty(app.data[controller].controller)
+									}
+
+									if (instructionMatch && !instruction.applyEvenIfNotReload)
+									{
+										instructionMatch = isReLoad
+									}
 								}
 
 								return instructionMatch
@@ -2755,23 +2799,33 @@ mydigitalstructure._util.factory = function (param)
 
 							if (routingInstruction != undefined)
 							{
-								routingInstruction.redirect.uri = mydigitalstructure._scope.app.options.startURI;
-								routingInstruction.redirect.uriContext = mydigitalstructure._scope.app.options.startURIContext
+								routingInstruction.redirect =
+								{
+									uri: mydigitalstructure._scope.app.options.startURI,
+									uriContext: mydigitalstructure._scope.app.options.startURIContext
+								}	
 							}
 						}
+					}	
 
-						if (routingInstruction != undefined)
+					if (routingInstruction != undefined)
+					{
+						if (routingInstruction.redirect != undefined)
 						{
-							if (routingInstruction.redirect != undefined)
-							{
-								if (routingInstruction.redirect.uri != undefined) {uri = routingInstruction.redirect.uri}
-								if (routingInstruction.redirect.uriContext != undefined) {uri = routingInstruction.redirect.uriContext}
-							}
+							if (routingInstruction.redirect.uri != undefined) {uri = routingInstruction.redirect.uri}
+							if (routingInstruction.redirect.uriContext != undefined) {uriContext = routingInstruction.redirect.uriContext}
 						}
 					}
 				}
 
-				mydigitalstructure._util.view.render(uri, uriContext);
+				if (window.location.pathname != uri && window.location.pathname != uri + '/')
+				{
+					window.location.href = uri + '/' + uriContext;
+				}
+				else
+				{
+					mydigitalstructure._util.view.render(uri, uriContext);
+				}
 
 				app.controller['app-navigation']();
 
