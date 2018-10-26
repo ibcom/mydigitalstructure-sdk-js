@@ -2727,10 +2727,6 @@ mydigitalstructure._util.factory = function (param)
 				{
 					var isReLoad = (window.performance.navigation.type == 1)
 
-					console.log(isReLoad)
-
-					console.log(window.performance.navigation.type)
-
 					if (!isReLoad)
 					{
 						isReLoad = (_.isEmpty(document.referrer));
