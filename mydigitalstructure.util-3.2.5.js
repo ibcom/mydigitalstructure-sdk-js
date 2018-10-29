@@ -41,7 +41,7 @@ catch (e)
 
 $(document).off('click', '.myds-logoff').on('click', '.myds-logoff', function(event)
 {
-	mydigitalstructure.deauth({uri: '/app/#auth'});
+	mydigitalstructure.deauth();
 });
 
 $(document).off('click', '#myds-logon')
@@ -2725,6 +2725,8 @@ mydigitalstructure._util.factory = function (param)
 
 				//looking for routing options
 
+				console.log(document.referrer)
+
 				if (mydigitalstructure._scope.app.options.routing != undefined)
 				{
 					if (isReload == undefined)
@@ -2735,6 +2737,13 @@ mydigitalstructure._util.factory = function (param)
 						{
 							isReload = (_.isEmpty(document.referrer));
 						}
+
+						if (!isReload)
+						{
+							isReload = (_.includes(document.referrer, mydigitalstructure._scope.app.options.authURI & '/'));
+						}
+
+						
 					}	
 
 					var routingInstruction;

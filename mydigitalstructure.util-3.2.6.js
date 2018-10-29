@@ -41,7 +41,7 @@ catch (e)
 
 $(document).off('click', '.myds-logoff').on('click', '.myds-logoff', function(event)
 {
-	mydigitalstructure.deauth({uri: '/app/#auth'});
+	mydigitalstructure.deauth();
 });
 
 $(document).off('click', '#myds-logon')
@@ -2662,17 +2662,17 @@ mydigitalstructure._util.factory = function (param)
 									$('.myds-logon-surname').html(mydigitalstructure._scope.user.surname)
 									$('.myds-logon-name').html(mydigitalstructure._scope.user.userlogonname)
 									$('.myds-logon-space').html(mydigitalstructure._scope.user.contactbusinesstext)
-								}
-
-								mydigitalstructure._util.controller.invoke(
-								{
-									name: 'app-route-to'
-								},
-								{
-									uri: uri,
-									uriContext: uriContext,
-									reload: true
-								})				
+								
+									mydigitalstructure._util.controller.invoke(
+									{
+										name: 'app-route-to'
+									},
+									{
+										uri: uri,
+										uriContext: uriContext,
+										reload: true
+									})
+								}				
 							}	
 						}	
 					}	
@@ -2735,6 +2735,13 @@ mydigitalstructure._util.factory = function (param)
 						{
 							isReload = (_.isEmpty(document.referrer));
 						}
+
+						if (!isReload)
+						{
+							isReload = (_.includes(document.referrer, mydigitalstructure._scope.app.options.authURI & '/'));
+						}
+
+						
 					}	
 
 					var routingInstruction;

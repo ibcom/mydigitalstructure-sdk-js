@@ -991,8 +991,13 @@ mydigitalstructure._util =
 
 	logoff: 	function (param)
 				{
-					var uri = mydigitalstructure._util.param.get(param, 'uri', {"default": '/'}).value;
+					var uri = mydigitalstructure._util.param.get(param, 'uri').value;
 					var refresh = mydigitalstructure._util.param.get(param, 'refresh', {"default": true}).value;
+
+					if (uri == undefined)
+					{
+						uri = mydigitalstructure._scope.app.options.authURI + '/' + mydigitalstructure._scope.app.options.authURIContext;
+					}
 
 					$.ajax(
 					{
@@ -1167,7 +1172,6 @@ mydigitalstructure._util =
 
 								if (uriContext != undefined)
 								{
-									if 
 									if ($(uriContext).length != 0)
 									{
 										if (_.isEmpty($('#myds-container')))
