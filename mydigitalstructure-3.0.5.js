@@ -509,7 +509,10 @@ mydigitalstructure._util =
 							delete param.onComplete;
 						}
 
-						onComplete(param);
+						if (typeof(onComplete) == 'function')
+						{
+							onComplete(param);
+						}	
 					}
 					else if (mydigitalstructure._util.param.get(param, 'onCompleteWhenCan').exists)
 					{
@@ -517,7 +520,10 @@ mydigitalstructure._util =
 
 						delete param.onCompleteWhenCan;
 					
-						onCompleteWhenCan(param);
+						if (typeof(onComplete) == 'function')
+						{
+							onCompleteWhenCan(param);
+						}	
 					}
 				},			
 
