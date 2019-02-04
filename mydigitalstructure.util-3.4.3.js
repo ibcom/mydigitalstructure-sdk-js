@@ -140,6 +140,29 @@ $(document).off('click', '.myds-navigate')
 
 	if (controller != undefined)
 	{
+		var routerElement = $('.myds-router');
+
+		if (routerElement.length > 0)
+		{
+			var element = routerElement.children('.btn');
+			if (element.length == 0)
+			{
+				element = routerElement.children('.dropdown-toggle');
+			}
+
+			if (element.length > 0)
+			{
+				var textElement = element.siblings().find('[data-context="' + controller + '"]')
+
+				if (textElement.length > 0)
+				{
+					var text = textElement.html();
+
+					element.html(text + ' <span class="caret"></span>');
+				}
+			}
+		}
+
 		var param =
 		{
 			context: (mydigitalstructure._scope.app.uriContext).replace('#', '')
