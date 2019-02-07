@@ -1971,7 +1971,12 @@ mydigitalstructure._util.data.param =
 
 mydigitalstructure._util.controller = 
 {
-	invoke: function (param, controllerParam)
+	data:
+	{
+		note: {}
+	},
+
+	invoke: function (param, controllerParam, controllerData)
 	{
 		var name = mydigitalstructure._util.param.get(param, 'name').value;
 
@@ -1990,12 +1995,13 @@ mydigitalstructure._util.controller =
 
 			if (_.isFunction(namespace.controller[name]))
 			{
-				namespace.controller[name](controllerParam);
+				namespace.controller[name](controllerParam, controllerData);
 			}
 			else
 			{
 				console.log(name);
 				console.log(controllerParam)
+				console.log(controllerData)
 			}
 		}
 	},
@@ -2012,6 +2018,11 @@ mydigitalstructure._util.controller =
 			{
 				if (controller.name != undefined)
 				{
+					if (controller.note != undefined)
+					{
+						mydigitalstructure._util.controller.data.note[controller.name] = controller.note;
+					}
+
 					namespace = controller.namespace;
 					if (namespace == undefined) {namespace = mydigitalstructure._scope.app.options.namespace};
 					if (namespace == undefined) {namespace = window.app}
@@ -2023,9 +2034,15 @@ mydigitalstructure._util.controller =
 		{
 			var name = mydigitalstructure._util.param.get(param, 'name').value;
 			var code = mydigitalstructure._util.param.get(param, 'code').value;
+			var note = mydigitalstructure._util.param.get(param, 'note').value; 
 			var namespace = mydigitalstructure._util.param.get(param, 'namespace').value;
 			if (namespace == undefined) {namespace = mydigitalstructure._scope.app.options.namespace};
 			if (namespace == undefined) {namespace = window.app}
+
+			if (note != undefined)
+			{
+				mydigitalstructure._util.controller.data.note[name] = note;
+			}
 
 			if (name != undefined)
 			{
@@ -2437,7 +2454,7 @@ mydigitalstructure._util.data =
 						context: dataContext
 					});
 					
-					if (data != undefined)
+					if (data != undefined && id != undefined)
 					{
 						var _id = id;
 							

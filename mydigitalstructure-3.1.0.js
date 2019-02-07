@@ -489,7 +489,27 @@ mydigitalstructure._util =
 					if (callback)
 					{
 						if (param.callbackParam != undefined) {param = param.callbackParam}
-						callback(param, data)
+
+						if (_.isFunction(callback))
+						{
+							callback(param, data)
+						}
+						else
+						{
+							if (_.has(app, '_util.controller.invoke'))
+							{
+								app._util.controller.invoke(
+								{
+									name: callback
+								},
+								param,
+								data);
+							}
+							else
+							{
+								app.controller[callback](param, data)
+							}
+						}
 					};
 				},
 
