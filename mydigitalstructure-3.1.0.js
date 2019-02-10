@@ -148,8 +148,7 @@ mydigitalstructure.init = function (data)
 			options: arguments[2],
 			views: arguments[3],
 			site: arguments[4],
-			notify: arguments[5],
-			viewAssemblySupport: arguments[6]
+			viewAssemblySupport: arguments[5]
 		}
 	}
 
@@ -556,7 +555,7 @@ mydigitalstructure._util =
 					xhtmlHeadID.appendChild(oScript);
 				},			
 
-	init: 		function(param)
+	init: 	function(param)
 				{
 					mydigitalstructure._util.sendToView(
 					{
@@ -2057,7 +2056,7 @@ mydigitalstructure._util =
 
 										if (mydigitalstructure._scope.user != undefined)
 										{	
-											if (roleTitle != undefined)
+											if (roleTitle != unondefined)
 											{
 												bHas = ($.grep(mydigitalstructure._scope.user.roles.rows, function (row)
 														{return (exact?row.title==roleTitle:row.title.indexOf(roleTitle)!=-1)}).length > 0);
