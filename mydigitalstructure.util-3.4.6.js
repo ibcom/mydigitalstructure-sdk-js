@@ -2909,17 +2909,26 @@ mydigitalstructure._util.factory.core = function (param)
 			code: function (param)
 			{
 				var message; 
-				var type = 'info'
+				var type;
 
 				if (typeof param == 'object')
 				{
 					message = mydigitalstructure._util.param.get(param, 'message').value;
-					type = mydigitalstructure._util.param.get(param, 'class', {"default": 'info'}).value;
+					type = mydigitalstructure._util.param.get(param, 'class').value;
+					if (type == undefined && _.includes(_.toLower(message), 'delete'))
+					{
+						type = 'danger'
+					}
 				}
 				else
 				{
 					message = param;
 				}	
+
+				if (type == undefined)
+				{
+					type = 'info'
+				}
 
 				if (message == undefined && app.data['notify-message'] != undefined)
 				{
@@ -2935,7 +2944,7 @@ mydigitalstructure._util.factory.core = function (param)
 					},
 					{
 						type: type,
-						delay: 3000,
+						delay: 2400,
 						z_index: 9999,
 						placement:
 						{
@@ -2960,7 +2969,7 @@ mydigitalstructure._util.factory.core = function (param)
 						onclick: null,
 						showDuration: 400,
 						hideDuration: 1000,
-						timeOut: 4000,
+						timeOut: 3000,
 						extendedTimeOut: 1000,
 						showEasing: 'swing',
 						hideEasing: 'linear',

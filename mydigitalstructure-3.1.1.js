@@ -1577,9 +1577,9 @@ mydigitalstructure._util =
 								  		{
 								     		if (data.hasOwnProperty(key))
 								     		{
-								     			content = s.replaceAll(content, '{{' + key.toLowerCase() + '}}', data[key]);
-								     			content = s.replaceAll(content, '{{' + key + '}}', data[key]);
-								     			if (s != undefined) {content = s.unescapeHTML(content)}
+								     			content = s.replaceAll(content, '{{' + key.toLowerCase() + '}}', _.escape(data[key]));
+								     			content = s.replaceAll(content, '{{' + key + '}}', _.escape(data[key]));
+								     			//if (s != undefined) {content = s.unescapeHTML(content)}
 								     		}
 								     	}
 
@@ -1625,7 +1625,7 @@ mydigitalstructure._util =
 								  		{
 								     		if (data.hasOwnProperty(key))
 								     		{
-								     			selector = s.replaceAll(selector, '{{' + key.toLowerCase() + '}}', data[key]);
+								     			selector = s.replaceAll(selector, '{{' + key.toLowerCase() + '}}', _.escape(data[key]));
 								     		}
 								     	}
 									}
@@ -1749,7 +1749,7 @@ mydigitalstructure._util =
 								  		{
 								     		if (data.hasOwnProperty(key))
 								     		{
-								     			content = s.replaceAll(content, '{{' + key.toLowerCase() + '}}', data[key]);
+								     			content = s.replaceAll(content, '{{' + key.toLowerCase() + '}}', _.escape(data[key]));
 								     			if (s != undefined) {content = s.unescapeHTML(content)}
 								     		}
 								     	}
