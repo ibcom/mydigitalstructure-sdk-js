@@ -1586,8 +1586,14 @@ mydigitalstructure._util =
 								     				content = s.unescapeHTML(content)
 								     			}
 
-								     			content = s.replaceAll(content, '{{~' + key.toLowerCase() + '}}', _.escape(data[key]));
-								     			content = s.replaceAll(content, '{{~' + key + '}}', _.escape(data[key]));
+								     			content = s.replaceAll(content, '{{~' + key.toLowerCase() + '}}', encodeURIComponent(data[key]));
+								     			content = s.replaceAll(content, '{{~' + key + '}}', encodeURIComponent(data[key]));
+
+								     			content = s.replaceAll(content, '{{#' + key.toLowerCase() + '}}', _.escape(data[key]));
+								     			content = s.replaceAll(content, '{{#' + key + '}}', _.escape(data[key]));
+
+								     			content = s.replaceAll(content, '{{!' + key.toLowerCase() + '}}', 'base64:' + btoa(data[key]));
+								     			content = s.replaceAll(content, '{{!' + key + '}}',  'base64:' + btoa(data[key]));
 								     		}
 								     	}
 
