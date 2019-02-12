@@ -157,6 +157,11 @@ mydigitalstructure.init = function (data)
 		mydigitalstructure._util.factory.core()
 	}
 
+	if (_.isFunction(data.viewStarted))
+	{
+		data.viewStarted()
+	}
+
 	data.site = data.site || mydigitalstructureSiteId;
 	data.options.objects = (data.options.objects!=undefined?data.options.objects:true);
 

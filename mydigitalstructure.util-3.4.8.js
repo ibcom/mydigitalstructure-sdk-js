@@ -3774,5 +3774,4 @@ mydigitalstructure._util.factory.core = function (param)
 	{
 		mydigitalstructure._util.factory.export(param)
 	}	
-
 }
