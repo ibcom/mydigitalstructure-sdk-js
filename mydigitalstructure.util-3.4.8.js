@@ -2954,15 +2954,16 @@ mydigitalstructure._util.factory.core = function (param)
 				{
 					message = mydigitalstructure._util.param.get(param, 'message').value;
 					type = mydigitalstructure._util.param.get(param, 'class').value;
-					if (type == undefined && _.includes(_.toLower(message), 'delete'))
-					{
-						type = 'danger'
-					}
 				}
 				else
 				{
 					message = param;
-				}	
+				}
+
+				if (type == undefined && _.includes(_.toLower(message), 'delete'))
+				{
+					type = 'danger'
+				}
 
 				if (type == undefined)
 				{
