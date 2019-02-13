@@ -2465,55 +2465,62 @@ mydigitalstructure._util =
 						var callback = (param && param.callback) ? param.callback : context + '-attachments-show';
 						var reset = mydigitalstructure._util.param.get(param, 'reset', {'default': false}).value;
 
-						$('[name="' + context + '-attach-container"]')['ajax' + (directSubmit?'Submit':'Form')](
+						if (typeof $.fn['ajax' + (directSubmit?'Submit':'Form')] == 'function')
 						{
-							beforeSubmit: function()
+							$('[name="' + context + '-attach-container"]')['ajax' + (directSubmit?'Submit':'Form')](
 							{
-								return functionValidate(context);
-							},
-
-							beforeSend: function() 
-							{
-								$('#' + context + '-attach-status').html(
-								'<div class="progress">' +
-								'<div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div></div>');
-							},
-
-							uploadProgress: function(event, position, total, percentComplete) 
-							{
-								$('#' + context + '-attach-status [role="progressbar"]').css('width', percentComplete + '%');
-							},
-
-							success: function() 
-							{
-								$('#' + context + '-attach-status [role="progressbar"]').css('width', '100%');
-							},
-
-							complete: function(xhr) 
-							{
-								var response = JSON.parse(xhr.responseText);
-
-								if (reset)
+								beforeSubmit: function()
 								{
-									$('#' + context + '-attach-status').html('');
-								}
+									return functionValidate(context);
+								},
 
-								if (response.status == 'OK')
+								beforeSend: function() 
 								{
-									$.extend(param, {attachments: response.data.rows}, true);
-									mydigitalstructure._util.doCallBack(callback, param)
-								}
-								else
+									$('#' + context + '-attach-status').html(
+									'<div class="progress">' +
+									'<div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div></div>');
+								},
+
+								uploadProgress: function(event, position, total, percentComplete) 
 								{
-									mydigitalstructure._util.sendToView(
+									$('#' + context + '-attach-status [role="progressbar"]').css('width', percentComplete + '%');
+								},
+
+								success: function() 
+								{
+									$('#' + context + '-attach-status [role="progressbar"]').css('width', '100%');
+								},
+
+								complete: function(xhr) 
+								{
+									var response = JSON.parse(xhr.responseText);
+
+									if (reset)
 									{
-										from: 'myds-util-attachments-upload',
-										status: 'error',
-										message: response.error.errornotes
-									});
-								}
-							} 			
-						});
+										$('#' + context + '-attach-status').html('');
+									}
+
+									if (response.status == 'OK')
+									{
+										$.extend(param, {attachments: response.data.rows}, true);
+										mydigitalstructure._util.doCallBack(callback, param)
+									}
+									else
+									{
+										mydigitalstructure._util.sendToView(
+										{
+											from: 'myds-util-attachments-upload',
+											status: 'error',
+											message: response.error.errornotes
+										});
+									}
+								} 			
+							});
+						}
+						else
+						{
+							mydigitalstructure._util.attachment._upload(param);
+						}
 					},
 
 					validate: function(context)
@@ -2530,7 +2537,6 @@ mydigitalstructure._util =
 
 						return bValid;
 					},
-
 
 					_upload:	
 							function (param)
@@ -2556,11 +2562,11 @@ mydigitalstructure._util =
 
 								var form = document[mydigitalstructure._scope.data.attachment.context + '-attach-container'];
 							  	form.submit();
-							 	mydigitalstructure._util.attachment.status();
-								mydigitalstructure._scope.data.attachment.timer = setInterval('mydigitalstructure._util.attachment.status()', 1000);
+							 	mydigitalstructure._util.attachment._status();
+								mydigitalstructure._scope.data.attachment.timer = setInterval('mydigitalstructure._util.attachment._status()', 1000);
 							},
 
-					status:		
+					_status:		
 							function ()
 							{
 								var frame = document.getElementById(mydigitalstructure._scope.data.attachment.context + '-attach-proxy');
