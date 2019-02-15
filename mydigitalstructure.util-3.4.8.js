@@ -338,16 +338,24 @@ $(document).off('click', '.myds-check')
 .on('click', '.myds-check', function (event)
 {
 	var controller = $(this).data('controller');
+	var scope = $(this).data('scope');
 	var controllerBefore = $(this).data('controller-before');
-	var context = $(this).data('context');	
+	var context = $(this).data('context');
 
-	if (controller != undefined && context != undefined)
+	if (scope == undefined) {scope = controller}
+
+	if ((controller != undefined || scope != undefined) && context != undefined)
 	{	
-		if (app.data[controller] == undefined) {app.data[controller] = {}}
+		if (app.data[scope] == undefined) {app.data[scope] = {}}
 
 		var dataID = $(this).data('id');
 		var selected = $(this).prop('checked');
 		var dataUnselectedID = $(this).data('unselectedId');
+
+		if (dataUnselectedID == undefined)
+		{
+			dataUnselectedID = $(this).data('uncheckedId');
+		}
 		
 		if (!selected && dataUnselectedID != undefined)
 		{
@@ -359,7 +367,8 @@ $(document).off('click', '.myds-check')
 			selected: selected,
 			dataID: dataID,
 			dataContext: $(this).data(),
-			controller: controller
+			controller: controller,
+			scope: scope
 		}
 
 		if (controllerBefore != undefined)
@@ -367,21 +376,36 @@ $(document).off('click', '.myds-check')
 			app.controller[controllerBefore](param);
 		}
 
-		var inputs = $('input.myds-check[data-controller="' + controller + '"][data-context="' + context + '"]:visible');
-		var ids = [dataID];
-		
-		if (inputs.length != 1)
+		if (controller != undefined)
 		{
- 			var checked = $('input.myds-check[data-controller="' + controller + '"][data-context="' + context + '"]:checked:visible');
- 			ids = $.map(checked, function (c) {return $(c).data('id')});
+			var inputs = $('input.myds-check[data-controller="' + controller + '"][data-context="' + context + '"]:visible');
+			var ids = [dataID];
+			
+			if (inputs.length != 1)
+			{
+	 			var checked = $('input.myds-check[data-controller="' + controller + '"][data-context="' + context + '"]:checked:visible');
+	 			ids = $.map(checked, function (c) {return $(c).data('id')});
+			}
+		}
+		else
+		{
+			var inputs = $('input.myds-check[data-scope="' + scope + '"][data-context="' + context + '"]:visible');
+			var ids = [dataID];
+			
+			if (inputs.length != 1)
+			{
+	 			var checked = $('input.myds-check[data-scope="' + scope + '"][data-context="' + context + '"]:checked:visible');
+	 			ids = $.map(checked, function (c) {return $(c).data('id')});
+			}
 		}
 		
- 		app.data[controller][context] = (ids.length==0?'':ids.join(','));
- 		app.data[controller]['_' + context] = ids;
+ 		app.data[scope][context] = (ids.length==0?'':ids.join(','));
+ 		app.data[scope]['_' + context] = ids;
 
 		if (app.controller[controller] != undefined)
 		{	
-			app.controller[controller](param);
+			app.invoke(controller, param);
+			//app.controller[controller](param);
 		}
 	}		
 });
@@ -1870,7 +1894,8 @@ mydigitalstructure._util.view._refresh = function (param)
 	var hide = mydigitalstructure._util.param.get(param, 'hide').value;
 	var template = mydigitalstructure._util.param.get(param, 'template').value;
 	var selector = mydigitalstructure._util.param.get(param, 'selector').value;
-	
+	var dataScope = mydigitalstructure._util.param.get(param, 'dataScope').value;
+
 	if (_.isUndefined(template) && !_.isUndefined(selector)) {template = true}
 
 	if (_.isUndefined(scope)) {scope = controller}
@@ -1879,7 +1904,7 @@ mydigitalstructure._util.view._refresh = function (param)
 		mydigitalstructure._util.param.set(param, 'controller', scope)
 	}
 
-	if (!_.isUndefined(data) && scope != undefined)
+	if (!_.isUndefined(data) && !_.isUndefined(scope))
 	{
 		_.each(data, function (value, key)
 		{
@@ -1910,6 +1935,27 @@ mydigitalstructure._util.view._refresh = function (param)
 		}
 	}
 
+	if (!_.isUndefined(dataScope) && !_.isUndefined(data))
+	{
+		var dataScopeAll = mydigitalstructure._util.data.get(
+		{
+			scope: dataScope,
+			context: 'all',
+			valueDefault: []
+		});
+
+		var dataInScopeAll = _.find(dataScopeAll, function (d) {return d.id == data.id});
+
+		if (_.isUndefined(dataInScopeAll))
+		{
+			dataScopeAll.push(data);
+		}
+		else
+		{
+			dataInScopeAll = _.assign(dataInScopeAll, data)
+		}
+	}
+
 	if (!_.isUndefined(show))
 	{
 		$(show).removeClass('hidden');
@@ -1928,6 +1974,11 @@ mydigitalstructure._util.view._refresh = function (param)
 	if (template)
 	{
 		app._util.view.queue.templateRender(param);
+
+		_.each(data, function (value, key)
+		{
+			$(selector + ' input.myds-check[data-context="' + key + '"][data-id="' + value + '"]').attr('checked', 'checked')
+		});
 	}
 }	
 
