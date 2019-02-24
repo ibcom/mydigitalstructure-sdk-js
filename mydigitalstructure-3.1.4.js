@@ -1600,8 +1600,13 @@ mydigitalstructure._util =
 								     			content = s.replaceAll(content, '{{#' + key.toLowerCase() + '}}', _.escape(data[key]));
 								     			content = s.replaceAll(content, '{{#' + key + '}}', _.escape(data[key]));
 
-								     			content = s.replaceAll(content, '{{!' + key.toLowerCase() + '}}', 'base64:' + btoa(data[key]));
-								     			content = s.replaceAll(content, '{{!' + key + '}}',  'base64:' + btoa(data[key]));
+												contentData = data[key].replace(/[\u00A0-\u2666]/g, function(c)
+								     			{
+													return '&#' + c.charCodeAt(0) + ';';
+												});
+
+								     			content = s.replaceAll(content, '{{!' + key.toLowerCase() + '}}', 'base64:' + btoa(contentData));
+								     			content = s.replaceAll(content, '{{!' + key + '}}',  'base64:' + btoa(contentData));
 								     		}
 								     	}
 
