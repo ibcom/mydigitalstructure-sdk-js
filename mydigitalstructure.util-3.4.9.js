@@ -586,24 +586,38 @@ $(document).off('change', '.myds-text-select')
 	{
 		if (app.data[scope] == undefined) {app.data[scope] = {}}
 		
-		if (typeof $.fn.typeahead == 'function')
+		if ($(this).val() == '')
 		{
-			app.data[scope][context] = $(this).typeahead("getActive")
+			app.data[scope]['_' + context] = undefined;
+			app.data[scope][context] = '';
 
-			if (app.data[scope][context] != undefined)
+			if ($(this).attr('data-none') != undefined)
 			{
-				$(this).attr('data-id', app.data[scope][context].id);
-			}	
+				app.data[scope][context] = $(this).attr('data-none');
+			}
 		}
 		else
 		{
- 			app.data[scope][context] = $(this).val();
- 			$(this).attr('data-id', $(this).val());
- 			app.data[scope]['_' + context] = mydigitalstructure._util.data.clean($(this).data());
- 			app.data[scope]['_' + context]._type = 'change';
- 			app.data[scope]['_' + context][context] = $(this).val();
- 			app.data[scope]['_' + context]._value = $(this).val();
- 		}	
+			if (typeof $.fn.typeahead == 'function')
+			{
+				app.data[scope]['_' + context] = $(this).typeahead("getActive")
+
+				if (app.data[scope]['_' + context] != undefined)
+				{
+					app.data[scope][context] = app.data[scope]['_' + context].id
+					$(this).attr('data-id', app.data[scope][context].id);
+				}
+			}
+			else
+			{
+	 			app.data[scope][context] = $(this).val();
+	 			$(this).attr('data-id', $(this).val());
+	 			app.data[scope]['_' + context] = mydigitalstructure._util.data.clean($(this).data());
+	 			app.data[scope]['_' + context]._type = 'change';
+	 			app.data[scope]['_' + context][context] = $(this).val();
+	 			app.data[scope]['_' + context]._value = $(this).val();
+	 		}	
+	 	}	
 	}
 
 	if (controller != undefined && context != undefined)
@@ -3394,7 +3408,6 @@ mydigitalstructure._util.factory.core = function (param)
 			var dataSort = app._util.data.get(
 			{
 				controller: 'util-view-table',
-				_context: '_table-' + controller,
 				context: context,
 				valueDefault: {}
 			});
@@ -3506,7 +3519,6 @@ mydigitalstructure._util.factory.core = function (param)
 
 						app._util.data.set(
 						{
-							_controller: '_table-' + controller,
 							controller: context,
 							context: 'count',
 							value: _.toNumber(response.summary.count)
@@ -3521,24 +3533,29 @@ mydigitalstructure._util.factory.core = function (param)
 					} 
 					else
 					{	
-						//data
-
 						if (format.row != undefined)
 						{
 							if (_.isFunction(format.row.method))
-		                     {             
+							{             
 								_.each(response.data.rows, function (row)
 								{
 									format.row.method(row);
 								});
-		                     }
-		                 }    
-						
+							}
+
+							if (!_.isUndefined(format.row.controller))
+							{             
+								_.each(response.data.rows, function (row)
+								{
+									mydigitalstructure._util.controller.invoke(format.row.controller, row)
+								});
+							}
+						}    
+
 						if (init)
 						{
 							app._util.data.set(
 							{
-								_controller: '_table-' + controller,
 								controller: context,
 								context: 'all',
 								value: response.data.rows
@@ -3644,7 +3661,6 @@ mydigitalstructure._util.factory.core = function (param)
 
 										var data = mydigitalstructure._util.data.set(
 										{
-											_controller: '_table-website',
 											controller: context,
 											context: 'count',
 											value: rowsTotal
