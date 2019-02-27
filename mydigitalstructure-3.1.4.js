@@ -1157,6 +1157,14 @@ mydigitalstructure._util =
 							_rf: this.rf
 						});
 					}
+					else if (mode.toLowerCase() == 'log')
+					{
+						mydigitalstructure._util.log.add(
+						{
+							message: data,
+							controller: 'mydigitalstructure._util.send > ' + url
+						})
+					}
 					else
 					{
 						mydigitalstructure._util.doCallBack(param);
@@ -2845,11 +2853,24 @@ mydigitalstructure._util.log =
 		{
 			if (window.console)
 			{
-				var message = '@mydsSDK';
-				if (log.message != undefined) {message = message + ' # ' + log.message}
-				if (log.controller != undefined) {message = message + ' # ' + log.controller}
+				var message = '@mydigitalstructureSDK';
+
+				if (log.controller != undefined) {message = message + ' #' + log.controller}
+
+				if (log.message != undefined)
+				{
+					if (!_.isObject(log.message))
+					{
+						message = message + ' #' + log.message
+					}
+				}
 				
 				console.log(message);
+
+				if (_.isObject(log.message))
+				{
+					console.log(log.message);
+				}
 
 				if (log.param != undefined)
 				{
