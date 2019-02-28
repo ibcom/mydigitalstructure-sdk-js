@@ -1096,6 +1096,7 @@ mydigitalstructure._util =
 					var rf = mydigitalstructure._util.param.get(param, 'rf', {"default": 'json'}).value;
 					var managed = mydigitalstructure._util.param.get(param, 'managed', {"default": true}).value;
 					var noFormatting = mydigitalstructure._util.param.get(param, 'noFormatting').value;
+					var manageErrors = mydigitalstructure._util.param.get(param, 'manageErrors', {default: true}).value;
 
 					data.sid = mydigitalstructure._scope.session.sid;
 					data.logonkey = mydigitalstructure._scope.session.logonkey;
@@ -1143,6 +1144,7 @@ mydigitalstructure._util =
 							dataType: 'json',
 							cache: false,
 							data: data,
+							global: manageErrors,
 							success: function(response) 
 							{
 								mydigitalstructure._util.sendToView(

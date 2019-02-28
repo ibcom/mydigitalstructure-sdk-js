@@ -2067,7 +2067,8 @@ mydigitalstructure._util.controller =
 {
 	data:
 	{
-		note: {}
+		note: {},
+		last: undefined
 	},
 
 	invoke: function (param, controllerParam, controllerData)
@@ -2100,15 +2101,16 @@ mydigitalstructure._util.controller =
 
 			if (_.isFunction(namespace.controller[name]))
 			{
+				mydigitalstructure._util.controller.data.last = name;
 				returnData = namespace.controller[name](controllerParam, controllerData);
 			}
 			else
 			{
-				returnData = 'No controlled named ' + name;
+				returnData = 'No controller named ' + name;
 
 				mydigitalstructure._util.log.add(
 				{
-					message: 'No controlled named ' + name
+					message: 'No controller named ' + name
 				})
 				
 				if (!_.isUndefined(controllerParam))
@@ -3083,7 +3085,7 @@ mydigitalstructure._util.factory.core = function (param)
 
 					$.notify(
 					{
-						message: message
+						message: '<div class="text-center">' + message + '</div>'
 					},
 					{
 						allow_dismiss: showDismiss,
@@ -3095,8 +3097,9 @@ mydigitalstructure._util.factory.core = function (param)
 							from: "top",
 							align: "center"
 						},
-						template:
-							'<div data-notify="container" class="col-xs-11 col-sm-3 alert alert-{0}" role="alert">' + 
+						__template:
+							'<div data-notify="container" class="col-xs-11 col-sm-3 alert alert-{0}" role="alert">' +
+							'<button type="button" class="close" data-notify="dismiss" style="position: absolute; right: 10px; top: 5px; z-index: 10001;">×</button>' +
 							'<div data-notify="message" class="text-center">{2}</div>' +
 							'</div>'
 					});
