@@ -3050,7 +3050,7 @@ mydigitalstructure._util.factory.core = function (param)
 				{
 					message = mydigitalstructure._util.param.get(param, 'message').value;
 					type = mydigitalstructure._util.param.get(param, 'class').value;
-					time = mydigitalstructure._util.param.get(param, 'time', {default: 2400}).value;
+					time = mydigitalstructure._util.param.get(param, 'time', {default: 2000}).value;
 					persist = mydigitalstructure._util.param.get(param, 'persist', {default: false}).value;
 					showDismiss = mydigitalstructure._util.param.get(param, 'showDismiss', {default: true}).value;
 				}

@@ -286,9 +286,10 @@ mydigitalstructure.create = function (param)
 		object: param.object,
 		data: param.data,
 		callback: param.callback,
+		callbackIncludeResponse: param.callbackIncludeResponse,
 		mode: param.mode,
 		type: 'POST',
-		url: '/rpc/' + endpoint + '/?method=' + (param.object).toUpperCase() + '_MANAGE',
+		url: '/rpc/' + endpoint + '/?method=' + (param.object).toUpperCase() + '_MANAGE'
 	});
 }
 
@@ -382,6 +383,7 @@ mydigitalstructure.update = function (param, data, callback)
 		object: param.object,
 		data: param.data,
 		callback: param.callback,
+		callbackIncludeResponse: param.callbackIncludeResponse,
 		mode: param.mode,
 		type: 'POST',
 		url: '/rpc/' + param.endpoint + '/?method=' + (param.object).toUpperCase() + '_MANAGE',
@@ -413,6 +415,7 @@ mydigitalstructure.delete = function (param)
 		object: param.object,
 		data: param.data,
 		callback: param.callback,
+		callbackIncludeResponse: param.callbackIncludeResponse,
 		type: 'POST',
 		url: '/rpc/' + param.endpoint + '/?method=' + (param.object).toUpperCase() + '_MANAGE',
 	});
@@ -1097,6 +1100,7 @@ mydigitalstructure._util =
 					var managed = mydigitalstructure._util.param.get(param, 'managed', {"default": true}).value;
 					var noFormatting = mydigitalstructure._util.param.get(param, 'noFormatting').value;
 					var manageErrors = mydigitalstructure._util.param.get(param, 'manageErrors', {default: true}).value;
+					var callbackIncludeResponse = mydigitalstructure._util.param.get(param, 'callbackIncludeResponse', {default: true}).value;
 
 					data.sid = mydigitalstructure._scope.session.sid;
 					data.logonkey = mydigitalstructure._scope.session.logonkey;
@@ -1153,7 +1157,14 @@ mydigitalstructure._util =
 									status: 'end'
 								});
 
-								mydigitalstructure._util.doCallBack(param, response);
+								if (callbackIncludeResponse)
+								{
+									mydigitalstructure._util.doCallBack(param, response);
+								}
+								else
+								{
+									mydigitalstructure._util.doCallBack(param);
+								}
 							},
 							_managed: this.managed,
 							_rf: this.rf
@@ -2857,13 +2868,13 @@ mydigitalstructure._util.log =
 			{
 				var message = '@mydigitalstructureSDK';
 
-				if (log.controller != undefined) {message = message + ' #' + log.controller}
+				if (log.controller != undefined) {message = message + ' # ' + log.controller}
 
 				if (log.message != undefined)
 				{
 					if (!_.isObject(log.message))
 					{
-						message = message + ' #' + log.message
+						message = message + ' # ' + log.message
 					}
 				}
 				
