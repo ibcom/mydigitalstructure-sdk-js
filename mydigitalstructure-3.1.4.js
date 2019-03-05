@@ -1876,6 +1876,8 @@ mydigitalstructure._util =
 					{
 						create: function (param)
 								{
+									var manageErrors = mydigitalstructure._util.param.get(param, 'manageErrors', {default: false}).value;
+
 									mydigitalstructure._util.sendToView(
 									{
 										from: 'myds-register-space',
@@ -1906,6 +1908,7 @@ mydigitalstructure._util =
 										dataType: 'json',
 										cache: false,
 										data: data,
+										global: manageErrors,
 										success: function(response) 
 										{
 											mydigitalstructure._util.sendToView(
