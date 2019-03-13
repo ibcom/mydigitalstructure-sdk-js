@@ -3385,6 +3385,7 @@ mydigitalstructure._util.factory.core = function (param)
 			}
 		}
 
+		var callback = mydigitalstructure._util.param.get(param, 'callback', {default: 'util-view-table'}).value;
 		var format = mydigitalstructure._util.param.get(param, 'format').value;
 		var filters = mydigitalstructure._util.param.get(param, 'filters').value;
 		var customOptions = mydigitalstructure._util.param.get(param, 'customOptions').value;
@@ -3507,7 +3508,7 @@ mydigitalstructure._util.factory.core = function (param)
 				{
 					object: object,
 					data: search,
-					callback: app.controller['util-view-table'],
+					callback: callback,
 					callbackParam: param
 				});
 			}
