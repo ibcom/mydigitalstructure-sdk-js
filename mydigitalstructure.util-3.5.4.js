@@ -2660,65 +2660,69 @@ mydigitalstructure._util.factory.core = function (param)
 	mydigitalstructure._util.controller.add(
 	[
 		{
-			var controller = $(this).data('controller');
-			var target = $(this).data('target');
-			var context = $(this).attr('data-context');
-
-			if (controller == undefined && target != undefined)
+			name: 'app-navigate-to',
+			code: function (param)
 			{
-				controller = target.replace('#', '')
-			}
+				var controller = mydigitalstructure._util.param.get(param, 'controller').value;
+				var target = mydigitalstructure._util.param.get(param, 'target').value;
+				var context = mydigitalstructure._util.param.get(param, 'context').value;
 
-			if (controller != undefined)
-			{
-				var routerElement = $('.myds-router');
-
-				if (routerElement.length > 0)
+				if (_.isUndefined(controller) && !_.isUndefined(target))
 				{
-					var element = routerElement.children('.btn');
-					if (element.length == 0)
-					{
-						element = routerElement.children('.dropdown-toggle');
-					}
+					controller = target.replace('#', '')
+				}
 
-					if (element.length > 0)
-					{
-						var textElement = element.siblings().find('[data-context="' + controller + '"]')
+				if (!_.isUndefined(controller))
+				{
+					var routerElement = $('.myds-router');
 
-						if (textElement.length > 0)
+					if (routerElement.length > 0)
+					{
+						var element = routerElement.children('.btn');
+						if (element.length == 0)
 						{
-							var text = textElement.html();
+							element = routerElement.children('.dropdown-toggle');
+						}
 
-							var elementText = element.find('span.dropdown-text');
+						if (element.length > 0)
+						{
+							var textElement = element.siblings().find('[data-context="' + controller + '"]')
 
-							if (elementText.length != 0)
+							if (textElement.length > 0)
 							{
-								elementText.html(text)
+								var text = textElement.html();
+
+								var elementText = element.find('span.dropdown-text');
+
+								if (elementText.length != 0)
+								{
+									elementText.html(text)
+								}
+								else
+								{
+									element.html(text + ' <span class="caret"></span>');
+								}	
 							}
-							else
-							{
-								element.html(text + ' <span class="caret"></span>');
-							}	
 						}
 					}
-				}
 
-				var param =
-				{
-					context: (mydigitalstructure._scope.app.uriContext).replace('#', '')
-				}
+					var param =
+					{
+						context: (mydigitalstructure._scope.app.uriContext).replace('#', '')
+					}
 
-				param.dataContext = mydigitalstructure._util.data.clean($(this).data());
-				app.data[controller] = mydigitalstructure._util.data.clean($(this).data());
+					param.dataContext = mydigitalstructure._util.data.clean($(this).data());
+					app.data[controller] = mydigitalstructure._util.data.clean($(this).data());
 
-				var locationHash = '#' + controller;
+					var locationHash = '#' + controller;
 
-				if (context != undefined)
-				{
-					locationHash = locationHash + '/' + context
-				}
+					if (context != undefined)
+					{
+						locationHash = locationHash + '/' + context
+					}
 
-				window.location.hash = locationHash;
+					window.location.hash = locationHash;
+				}	
 			}
 		},
 		{
