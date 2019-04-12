@@ -657,12 +657,12 @@ $(document).off('change', '.myds-text-select')
 		}
 		else
 		{
- 			app.data[controller][context] = $(this).val();
- 			app.data[controller]['_' + context] = mydigitalstructure._util.data.clean($(this).data());
+ 			app.data[controller][context] = val;
+ 			app.data[controller]['_' + context] = data;
  			delete app.data[controller]['_' + context].chosen;
  			app.data[controller]['_' + context]._type = 'focusout';
- 			app.data[controller]['_' + context][context] = $(this).val();
- 			app.data[controller]['_' + context]._value = $(this).val();
+ 			app.data[controller]['_' + context][context] = val;
+ 			app.data[controller]['_' + context]._value = val;
  		}	
 
 		if (app.controller[controller] != undefined)
@@ -686,20 +686,23 @@ $(document).off('change', '.myds-select')
 	var controller = $(this).data('controller');
 	var scope = $(this).data('scope');
 	var context = $(this).data('context');
+
+	var val = mydigitalstructure._util.clean($(this).val());
+	var data = mydigitalstructure._util.data.clean($(this).data());
 	
 	if (scope != undefined && context != undefined)
 	{
 		if (app.data[scope] == undefined) {app.data[scope] = {}}
- 		app.data[scope][context] = $(this).val();
- 		app.data[scope]['_' + context] = mydigitalstructure._util.data.clean($(this).data());
+ 		app.data[scope][context] = val;
+ 		app.data[scope]['_' + context] = data;
 	}
 
 	if (controller != undefined && context != undefined)
 	{	
  		if (app.data[controller] == undefined) {app.data[controller] = {}}
 
-		app.data[controller][context] = $(this).val();
- 		app.data[controller]['_' + context] = mydigitalstructure._util.data.clean($(this).data());
+		app.data[controller][context] = val;
+ 		app.data[controller]['_' + context] = data;
  	
 		if (app.controller[controller] != undefined)
 		{	
@@ -714,12 +717,15 @@ $(document).off('change', '.myds-change')
 	var controller = $(this).data('controller');
 	var context = $(this).data('context');
 
+	var val = mydigitalstructure._util.clean($(this).val());
+	var data = mydigitalstructure._util.data.clean($(this).data());
+
 	if (controller != undefined && context != undefined)
 	{	
  		if (app.data[controller] == undefined) {app.data[controller] = {}}
 
- 		app.data[controller][context] = $(this).val();
- 		app.data[controller]['_' + context] = mydigitalstructure._util.data.clean($(this).data());
+ 		app.data[controller][context] = val;
+ 		app.data[controller]['_' + context] = data;
 
 		if (app.controller[controller] != undefined)
 		{	
@@ -736,6 +742,9 @@ $(document).off('click', '.myds-sort')
 	var sortDirection = $(this).attr('data-sort-direction');
 	var controller = $(this).attr('data-controller');
 	var context = $(this).attr('data-context');
+
+	var val = mydigitalstructure._util.clean($(this).val());
+	var data = mydigitalstructure._util.data.clean($(this).data());
 
 	if (_.isUndefined(controller))
 	{
@@ -764,7 +773,7 @@ $(document).off('click', '.myds-sort')
  		if (app.data[controller] == undefined) {app.data[controller] = {}}
 
  		app.data[controller][context] = {name: sort, direction: sortDirection};
- 		app.data[controller]['_' + context] = mydigitalstructure._util.data.clean($(this).data());
+ 		app.data[controller]['_' + context] = data;
 
 		if (app.controller[controller] != undefined)
 		{	
@@ -782,12 +791,15 @@ $(document).off('dp.change').on('dp.change', function(event)
 	var controller = element.data('controller');
 	var context = element.data('context');
 
+	var val = mydigitalstructure._util.clean(element.val());
+	var data = mydigitalstructure._util.data.clean(element.data());
+
 	if (controller != undefined && context != undefined)
 	{	
  		if (app.data[controller] == undefined) {app.data[controller] = {}}
 
- 		app.data[controller][context] = element.val();
- 		app.data[controller]['_' + context] = element.data();
+ 		app.data[controller][context] = val;
+ 		app.data[controller]['_' + context] = data;
 
 		if (app.controller[controller] != undefined)
 		{	
