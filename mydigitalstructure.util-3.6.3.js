@@ -1261,8 +1261,8 @@ if (typeof $.fn.carousel == 'function')
 
 if (typeof $.fn.dropdown == 'function')
 { 
-    $(document).off('show.bs.dropdown')
-    .on('show.bs.dropdown', function (event)
+    $(document).off('show.bs.dropdown', 'myds-dropdown')
+    .on('show.bs.dropdown', 'myds-dropdown', function (event)
 	{
 		if (event.relatedTarget != undefined)
 		{
