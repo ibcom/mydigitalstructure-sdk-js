@@ -290,7 +290,9 @@ mydigitalstructure.create = function (param)
 		callbackIncludeResponse: param.callbackIncludeResponse,
 		mode: param.mode,
 		type: 'POST',
-		url: '/rpc/' + endpoint + '/?method=' + (param.object).toUpperCase() + '_MANAGE'
+		url: '/rpc/' + endpoint + '/?method=' + (param.object).toUpperCase() + '_MANAGE',
+		manageErrors: param.manageErrors,
+		managed: param.managed
 	});
 }
 
@@ -389,6 +391,8 @@ mydigitalstructure.update = function (param, data, callback)
 		mode: param.mode,
 		type: 'POST',
 		url: '/rpc/' + param.endpoint + '/?method=' + (param.object).toUpperCase() + '_MANAGE',
+		manageErrors: param.manageErrors,
+		managed: param.managed
 	});
 }
 
@@ -421,6 +425,8 @@ mydigitalstructure.delete = function (param)
 		callbackIncludeResponse: param.callbackIncludeResponse,
 		type: 'POST',
 		url: '/rpc/' + param.endpoint + '/?method=' + (param.object).toUpperCase() + '_MANAGE',
+		manageErrors: param.manageErrors,
+		managed: param.managed
 	});
 }
 
