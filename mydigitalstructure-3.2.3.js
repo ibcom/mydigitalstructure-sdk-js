@@ -1196,7 +1196,12 @@ mydigitalstructure._util =
 						mydigitalstructure._scope.data._send = {}
 					}
 
-					if (btoa(JSON.stringify(param)) == mydigitalstructure._scope.data._send.param)
+					var paramData = btoa(String(JSON.stringify(param)).replace(/[\u00A0-\u2666]/g, function(c)
+	     			{
+						return '&#' + c.charCodeAt(0) + ';';
+					}))
+
+					if (paramData == mydigitalstructure._scope.data._send.param)
 					{
 						if (moment().isBefore(mydigitalstructure._scope.data._send.when.add(sameAsLastSeconds, 'seconds')))
 						{
@@ -1235,7 +1240,7 @@ mydigitalstructure._util =
 					else
 					{
 						mydigitalstructure._scope.data._send.count = 1;
-						mydigitalstructure._scope.data._send.param = btoa(JSON.stringify(param));
+						mydigitalstructure._scope.data._send.param = paramData;
 						mydigitalstructure._scope.data._send.when = moment();
 					}
 
