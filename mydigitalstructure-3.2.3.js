@@ -26,8 +26,8 @@ mydigitalstructure.init = function (data)
 
 	$.ajaxPrefilter(function(options, originalOptions, jqXHR)
 	{
-	   	originalOptions._error = originalOptions.error;
-	   	originalOptions._success = originalOptions.success;
+	   originalOptions._error = originalOptions.error;
+	   originalOptions._success = originalOptions.success;
 		originalOptions._id = _.now();
 		
 		var _controller;
@@ -1166,7 +1166,27 @@ mydigitalstructure._util =
 					var noFormatting = mydigitalstructure._util.param.get(param, 'noFormatting').value;
 					var manageErrors = mydigitalstructure._util.param.get(param, 'manageErrors', {default: true}).value;
 					var callbackIncludeResponse = mydigitalstructure._util.param.get(param, 'callbackIncludeResponse', {default: true}).value;
-					var sameAsLast = false;
+					var sameAsLastSeconds = 5;
+					var sameAsLastCount = 1;
+					var sameAsLastWarning = false;
+
+					if (mydigitalstructure._scope.app.options.sendSameAsLast != undefined)
+					{
+						if (mydigitalstructure._scope.app.options.sendSameAsLast.seconds != undefined)
+						{
+							sameAsLastSeconds = mydigitalstructure._scope.app.options.sendSameAsLast.seconds
+						}
+
+						if (mydigitalstructure._scope.app.options.sendSameAsLast.count != undefined)
+						{
+							sameAsLastCount = mydigitalstructure._scope.app.options.sendSameAsLast.count
+						}
+
+						if (mydigitalstructure._scope.app.options.sendSameAsLast.warning != undefined)
+						{
+							sameAsLastWarning = mydigitalstructure._scope.app.options.sendSameAsLast.warning
+						}
+					}
 
 					data.sid = mydigitalstructure._scope.session.sid;
 					data.logonkey = mydigitalstructure._scope.session.logonkey;
@@ -1178,33 +1198,45 @@ mydigitalstructure._util =
 
 					if (btoa(JSON.stringify(param)) == mydigitalstructure._scope.data._send.param)
 					{
-						mydigitalstructure._scope.data._send.count = 
-						mydigitalstructure._scope.data._send.count + 1;
-
-						if (manageErrors && mydigitalstructure._scope.data._send.count > 1)
+						if (moment().isBefore(mydigitalstructure._scope.data._send.when.add(sameAsLastSeconds, 'seconds')))
 						{
-							sameAsLast = true;
+							mydigitalstructure._scope.data._send.count = 
+							mydigitalstructure._scope.data._send.count + 1;
+							mydigitalstructure._scope.data._send.when = moment();
 
-							mydigitalstructure._util.sendToView(
+							if (manageErrors && mydigitalstructure._scope.data._send.count > sameAsLastCount)
 							{
-								from: 'myds-send',
-								status: 'error',
-								message: 'Not sent to mydigitalstructure as same as the last send.',
-								data: _.clone(param)
-							});
+								var sameAsLast = false;
+								var message = 'Warning, this appears to be a repeated send to mydigitalstructure.'
 
-							mydigitalstructure._util.log.add(
-							{
-								message: '!! Not sent to mydigitalstructure as same as the last send.',
-								controller: 'mydigitalstructure._util.send > ' + url,
-								param: _.clone(param)
-							});
+								if (!sameAsLastWarning)
+								{
+									sameAsLast = true;
+									message = 'Not sent to mydigitalstructure as same as the last send.'
+								};
+
+								mydigitalstructure._util.sendToView(
+								{
+									from: 'myds-send',
+									status: 'error',
+									message: message,
+									data: _.clone(param)
+								});
+
+								mydigitalstructure._util.log.add(
+								{
+									message: message,
+									controller: 'mydigitalstructure._util.send > ' + url,
+									param: _.clone(param)
+								});
+							}
 						}
 					}
 					else
 					{
 						mydigitalstructure._scope.data._send.count = 1;
 						mydigitalstructure._scope.data._send.param = btoa(JSON.stringify(param));
+						mydigitalstructure._scope.data._send.when = moment();
 					}
 
 					if (data.criteria == undefined && url.toLowerCase().indexOf('_search') != -1)
