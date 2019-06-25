@@ -870,6 +870,7 @@ mydigitalstructure._util =
 
 												mydigitalstructure._scope.authenticationLevel = data.authenticationlevel;
 												mydigitalstructure._scope.authenticationDelivery = data.authenticationdelivery;
+												mydigitalstructure._scope.authenticationUsingAccessToken = data.authenticationusingaccesstoken;
 
 												if (mydigitalstructure._scope.authenticationLevel == 3)
 												{	
@@ -938,13 +939,36 @@ mydigitalstructure._util =
 													else
 													{
 														mydigitalstructure._scope.logonInitialised = true;
-														
-														mydigitalstructure._util.sendToView(
+														mydigitalstructure._scope.needTOTPCode = true;
+
+														if (mydigitalstructure._scope.authenticationUsingAccessToken == 2)
 														{
-															from: 'myds-logon-init',
-															status: 'need-totp-code',
-															message: mydigitalstructure._scope.authenticationDelivery
-														});
+															var localAccessToken = app.invoke('util-local-cache-search',
+															{
+																persist: true,
+																key: 'myds.access-token-' + mydigitalstructure._scope.user.user
+															});
+
+															if (localAccessToken != undefined)
+															{
+																mydigitalstructure._scope.needTOTPCode = false
+															}
+														}
+														
+														if (mydigitalstructure._scope.needTOTPCode)
+														{
+															mydigitalstructure._util.sendToView(
+															{
+																from: 'myds-logon-init',
+																status: 'need-totp-code',
+																message: mydigitalstructure._scope.authenticationDelivery
+															});
+														}
+														else
+														{
+															param = mydigitalstructure._util.param.set(param, 'code', localAccessToken);
+															mydigitalstructure._util.logon.send(param);
+														}
 													}	
 												}
 												else
