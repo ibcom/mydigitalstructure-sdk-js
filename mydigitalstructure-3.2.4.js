@@ -946,7 +946,7 @@ mydigitalstructure._util =
 															var localAccessToken = app.invoke('util-local-cache-search',
 															{
 																persist: true,
-																key: 'myds.access-token-' + mydigitalstructure._scope.user.user
+																key: 'myds.access-token-' + window.btoa(logon)
 															});
 
 															if (localAccessToken != undefined)
