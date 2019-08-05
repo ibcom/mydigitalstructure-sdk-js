@@ -1194,7 +1194,7 @@ mydigitalstructure._util =
 					var noFormatting = mydigitalstructure._util.param.get(param, 'noFormatting').value;
 					var manageErrors = mydigitalstructure._util.param.get(param, 'manageErrors', {default: true}).value;
 					var callbackIncludeResponse = mydigitalstructure._util.param.get(param, 'callbackIncludeResponse', {default: true}).value;
-					var setDataContext = mydigitalstructure._util.param.get(param, 'setDataContext').value;
+					var set = mydigitalstructure._util.param.get(param, 'set').value;
 
 					var sameAsLastSeconds = 5;
 					var sameAsLastCount = 1;
@@ -1344,16 +1344,16 @@ mydigitalstructure._util =
 									if (callbackIncludeResponse)
 									{
 										if (_.has(mydigitalstructure._util.data, 'set') && _.has(response.data, 'rows')
-												&& typeof(param.callback) == 'string' && setDataContext != undefined)
+												&& typeof(param.callback) == 'string' && typeof(set) == 'object')
 										{
 											mydigitalstructure._util.data.set(
 											{
-												controller: param.callback,
-												context: setDataContext,
+												scope: set.scope,
+												context: set.context,
 												value: response.data.rows
 											});
 										}
-									
+
 										mydigitalstructure._util.doCallBack(param, response);
 									}
 									else
