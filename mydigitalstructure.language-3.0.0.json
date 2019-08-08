@@ -1,0 +1,254 @@
+{
+	"query":
+	{
+		"comparisons":
+		[ 
+			{
+				"title": "None", 
+				"code": "",
+				"dataType": "all", 
+				"inputCount": "0"
+			},
+			{
+				"title": "Equal to",
+				"code": "EQUAL_TO",
+				"dataType": "all",
+				"inputCount": "1"
+			},
+			{
+				"title": "Not equal to",
+				"code": "NOT_EQUAL_TO",
+				"dataType": "all",
+				"inputCount": "1"
+			},
+			{
+				"title": "Greater than",
+				"code": "GREATER_THAN",
+				"dataType": "all",
+				"inputCount": "1"
+			},
+			{
+				"title": "Greater than or equal to",
+				"code": "GREATER_THAN_OR_EQUAL_TO",
+				"dataType": "all",
+				"inputCount": "1"
+			},
+			{
+				"title": "Less than",
+				"code": "LESS_THAN",
+				"dataType": "all",
+				"inputCount": "1"
+			},
+			{
+				"title": "Less than or equal to",
+				"code": "LESS_THAN_OR_EQUAL_TO",
+				"dataType": "all",
+				"inputCount": "1"
+			},
+			{
+				"title": "Is in list",
+				"code": "IN_LIST",
+				"dataType": "all",
+				"inputCount": "1"
+			},
+			{
+				"title": "Not in list",
+				"code": "NOT_IN_LIST",
+				"dataType": "all",
+				"inputCount": "1"
+			},
+			{
+				"title": "Never set",
+				"code": "IS_NULL",
+				"dataType": "all",
+				"inputCount": "0"
+			},
+			{
+				"title": "Has been set",
+				"code": "IS_NOT_NULL",
+				"dataType": "all",
+				"inputCount": "0"
+			},
+			{
+				"title": "Approximately equal to",
+				"code": "APPROX_EQUAL_TO",
+				"dataType": "all",
+				"inputCount": "1"
+			},
+			{
+				"title": "Contains",
+				"code": "TEXT_IS_LIKE",
+				"dataType": "text",
+				"inputCount": "1"
+			},
+			{
+				"title": "Does Not Contain",
+				"code": "TEXT_IS_NOT_LIKE",
+				"dataType": "text",
+				"inputCount": "1"
+			},
+			{
+				"title": "Starts with",
+				"code": "TEXT_STARTS_WITH",
+				"dataType": "text",
+				"inputCount": "1"
+			},
+			{
+				"title": "Is empty",
+				"code": "TEXT_IS_EMPTY",
+				"dataType": "text",
+				"inputCount": "0"
+			},
+			{
+				"title": "Is not empty",
+				"code": "TEXT_IS_NOT_EMPTY",
+				"dataType": "text",
+				"inputCount": "0"
+			},
+			{
+				"title": "Today",
+				"code": "TODAY",
+				"dataType": "date",
+				"inputCount": "0"
+			},
+			{
+				"title": "Yesterday",
+				"code": "YESTERDAY",
+				"dataType": "date",
+				"inputCount": "0"
+			},
+			{
+				"title": "Between",
+				"code": "BETWEEN",
+				"dataType": "date",
+				"inputCount": "2"
+			},
+			{
+				"title": "Week to date",
+				"code": "WEEK_TO_DATE",
+				"dataType": "date",
+				"inputCount": "0"
+			},
+			{
+				"title": "Month to date",
+				"code": "MONTH_TO_DATE",
+				"dataType": "date",
+				"inputCount": "0"
+			},
+			{
+				"title": "Calendar year to date",
+				"code": "CALENDAR_YEAR_TO_DATE",
+				"dataType": "date",
+				"inputCount": "0"
+			},
+			{
+				"title": "Calendar last week",
+				"code": "CALENDAR_LAST_WEEK",
+				"dataType": "date",
+				"inputCount": "0"
+			},
+			{
+				"title": "Calendar next week",
+				"code": "CALENDAR_NEXT_WEEK",
+				"dataType": "date",
+				"inputCount": "0"
+			},
+			{
+				"title": "Calendar last month",
+				"code": "CALENDAR_LAST_MONTH",
+				"dataType": "date",
+				"inputCount": "0"
+			},
+			{
+				"title": "Calendar next month",
+				"code": "CALENDAR_NEXT_MONTH",
+				"dataType": "date",
+				"inputCount": "0"
+			},
+			{
+				"title": "Calendar last year",
+				"code": "CALENDAR_LAST_YEAR",
+				"dataType": "date",
+				"inputCount": "0"
+			},
+			{
+				"title": "Calendar next year",
+				"code": "CALENDAR_NEXT_YEAR",
+				"dataType": "date",
+				"inputCount": "0"
+			},
+			{
+				"title": "End of last month",
+				"code": "END_OF_LAST_MONTH",
+				"dataType": "date",
+				"inputCount": "0"
+			},
+			{
+				"title": "End of next month",
+				"code": "END_OF_NEXT_MONTH",
+				"dataType": "date",
+				"inputCount": "0"
+			},
+			{
+				"title": "Last 52 weeks",
+				"code": "LAST_52_WEEKS",
+				"dataType": "date",
+				"inputCount": "0"
+			},
+			{
+				"title": "In month",
+				"code": "IN_MONTH",
+				"dataType": "date",
+				"inputCount": "1"
+			},
+			{
+				"title": "On day and month",
+				"code": "ON_DAY_MONTH",
+				"dataType": "date",
+				"inputCount": "1"
+			},
+			{
+				"title": "This month",
+				"code": "THIS_MONTH",
+				"dataType": "date",
+				"inputCount": "0"
+			},
+			{
+				"title": "Next month",
+				"code": "NEXT_MONTH",
+				"dataType": "date",
+				"inputCount": "0"
+			},
+			{
+				"title": "Aged 30 days",
+				"code": "AGED_THIRTY",
+				"dataType": "date",
+				"inputCount": "0"
+			},
+			{
+				"title": "Aged 60 days",
+				"code": "AGED_SIXTY",
+				"dataType": "date",
+				"inputCount": "0"
+			},
+			{
+				"title": "Aged 90 days",
+				"code": "AGED_NINETY",
+				"dataType": "date",
+				"inputCount": "0"
+			},
+			{
+				"title": "Aged 90+ days",
+				"code": "AGED_NINETY_PLUS",
+				"dataType": "date",
+				"inputCount": "0"
+			},
+			{
+				"title": "Last financial quarter",
+				"code": "LAST_FINANCIAL_QUARTER",
+				"dataType": "date",
+				"inputCount": "0"
+			}
+		]
+	}
+}
