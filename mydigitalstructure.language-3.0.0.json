@@ -49,7 +49,8 @@
 				"title": "Is in list",
 				"code": "IN_LIST",
 				"dataType": "all",
-				"inputCount": "1"
+				"inputCount": "1",
+				"notes": "Comma delimited list"
 			},
 			{
 				"title": "Not in list",

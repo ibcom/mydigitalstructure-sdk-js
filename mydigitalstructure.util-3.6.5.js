@@ -4133,5 +4133,10 @@ mydigitalstructure._util.factory.core = function (param)
 	if (_.isFunction(mydigitalstructure._util.factory.local))
 	{
 		mydigitalstructure._util.factory.local(param)
+	}
+
+	if (_.isFunction(mydigitalstructure._util.factory.language))
+	{
+		mydigitalstructure._util.factory.language(param)
 	}	
 }
