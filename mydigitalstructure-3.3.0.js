@@ -450,8 +450,6 @@ mydigitalstructure.delete = function (param)
 	});
 }
 
-mydigitalstructure.upload = mydigitalstructure._util.attachment.upload;
-
 mydigitalstructure.help = function ()
 {
 	return {scope: mydigitalstructure._scope}
@@ -3177,3 +3175,5 @@ mydigitalstructure._util.log =
 		});
 	}
 }
+
+mydigitalstructure.upload = mydigitalstructure._util.attachment.upload;
