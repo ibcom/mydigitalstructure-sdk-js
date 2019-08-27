@@ -416,8 +416,6 @@ mydigitalstructure.retrieve = function (param)
 	}
 }
 
-
-
 mydigitalstructure.delete = function (param)
 {
 	if (typeof arguments[0] != 'object')
@@ -451,6 +449,8 @@ mydigitalstructure.delete = function (param)
 		managed: param.managed
 	});
 }
+
+mydigitalstructure.upload = mydigitalstructure._util.attachment.upload;
 
 mydigitalstructure.help = function ()
 {

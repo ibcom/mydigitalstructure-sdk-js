@@ -1,9 +1,9 @@
-mydigitalstructure._util.factory.language = function (param)
+mydigitalstructure._util.factory.queryLanguage = function (param)
 {
 	if (app == undefined) {app = {controller: {}}};
 	if (app.controller == undefined) {app.controller = {}};
 
-	app.controller['util-language-get'] = function (param)
+	app.controller['util-query-language-get'] = function (param)
 	{
 		var site = mydigitalstructure._util.param.get(param, 'site').value;
 
@@ -12,13 +12,13 @@ mydigitalstructure._util.factory.language = function (param)
 			$.ajax(
 			{
 				type: 'GET',
-				url: '/site/' + site + '/mydigitalstructure.language-3.0.0.json',
+				url: '/site/' + site + '/mydigitalstructure.storage.language-3.0.0.json',
 				dataType: 'json',
 				success: function(data)
 				{
 					mydigitalstructure._util.data.set(
 					{
-						scope: 'util-language',
+						scope: 'util-query-language',
 						value: data
 					});
 
