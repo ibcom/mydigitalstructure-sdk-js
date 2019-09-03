@@ -4174,8 +4174,6 @@ mydigitalstructure._util.factory.core = function (param)
 
 						if (gotoPage)
 						{
-							//set startrow as currentpage * rows
-
 							mydigitalstructure._util.view.showPage(
 							{
 								id: response.moreid,
