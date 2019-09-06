@@ -3596,6 +3596,7 @@ mydigitalstructure._util.factory.core = function (param)
 		var context = mydigitalstructure._util.param.get(param, 'context').value;
 		var useCache = mydigitalstructure._util.param.get(param, 'useCache', {default: false}).value;
 		var goToPageWhenCan = mydigitalstructure._util.param.get(param, 'goToPageWhenCan', {default: true}).value;
+		var goToPageNumber = mydigitalstructure._util.param.get(param, 'goToPageNumber').value;
 		var container = mydigitalstructure._util.param.get(param, 'container').value;
 
 		var dataCache = app._util.data.get(
@@ -3677,7 +3678,9 @@ mydigitalstructure._util.factory.core = function (param)
 				$.each(format.columns, function (c, column)
 				{
 					if (column.param == undefined) {column.param = column.property}
-					if (column.paramList == undefined) {column.paramList = column.propertyList}
+					if (column.param == undefined) {column.param = column.field}
+					if (column.paramList == undefined) {column.paramList = column.properties}
+					if (column.paramList == undefined) {column.paramList = column.fields}
 				})
 				
 				var dataSort = app._util.data.get(
@@ -4159,7 +4162,7 @@ mydigitalstructure._util.factory.core = function (param)
 
 						var gotoPage = false;
 
-						if (options.orientation == 'horizontal' && !options.progressive && goToPageWhenCan)
+						if (options.orientation == 'horizontal' && !options.progressive && goToPageWhenCan && goToPageNumber == undefined)
 						{
 							var dataStatus = app._util.data.get(
 							{
@@ -4172,6 +4175,7 @@ mydigitalstructure._util.factory.core = function (param)
 								if (currentPage != dataStatus.currentPage)
 								{
 									gotoPage = true
+									goToPageNumber = dataStatus.currentPage
 								}
 							}
 						}
@@ -4183,7 +4187,7 @@ mydigitalstructure._util.factory.core = function (param)
 								id: response.moreid,
 								context: context,
 								controller: "util-view-table",
-								number: dataStatus.currentPage,
+								number: goToPageNumber,
 								pages: dataStatus.paging.pagesTotal,
 								rows: dataStatus.paging.pageRows,
 								showPages: "10",
