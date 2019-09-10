@@ -2500,25 +2500,57 @@ mydigitalstructure._util.data =
 					{
 						if (name != undefined)
 						{
-							app.data[controller][context][name] = value;
+							if (_.isObject(value) && _.isObject(app.data[controller][context][name]))
+							{
+								app.data[controller][context][name] = _.assign(app.data[controller][context][name], value);
+							}
+							else
+							{
+								app.data[controller][context][name] = value;
+							}
+
 							data = app.data[controller][context][name];
 						}
 						else 
 						{
-							app.data[controller][context] = value;
-							data = app.data[controller][context]
+							if (_.isObject(value) && _.isObject(app.data[controller][context]))
+							{
+								app.data[controller][context] = _.assign(app.data[controller][context], value);
+							}
+							else
+							{
+								app.data[controller][context] = value;
+							}
+
+							data = app.data[controller][context];
 						}	
 					}
 					else
 					{
 						if (name != undefined)
 						{
-							app.data[controller][name] = value;
+							if (_.isObject(value) && _.isObject(app.data[controller][name]))
+							{
+								app.data[controller][name] = _.assign(app.data[controller][name], value);
+							}
+							else
+							{
+								app.data[controller][name] = value;
+							}
+
 							data = app.data[controller][name]
 						}
 						else
 						{
-							app.data[controller] = value;
+							if (_.isObject(value) && _.isObject(app.data[controller]))
+							{
+								app.data[controller] = _.assign(app.data[controller], value);
+							}
+							else
+							{
+								app.data[controller] = value;
+							}
+
 							data = app.data[controller];
 						}	
 					}
@@ -3835,14 +3867,6 @@ mydigitalstructure._util.factory.core = function (param)
 								context: 'count',
 								value: _.toNumber(response.summary.count)
 							});
-
-							app._util.data.set(
-							{
-								controller: context,
-								context: 'rows',
-								name: currentPage,
-								value: response.data.rows.length
-							});
 						}
 						
 						if (_.eq(app.data[context].count, 0)) //nothing to show
@@ -3975,6 +3999,14 @@ mydigitalstructure._util.factory.core = function (param)
 								var startRow = response.startrow;
 								var currentPage = parseInt((_.toNumber(startRow) + _.toNumber(pageRows)) / _.toNumber(pageRows));
 								var tableClass = (options.class!=undefined?options.class:'table-hover');
+
+								app._util.data.set(
+								{
+									controller: context,
+									context: 'pages',
+									name: currentPage,
+									value: {rows: response.data.rows.length}
+								});
 
 								if (response.error != undefined)
 								{
