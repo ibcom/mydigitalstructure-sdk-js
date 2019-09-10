@@ -12,7 +12,7 @@ mydigitalstructure._util.factory.queryLanguage = function (param)
 			$.ajax(
 			{
 				type: 'GET',
-				url: '/site/' + site + '/mydigitalstructure.storage.language-3.0.0.json',
+				url: '/site/' + site + '/mydigitalstructure.query.language-3.0.0.json',
 				dataType: 'json',
 				success: function(data)
 				{
