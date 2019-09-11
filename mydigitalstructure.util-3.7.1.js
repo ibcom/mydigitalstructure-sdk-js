@@ -3843,6 +3843,12 @@ mydigitalstructure._util.factory.core = function (param)
 					}
 					else
 					{
+						var data = app._util.data.get(
+						{
+							controller: context,
+							valueDefault: {}
+						});
+						
 						if (options.count != undefined)
 						{
 							response.summary = {count: options.count}
