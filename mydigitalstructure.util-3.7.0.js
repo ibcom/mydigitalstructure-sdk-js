@@ -4236,7 +4236,7 @@ mydigitalstructure._util.factory.core = function (param)
 								value: currentPage
 							});
 
-							if (param.onComplete == undefined)
+							if (param.onComplete == undefined && data._param != undefined)
 							{
 								param.onComplete = data._param.onComplete
 							}
