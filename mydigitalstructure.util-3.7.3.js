@@ -437,6 +437,8 @@ $(document).off('keyup', '.myds-text')
 	var scope = $(this).data('scope');
 	var context = $(this).data('context');
 	var enter = $(this).data('enter');
+	var clean = $(this).data('clean');
+
 	var returnValue;
 
 	if (event.which == '13' && enter == 'stop')
@@ -445,8 +447,14 @@ $(document).off('keyup', '.myds-text')
 		returnValue = false;
 	}
 
-	var val = mydigitalstructure._util.clean($(this).val());
-	var data = mydigitalstructure._util.data.clean($(this).data());
+	var val = $(this).val();
+	var data = $(this).data();
+
+	if (clean != 'disabled')
+	{
+		val = mydigitalstructure._util.clean(val);
+		data = mydigitalstructure._util.data.clean(data);
+	}
 
 	if (scope != undefined && context != undefined)
 	{
@@ -569,9 +577,16 @@ $(document).off('focusout', '.myds-focus')
 	var controller = $(this).data('controller');
 	var scope = $(this).data('scope');
 	var context = $(this).data('context');
+	var clean = $(this).data('clean');
 
-	var val = mydigitalstructure._util.clean($(this).val());
-	var data = mydigitalstructure._util.data.clean($(this).data());
+	var val = $(this).val();
+	var data = $(this).data();
+
+	if (clean != 'disabled')
+	{
+		val = mydigitalstructure._util.clean(val);
+		data = mydigitalstructure._util.data.clean(data);
+	}
 	
 	if (scope != undefined && context != undefined)
 	{
@@ -615,8 +630,16 @@ $(document).off('change', '.myds-text-select')
 		scope = controller;
 	}
 
-	var val = mydigitalstructure._util.clean($(this).val());
-	var data = mydigitalstructure._util.data.clean($(this).data());
+	var clean = $(this).data('clean');
+
+	var val = $(this).val();
+	var data = $(this).data();
+
+	if (clean != 'disabled')
+	{
+		val = mydigitalstructure._util.clean(val);
+		data = mydigitalstructure._util.data.clean(data);
+	}
 	
 	if (scope != undefined && context != undefined)
 	{
@@ -710,8 +733,16 @@ $(document).off('change', '.myds-select')
 	var scope = $(this).data('scope');
 	var context = $(this).data('context');
 
-	var val = mydigitalstructure._util.clean($(this).val());
-	var data = mydigitalstructure._util.data.clean($(this).data());
+	var clean = $(this).data('clean');
+
+	var val = $(this).val();
+	var data = $(this).data();
+
+	if (clean != 'disabled')
+	{
+		val = mydigitalstructure._util.clean(val);
+		data = mydigitalstructure._util.data.clean(data);
+	}
 	
 	if (scope != undefined && context != undefined)
 	{
@@ -739,9 +770,16 @@ $(document).off('change', '.myds-change')
 {
 	var controller = $(this).data('controller');
 	var context = $(this).data('context');
+	var clean = $(this).data('clean');
 
-	var val = mydigitalstructure._util.clean($(this).val());
-	var data = mydigitalstructure._util.data.clean($(this).data());
+	var val = $(this).val();
+	var data = $(this).data();
+
+	if (clean != 'disabled')
+	{
+		val = mydigitalstructure._util.clean(val);
+		data = mydigitalstructure._util.data.clean(data);
+	}
 
 	if (controller != undefined && context != undefined)
 	{	
@@ -765,9 +803,16 @@ $(document).off('click', '.myds-sort')
 	var sortDirection = $(this).attr('data-sort-direction');
 	var controller = $(this).attr('data-controller');
 	var context = $(this).attr('data-context');
+	var clean = $(this).data('clean');
 
-	var val = mydigitalstructure._util.clean($(this).val());
-	var data = mydigitalstructure._util.data.clean($(this).data());
+	var val = $(this).val();
+	var data = $(this).data();
+
+	if (clean != 'disabled')
+	{
+		val = mydigitalstructure._util.clean(val);
+		data = mydigitalstructure._util.data.clean(data);
+	}
 
 	if (_.isUndefined(controller))
 	{
@@ -918,12 +963,15 @@ if (typeof $.fn.tab == 'function')
 			controller = $(event.target).parent().parent().attr('data-controller');
 		}
 
-		mydigitalstructure._util.view.track(
+		if (_.has(mydigitalstructure._scope.app.view, 'data'))
 		{
-			view: mydigitalstructure._scope.app.view.data,
-			uri: mydigitalstructure._scope.app.uri,
-			uriContext: uriContext
-		});
+			mydigitalstructure._util.view.track(
+			{
+				view: mydigitalstructure._scope.app.view.data,
+				uri: mydigitalstructure._scope.app.uri,
+				uriContext: uriContext
+			});
+		}
 
 		if (controller != undefined)
 		{
@@ -999,13 +1047,16 @@ if (typeof $.fn.modal == 'function')
 			if (app.data[id] == undefined) {app.data[id] = {}};
 			app.data[id] = _.extend(app.data[id], param);
 
-			mydigitalstructure._util.view.track(
+			if (_.has(mydigitalstructure._scope.app.view, 'data'))
 			{
-				view: mydigitalstructure._scope.app.view.data,
-				uri: mydigitalstructure._scope.app.options.startURI,
-				uriContext: id,
-				dataContext: param.dataContext
-			});
+				mydigitalstructure._util.view.track(
+				{
+					view: mydigitalstructure._scope.app.view.data,
+					uri: mydigitalstructure._scope.app.options.startURI,
+					uriContext: id,
+					dataContext: param.dataContext
+				});
+			}
 
 			if (app.controller[id] != undefined)
 			{	
@@ -2478,7 +2529,7 @@ mydigitalstructure._util.data =
 				var context = mydigitalstructure._util.param.get(param, 'context').value;
 				var name = mydigitalstructure._util.param.get(param, 'name').value;
 				var value = mydigitalstructure._util.param.get(param, 'value').value;
-				
+				var merge = mydigitalstructure._util.param.get(param, 'merge', {default: false}).value;
 				var data;
 
 				if (controller == undefined)
@@ -2501,7 +2552,7 @@ mydigitalstructure._util.data =
 					{
 						if (name != undefined)
 						{
-							if (_.isObject(value) && _.isObject(app.data[controller][context][name]))
+							if (merge && _.isObject(value) && _.isObject(app.data[controller][context][name]))
 							{
 								app.data[controller][context][name] = _.assign(app.data[controller][context][name], value);
 							}
@@ -2514,7 +2565,7 @@ mydigitalstructure._util.data =
 						}
 						else 
 						{
-							if (_.isObject(value) && _.isObject(app.data[controller][context]))
+							if (merge && _.isObject(value) && _.isObject(app.data[controller][context]))
 							{
 								app.data[controller][context] = _.assign(app.data[controller][context], value);
 							}
@@ -2530,7 +2581,7 @@ mydigitalstructure._util.data =
 					{
 						if (name != undefined)
 						{
-							if (_.isObject(value) && _.isObject(app.data[controller][name]))
+							if (merge && _.isObject(value) && _.isObject(app.data[controller][name]))
 							{
 								app.data[controller][name] = _.assign(app.data[controller][name], value);
 							}
@@ -2543,7 +2594,7 @@ mydigitalstructure._util.data =
 						}
 						else
 						{
-							if (_.isObject(value) && _.isObject(app.data[controller]))
+							if (merge && _.isObject(value) && _.isObject(app.data[controller]))
 							{
 								app.data[controller] = _.assign(app.data[controller], value);
 							}
@@ -3729,6 +3780,7 @@ mydigitalstructure._util.factory.core = function (param)
 					if (column.param == undefined) {column.param = column.property}
 					if (column.param == undefined) {column.param = column.field}
 					if (column.paramList == undefined) {column.paramList = column.properties}
+					if (column.paramList == undefined) {column.paramList = column.fieldList}
 					if (column.paramList == undefined) {column.paramList = column.fields}
 				})
 				
@@ -3849,7 +3901,7 @@ mydigitalstructure._util.factory.core = function (param)
 							controller: context,
 							valueDefault: {}
 						});
-						
+
 						if (options.count != undefined)
 						{
 							response.summary = {count: options.count}
@@ -3926,7 +3978,7 @@ mydigitalstructure._util.factory.core = function (param)
 							{
 								app.vq.clear({queue: context});
 							}
-							
+
 							if (init)
 							{	
 								//Row template construction
@@ -3989,12 +4041,6 @@ mydigitalstructure._util.factory.core = function (param)
 								app.vq.add(html.join(''), {type: 'template', queue: context});
 							}
 
-							var data = app._util.data.get(
-							{
-								controller: context,
-								valueDefault: {}
-							});
-							
 							if (init || options.orientation == 'horizontal')
 							{
 								//Header construction
@@ -4275,7 +4321,7 @@ mydigitalstructure._util.factory.core = function (param)
 								value: currentPage
 							});
 
-							if (param.onComplete == undefined && data._param != undefined)
+							if (param.onComplete == undefined)
 							{
 								param.onComplete = data._param.onComplete
 							}

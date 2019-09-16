@@ -2523,7 +2523,7 @@ mydigitalstructure._util.data =
 				var context = mydigitalstructure._util.param.get(param, 'context').value;
 				var name = mydigitalstructure._util.param.get(param, 'name').value;
 				var value = mydigitalstructure._util.param.get(param, 'value').value;
-				var merge = mydigitalstructure._util.param.get(param, 'value', {default: false}).value;
+				var merge = mydigitalstructure._util.param.get(param, 'merge', {default: false}).value;
 				var data;
 
 				if (controller == undefined)
@@ -3894,7 +3894,7 @@ mydigitalstructure._util.factory.core = function (param)
 							controller: context,
 							valueDefault: {}
 						});
-						
+
 						if (options.count != undefined)
 						{
 							response.summary = {count: options.count}
