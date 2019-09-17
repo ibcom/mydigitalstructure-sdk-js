@@ -491,8 +491,8 @@ $(document).off('keyup', '.myds-text')
 	return returnValue
 });
 
-$(document).off('changeDate clearDate', '.myds-date')
-.on('changeDate clearDate', '.myds-date', function (event)
+$(document).off('changeDate clearDate', '.myds-date, .myds-date-time')
+.on('changeDate clearDate', '.myds-date, .myds-date-time', function (event)
 {
 	var controller = $(this).data('controller');
 	var context = $(this).data('context');
@@ -2057,6 +2057,7 @@ mydigitalstructure._util.view._refresh = function (param)
 	var selector = mydigitalstructure._util.param.get(param, 'selector').value;
 	var dataScope = mydigitalstructure._util.param.get(param, 'dataScope').value;
 	var dataController = mydigitalstructure._util.param.get(param, 'dataController').value;
+	var includeDates = mydigitalstructure._util.param.get(param, 'includeDates', {default: false}).value;
 
 	if (_.isUndefined(template) && !_.isUndefined(selector)) {template = true}
 
@@ -2147,7 +2148,13 @@ mydigitalstructure._util.view._refresh = function (param)
 	if (!_.isUndefined(hide))
 	{
 		$(hide).addClass('hidden');
-	}		
+	}
+
+	if (includeDates)
+	{
+		mydigitalstructure._util.view.datepicker({selector: '.myds-date'})
+		mydigitalstructure._util.view.datepicker({selector: '.myds-date-time', format: 'D MMM YYYY LT'})
+	}
 
 	if (!_.isUndefined(routeTo))
 	{
@@ -2171,8 +2178,12 @@ mydigitalstructure._util.view.datepicker = function (param)
 		format: format,
 		icons:
 		{
-			previous: 'icon icon-chevron-left',
-			next: 'icon icon-chevron-right'
+			previous: 'icon icon-chevron-left fa fa-chevron-left',
+			next: 'icon icon-chevron-right fa fa-chevron-right',
+			time: "fa fa-clock-o",
+			date: "fa fa-calendar",
+			up: "fa fa-arrow-up",
+			down: "fa fa-arrow-down"
 		}    
 	});
 }
