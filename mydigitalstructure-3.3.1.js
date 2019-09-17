@@ -175,8 +175,6 @@ mydigitalstructure.init = function (data)
 
 mydigitalstructure.register = function (param)
 {
-	//object: space|website
-
 	if (typeof arguments[0] != 'object')
 	{
 		param =
@@ -453,6 +451,15 @@ mydigitalstructure.delete = function (param)
 		manageErrors: param.manageErrors,
 		managed: param.managed
 	});
+}
+
+mydigitalstructure.cloud = 
+{
+	auth: mydigitalstructure.auth,
+	deauth: mydigitalstructure.deauth,
+	save: mydigitalstructure.save,
+	delete: mydigitalstructure.delete,
+	retrieve: mydigitalstructure.retrieve
 }
 
 mydigitalstructure.help = function ()
@@ -3182,3 +3189,4 @@ mydigitalstructure._util.log =
 }
 
 mydigitalstructure.upload = mydigitalstructure._util.attachment.upload;
+mydigitalstructure.cloud.upload = mydigitalstructure.upload;
