@@ -852,11 +852,14 @@ $(document).off('click', '.myds-sort')
 	}		
 });
 
-$(document).off('dp.change', '.myds').on('dp.change', '.myds', function(event)
+$(document).off('dp.change', '.myds, .myds-date, .myds-date-time').on('dp.change', '.myds, .myds-date, .myds-date-time', function(event)
 {
 	var element = $(event.target).children('input');
 
 	var controller = element.data('controller');
+	var scope = element.data('scope');
+	if (controller == undefined) {controller = scope}
+
 	var context = element.data('context');
 
 	var val = mydigitalstructure._util.clean(element.val());

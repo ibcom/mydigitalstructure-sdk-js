@@ -2122,6 +2122,7 @@ mydigitalstructure._util =
 									{
 										param = arguments[0];
 										selector = (arguments.length>1?arguments[1]:param.selector);
+										content = param.content;
 									}
 
 									mydigitalstructure._util.view.queue.clear(param);
