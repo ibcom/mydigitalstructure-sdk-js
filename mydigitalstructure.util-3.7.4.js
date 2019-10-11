@@ -3312,8 +3312,9 @@ mydigitalstructure._util.factory.core = function (param)
 					}
 				}
 
+				//if (window.location.pathname != uri && window.location.pathname != uri + '/') 
 				if ((window.location.pathname != uri && window.location.pathname != uri + '/') 
-						|| window.location.hash != uriContext)
+						|| window.location.hash.split('/')[0] != uriContext)
 				{
 					window.location.href = uri + '/' + uriContext;
 				}
