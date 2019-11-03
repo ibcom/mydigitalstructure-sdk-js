@@ -2280,7 +2280,7 @@ mydigitalstructure._util.controller =
 
 				mydigitalstructure._util.log.add(
 				{
-					message: 'No controller named ' + name
+					message: 'There is no controller named: ' + name
 				})
 				
 				if (!_.isUndefined(controllerParam))
