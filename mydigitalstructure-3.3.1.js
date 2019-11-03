@@ -459,7 +459,8 @@ mydigitalstructure.cloud =
 	deauth: mydigitalstructure.deauth,
 	save: mydigitalstructure.save,
 	delete: mydigitalstructure.delete,
-	retrieve: mydigitalstructure.retrieve
+	retrieve: mydigitalstructure.retrieve,
+	invoke: mydigitalstructure.save
 }
 
 mydigitalstructure.help = function ()
