@@ -3431,9 +3431,14 @@ mydigitalstructure._util.factory.core = function (param)
 					var html	= 
 						'<div class="toast ml-auto" role="alert" style="min-width:260px;">';
 
-					if (header != undefined !! showDismiss == true)
+					if (header != undefined || showDismiss == true)
 					{
 	  					html = html + '<div class="toast-header">';
+					}
+
+					if (header == undefined && showDismiss == true)
+					{
+	  					header = '&nbsp;'
 					}
 
 	  				if (header != undefined)
@@ -3448,15 +3453,20 @@ mydigitalstructure._util.factory.core = function (param)
 	    							'</button>';
 	    			}
 
-	    			if (header != undefined !! showDismiss == true)
+	    			if (header != undefined || showDismiss == true)
 					{
 	  					html = html + '</div>';
 	  				}
 
-	  				html = html +
+	  				if (message != undefined)
+	  				{
+	  					html = html +
   							'<div class="toast-body">' +
   								message + 
-  							'</div>' +
+  							'</div>';
+  					}
+
+  					html = html +		
 	  					'</div>';
 
 	  				$('#myds-toast').html(html);
