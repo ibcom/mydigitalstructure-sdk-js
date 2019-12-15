@@ -864,7 +864,8 @@ $(document).off('click', '.myds-sort')
 	}		
 });
 
-$(document).off('dp.change', '.myds, .myds-date, .myds-date-time').on('dp.change', '.myds, .myds-date, .myds-date-time', function(event)
+$(document).off('dp.change change.datetimepicker', '.myds, .myds-date, .myds-date-time')
+.on('dp.change  change.datetimepicker', '.myds, .myds-date, .myds-date-time', function(event)
 {
 	var element = $(event.target).children('input');
 
@@ -3414,67 +3415,18 @@ mydigitalstructure._util.factory.core = function (param)
 					type = 'info'
 				}
 
+				if (time == undefined)
+				{
+					time = 2000
+				}
+
 				if (message == undefined && app.data['notify-message'] != undefined)
 				{
 					message = app.data['notify-message'];
 					app.data['notify-message'] = undefined;
 				}
 
-				if (typeof $.fn.toast == 'function')
-				{		
-					if ($('#myds-toast').length == 0)
-					{
-						$(selector).append(
-							'<div id="myds-toast" class="position-absolute w-100 d-flex flex-column p-4" aria-live="assertive" aria-atomic="true"></div>');
-					}
-
-					var html	= 
-						'<div class="toast ml-auto" role="alert" style="min-width:260px;">';
-
-					if (header != undefined || showDismiss == true)
-					{
-	  					html = html + '<div class="toast-header">';
-					}
-
-					if (header == undefined && showDismiss == true)
-					{
-	  					header = '&nbsp;'
-					}
-
-	  				if (header != undefined)
-	  				{
-	  					html = html + '<strong class="mr-auto">' + header + '</strong>';
-	  				}
-
-	  				if (showDismiss == true)
-					{
-	  					html = html + '<button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">' +
-	      							'<span aria-hidden="true">&times;</span>' +
-	    							'</button>';
-	    			}
-
-	    			if (header != undefined || showDismiss == true)
-					{
-	  					html = html + '</div>';
-	  				}
-
-	  				if (message != undefined)
-	  				{
-	  					html = html +
-  							'<div class="toast-body">' +
-  								message + 
-  							'</div>';
-  					}
-
-  					html = html +		
-	  					'</div>';
-
-	  				$('#myds-toast').html(html);
-					$('.toast').toast({delay: time, autohide: !persist})
-					$('.toast').toast('show')
-
-				}
-				else if (typeof $.notify == 'function')
+				if (typeof $.notify == 'function')
 				{	
 					if (persist)
 					{
@@ -3531,6 +3483,60 @@ mydigitalstructure._util.factory.core = function (param)
 					{
 						alert(message);
 					}
+				}
+				else if (typeof $.fn.toast == 'function')
+				{		
+					if ($('#myds-toast').length == 0)
+					{
+						$(selector).append(
+							'<div id="myds-toast" class="position-absolute w-100 d-flex flex-column p-4" aria-live="assertive" aria-atomic="true"></div>');
+					}
+
+					var html	= 
+						'<div class="toast ml-auto" role="alert" style="min-width:260px;">';
+
+					if (header != undefined || showDismiss == true)
+					{
+	  					html = html + '<div class="toast-header">';
+					}
+
+					if (header == undefined && showDismiss == true)
+					{
+	  					header = '&nbsp;'
+					}
+
+	  				if (header != undefined)
+	  				{
+	  					html = html + '<strong class="mr-auto">' + header + '</strong>';
+	  				}
+
+	  				if (showDismiss == true)
+					{
+	  					html = html + '<button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">' +
+	      							'<span aria-hidden="true">&times;</span>' +
+	    							'</button>';
+	    			}
+
+	    			if (header != undefined || showDismiss == true)
+					{
+	  					html = html + '</div>';
+	  				}
+
+	  				if (message != undefined)
+	  				{
+	  					html = html +
+  							'<div class="toast-body">' +
+  								message + 
+  							'</div>';
+  					}
+
+  					html = html +		
+	  					'</div>';
+
+	  				$('#myds-toast').html(html);
+					$('.toast').toast({delay: time, autohide: !persist})
+					$('.toast').toast('show')
+
 				}
 				else
 				{
