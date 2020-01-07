@@ -4024,7 +4024,7 @@ mydigitalstructure._util.factory.core = function (param)
 						{
 							var noDataText = options.noDataText;
 							if (noDataText == undefined) {noDataText = 'No data'}
-							app.vq.show('#' + container, '<div class="text-muted text-center">' + noDataText + '</div>', {queue: context});
+							app.vq.show('#' + container, '<div class="text-muted mx-auto text-center">' + noDataText + '</div>', {queue: context});
 						} 
 						else
 						{	
