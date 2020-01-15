@@ -1641,7 +1641,8 @@ mydigitalstructure._util.view.more = function (response, param)
 		}
 		else
 		{
-			data._pages = _.times(pagesTotal, function(p)
+			//data._pages = _.times(pagesTotal, function(p)
+			data._pages = _.times(allPagesTotal, function(p)
 			{
 				return {number: p+1, start: (pageRows * p), rows: pageRows}
 			});
@@ -1683,6 +1684,20 @@ mydigitalstructure._util.view.more = function (response, param)
 		{
 			firstShowPage = currentPage
 			lastShowPage = firstShowPage + showPagesMaximum
+		}
+
+		if ((currentPage + 1) > showPagesMaximum)
+		{
+			if ((currentPage + showPagesMaximum) > allPagesTotal)
+			{
+				firstShowPage = allPagesTotal - showPagesMaximum
+				lastShowPage = allPagesTotal
+			}
+			else
+			{
+				firstShowPage = currentPage - (showPagesMaximum / 2);
+				lastShowPage = currentPage + (showPagesMaximum / 2)
+			}
 		}
 
 		$.each(data._pages, function (p, page)
@@ -1860,10 +1875,38 @@ mydigitalstructure._util.view.showPage = function (param)
 				}
 			}
 
-			var shownPages = (parseInt(pages) - parseInt(number) + 1);
+			var currentPage = _.toNumber(number);
+			var firstShowPage = 1;
+			var lastShowPage = _.toNumber(showPagesMaximum);
+			var allPagesTotal = _.toNumber(pages);
+			showPagesMaximum = _.toNumber(showPagesMaximum);
+
+			var shownPages = (parseInt(pages) - parseInt(number) + 1); //check
+
+			if ((currentPage + 1) > showPagesMaximum)
+			{
+				if ((currentPage + showPagesMaximum) > allPagesTotal)
+				{
+					firstShowPage = allPagesTotal - showPagesMaximum
+					lastShowPage = allPagesTotal
+				}
+				else
+				{
+					firstShowPage = currentPage - (showPagesMaximum / 2);
+					lastShowPage = currentPage + (showPagesMaximum / 2)
+				}
+			}
+
+			$('div[data-id="' + id + '"] li.page-item[data-page]').addClass('hidden d-none');
+
+			_.each(_.range(firstShowPage, lastShowPage + 1), function (pageNumber)
+			{
+				$('div[data-id="' + id + '"] li.page-item[data-page="' + _.toString(pageNumber) + '"]').removeClass('hidden d-none');
+			})
+
 			if (shownPages > parseInt(showPagesMaximum))
 			{	
-				$('li.page-item[data-page="' + (parseInt(number) + parseInt(showPagesMaximum) ) + '"]').addClass('hidden d-none');
+				//$('li.page-item[data-page="' + (parseInt(number) + parseInt(showPagesMaximum) ) + '"]').addClass('hidden d-none');
 
 				$('li.myds-next[data-id="' + id + '"]').removeClass('disabled');
 				$('li.myds-next[data-id="' + id + '"] a').attr('style', 'cursor:pointer;');
