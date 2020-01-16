@@ -1686,9 +1686,9 @@ mydigitalstructure._util.view.more = function (response, param)
 			lastShowPage = firstShowPage + showPagesMaximum
 		}
 
-		if ((currentPage + 1) > showPagesMaximum)
+		if ((currentPage + 1) > (showPagesMaximum/2))
 		{
-			if ((currentPage + showPagesMaximum) > allPagesTotal)
+			if ((currentPage + (showPagesMaximum/2)) > allPagesTotal)
 			{
 				firstShowPage = allPagesTotal - showPagesMaximum
 				lastShowPage = allPagesTotal
@@ -1704,7 +1704,8 @@ mydigitalstructure._util.view.more = function (response, param)
 		{
 			html.push('<li class="page-item' + (page.number==currentPage?' active':'') + 
 								((page.number >= firstShowPage) && (page.number <= lastShowPage)?'':' hidden d-none') + '"' +
-								' data-page="' + page.number + '">' +
+								' data-page="' + page.number + '"' +
+								' data-id="' + response.moreid + '">' +
 								'<a class="page-link myds-page" style="cursor:pointer;"' +
 								' data-page="' + page.number + '"' +
 								' data-pages="' + allPagesTotal + '"' +
@@ -1849,9 +1850,9 @@ mydigitalstructure._util.view.showPage = function (param)
 			$('div.myds-page-view[data-context="' + context + '"]').hide();
 			$('div.myds-page-view[data-page="' + number + '"][data-context="' + context + '"]').show();
 
-			$('li.page-item').removeClass('active');
-			$('li.page-item[data-page="' + number + '"]').addClass('active');
-			$('li.page-item[data-page="' + number + '"]').removeClass('hidden d-none');
+			$('li.page-item[data-id="' + id + '"]').removeClass('active');
+			$('li.page-item[data-id="' + id + '"][data-page="' + number + '"]').addClass('active');
+			$('li.page-item[data-id="' + id + '"][data-page="' + number + '"]').removeClass('hidden d-none');
 
 			var previous = $('li.myds-previous a')
 			if (previous.length != 0)
@@ -1883,9 +1884,9 @@ mydigitalstructure._util.view.showPage = function (param)
 
 			var shownPages = (parseInt(pages) - parseInt(number) + 1); //check
 
-			if ((currentPage + 1) > showPagesMaximum)
+			if ((currentPage + 1) > (showPagesMaximum/2))
 			{
-				if ((currentPage + showPagesMaximum) > allPagesTotal)
+				if ((currentPage + (showPagesMaximum/2)) > allPagesTotal)
 				{
 					firstShowPage = allPagesTotal - showPagesMaximum
 					lastShowPage = allPagesTotal
@@ -1923,6 +1924,8 @@ mydigitalstructure._util.view.showPage = function (param)
 		}
 		else
 		{
+			$('li.page-item[data-id="' + id + '"]').addClass('disabled');
+			//$('li.page-item[data-id="' + id + '"][data-page="' + number + '"] a').html('...')
 			mydigitalstructure._util.view.moreSearch(param)
 		}
 	}
