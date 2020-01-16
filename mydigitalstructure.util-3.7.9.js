@@ -1577,7 +1577,21 @@ mydigitalstructure._util.view.more = function (response, param)
 		var pagesCurrent = Math.ceil(_.toNumber(rowsCurrent) / _.toNumber(pageRows));
 		var pagesTotal = Math.ceil(_.toNumber(rowsTotal) / _.toNumber(pageRows));
 		var startRow = response.startrow;
-		var currentPage = Math.ceil((_.toNumber(startRow) + _.toNumber(pageRows)) / _.toNumber(pageRows));
+
+		var currentPage = mydigitalstructure._util.data.get(
+		{
+			scope: 'util-view-table',
+			context: context,
+			name: 'currentPage'
+		});
+
+		if (currentPage == undefined)
+		{
+			currentPage = Math.ceil((_.toNumber(startRow) + _.toNumber(pageRows)) / _.toNumber(pageRows));
+		}
+
+		currentPage = _.toNumber(currentPage);
+		
 		var allPagesTotal = pagesTotal;
 		var showPagesTotal = currentPage;
 		var showPagesMaximum;
