@@ -918,6 +918,7 @@ mydigitalstructure._util =
 										url: '/rpc/logon/',
 										data: data,
 										dataType: 'json',
+										global: false,
 										error: function ()
 										{
 											console.log('error')
