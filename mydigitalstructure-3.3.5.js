@@ -500,6 +500,7 @@ mydigitalstructure.cloud =
 	save: mydigitalstructure.save,
 	delete: mydigitalstructure.delete,
 	retrieve: mydigitalstructure.retrieve,
+	search: mydigitalstructure.retrieve,
 	invoke: mydigitalstructure.invoke
 }
 
