@@ -431,20 +431,23 @@ mydigitalstructure.retrieve = function (param)
 			}
 		}
 
-		if (param.data.criteria.filters != undefined)
+		if (_.has(param, 'data'))
 		{
-			_.each(param.data.criteria.filters, function (filter)
+			if (_.has(param.data.criteria, 'filters'))
 			{
-				if (filter.value1 == undefined && filter.value != undefined)
+				_.each(param.data.criteria.filters, function (filter)
 				{
-					filter.value1 = filter.value
-				}
+					if (filter.value1 == undefined && filter.value != undefined)
+					{
+						filter.value1 = filter.value
+					}
 
-				if (filter.name == undefined && filter.field != undefined)
-				{
-					filter.name = filter.field
-				}
-			})
+					if (filter.name == undefined && filter.field != undefined)
+					{
+						filter.name = filter.field
+					}
+				})
+			}
 		}
 
 		param.type = 'POST';
