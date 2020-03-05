@@ -2771,11 +2771,14 @@ mydigitalstructure._util.data =
 	find: function (param)
 			{
 				var controller = mydigitalstructure._util.param.get(param, 'controller').value;
+				var scope = mydigitalstructure._util.param.get(param, 'scope').value;
 				var context = mydigitalstructure._util.param.get(param, 'context').value;
 				var setContext = mydigitalstructure._util.param.get(param, 'setContext', {'default': 'dataContext'}).value;  
 				
 				var dataController = mydigitalstructure._util.param.get(param, 'dataController', {'default': 'setup'}).value;
 				var dataContext = mydigitalstructure._util.param.get(param, 'dataContext').value;
+
+				if (controller == undefined) {controller = scope}
 
 				if (dataContext == undefined && dataController == 'setup')
 				{
