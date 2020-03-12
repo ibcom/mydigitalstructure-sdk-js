@@ -2139,7 +2139,7 @@ mydigitalstructure._util.view._refresh = function (param)
 	var selector = mydigitalstructure._util.param.get(param, 'selector').value;
 	var dataScope = mydigitalstructure._util.param.get(param, 'dataScope').value;
 	var dataController = mydigitalstructure._util.param.get(param, 'dataController').value;
-	var includeDates = mydigitalstructure._util.param.get(param, 'includeDates', {default: false}).value;
+	var includeDates = mydigitalstructure._util.param.get(param, 'includeDates', {default: true}).value;
 
 	if (_.isUndefined(template) && !_.isUndefined(selector)) {template = true}
 
