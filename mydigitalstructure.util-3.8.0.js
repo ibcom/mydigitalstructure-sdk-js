@@ -2767,7 +2767,20 @@ mydigitalstructure._util.data =
 
 				if (_.isObject(value) && clean)
 				{
-					value = _.pickBy(value, function (value, key) {return !_.startsWith(key, '_')})
+					value = _.pickBy(value, function (valueValue, key)
+								{
+									var include = true;
+
+									if (_.startsWith(key, '_'))
+									{
+										if (value[key.substr(1)] != undefined)
+										{
+											include = false;
+										}
+									}
+
+									return include
+								})
 				}
 
 				var valueReturn = (clone?_.clone(value):value);
@@ -2966,24 +2979,27 @@ mydigitalstructure._util._clean = function(param)
 		val = param;
 	}
 
-	if (typeof filterXSS == 'function')
+	if (val != undefined)
 	{
-		returnVal = filterXSS(val, {stripIgnoreTag: mydigitalstructure._scope.app.options.xssStrip})
-	}
-	else if (he != undefined)
-	{
-		if (encode)
+		if (typeof filterXSS == 'function')
 		{
-			returnVal = he.encode(val);
+			returnVal = filterXSS(val, {stripIgnoreTag: mydigitalstructure._scope.app.options.xssStrip})
+		}
+		else if (he != undefined)
+		{
+			if (encode)
+			{
+				returnVal = he.encode(val);
+			}
+			else
+			{
+				returnVal = he.escape(val);
+			}
 		}
 		else
 		{
-			returnVal = he.escape(val);
+			returnVal = he.encodeURIComponent(val);
 		}
-	}
-	else
-	{
-		returnVal = he.encodeURIComponent(val);
 	}
 
 	return returnVal;

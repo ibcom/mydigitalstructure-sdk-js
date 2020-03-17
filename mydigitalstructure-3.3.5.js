@@ -1322,7 +1322,7 @@ mydigitalstructure._util =
 						}
 					}
 
-					var paramData = encode(String(JSON.stringify(param)).replace(/[\u00A0-\u2666]/g, function(c)
+					var paramData = param.object + '-' + encode(String(JSON.stringify(param.data)).replace(/[\u00A0-\u2666]/g, function(c)
 	     			{
 						return '&#' + c.charCodeAt(0) + ';';
 					}))
