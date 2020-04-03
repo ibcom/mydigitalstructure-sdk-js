@@ -3843,14 +3843,24 @@ mydigitalstructure._util.factory.core = function (param)
 					alert(message);
 				}	
 			}
+		},
+		{
+			name: 'util-on-complete',
+			code: function (param)
+			{
+				mydigitalstructure._util.onComplete(param)
+			}
 		}
 	]);
 
 	app.controller['util-view-reset'] = function (param)
 	{
 		var controller = mydigitalstructure._util.param.get(param, 'controller').value;
+		var scope = mydigitalstructure._util.param.get(param, 'scope').value;
 		var data = mydigitalstructure._util.param.get(param, 'data').value;
 		
+		if (controller == undefined) {scope = controller}
+			
 		if (data)
 		{
 			app._util.data.reset(param)	

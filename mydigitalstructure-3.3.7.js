@@ -3367,7 +3367,7 @@ mydigitalstructure._util.security =
 
 				if (shareWithGUID != undefined)
 				{
-					mydigitalstructure._util.security.share.link_.util.add.init(param);
+					mydigitalstructure._util.security.share.link._util.add.init(param);
 				}
 				else
 				{
@@ -3410,8 +3410,8 @@ mydigitalstructure._util.security =
 				{
 					init: function (param, response)
 					{
-						param = mydigitalstructure._util.param.set(param, 'onComplete', mydigitalstructure._util.security.share.link_.util.add.process);
-						mydigitalstructure._util.security.share.link_.util.getUser(param)
+						param = mydigitalstructure._util.param.set(param, 'onComplete', mydigitalstructure._util.security.share.link._util.add.process);
+						mydigitalstructure._util.security.share.link._util.getUser(param)
 					},
 
 					process: function (param, response)
@@ -3424,9 +3424,9 @@ mydigitalstructure._util.security =
 						{
 							var data = 
 							{
-								relationshipmanager: shareWithUser.contactperson,
+								relationshipmanager: shareWithUser['user.contactperson.id'],
 								contactbusiness: mydigitalstructure._scope.user.contactbusiness,
-								notes: 'Shared with ' + shareWithUser['user.contactperson.email'] + ' by ' + mydigitalstructure._scope.user.userlogonname
+								notes: 'Shared with ' + shareWithUser['user.contactperson.firstname'] + ' ' + shareWithUser['user.contactperson.surname'] + ' by ' + mydigitalstructure._scope.user.userlogonname
 							}
 
 							if (sharedByContactType == 'person')
@@ -3434,11 +3434,13 @@ mydigitalstructure._util.security =
 								data.contactperson = mydigitalstructure._scope.user.contactperson
 							}
 
+							console.log(data)
+
 							mydigitalstructure.save(
 							{
 								object: 'contact_secondary_relationship',
 								data: data,
-								callback: mydigitalstructure._util.security.share.link_.util.add.finalise
+								callback: mydigitalstructure._util.security.share.link._util.add.finalise
 							});
 						}
 					},
@@ -3455,11 +3457,11 @@ mydigitalstructure._util.security =
 					var shareWithGUID = mydigitalstructure._util.param.get(param, 'shareWithGUID').value;
 					var shareWithGUIDType = mydigitalstructure._util.param.get(param, 'shareWithGUIDType', {default: 'user'}).value;
 
-					if (shareWithGUID != undefined)
+					if (response == undefined)
 					{
-						if (response == undefined)
+						if (shareWithGUID != undefined)
 						{
-							mydigitalstructure._util.security.share.link_.util.getUser = undefined;
+							mydigitalstructure._util.security.share.link._util.data.getUser = undefined;
 
 							var filters = [];
 
@@ -3467,7 +3469,7 @@ mydigitalstructure._util.security =
 							{
 								filters.push(
 								{
-									name: mydigitalstructure._util.security.share.link_.util.data.shareWithGUIDTypes[shareWithGUIDType].field,
+									name: mydigitalstructure._util.security.share.link._util.data.shareWithGUIDTypes[shareWithGUIDType].field,
 									comparison: 'EQUAL_TO',
 									value1: shareWithGUID
 								});
@@ -3482,39 +3484,39 @@ mydigitalstructure._util.security =
 									{
 										fields:
 										[
-											{name: 'user.contactbusiness.tradname'},
+											{name: 'user.contactbusiness.tradename'},
 											{name: 'user.contactbusiness.id'},
 											{name: 'user.contactperson.firstname'},
 											{name: 'user.contactperson.surname'},
 											{name: 'user.contactperson.email'},
 											{name: 'user.contactperson.id'},
 											{name: 'manager'},
-											{name: 'notes'},
-											{name: 'relationshipmanager'},
-											{name: 'relationshipmanagertext'}
+											{name: 'notes'}
 										],
 										filters: filters,
 										options: {rows: 1}
 									}
 								},
-								callback: mydigitalstructure._util.security.share.link_.util.getUser
-							});	
+								callback: mydigitalstructure._util.security.share.link._util.getUser,
+								callbackParam: param
+							});
 						}
 						else
 						{
-							if (oResponse.data.rows.length != 0)
-							{
-								mydigitalstructure._util.security.share.link_.util.data.getUser = oResponse.data.rows[0];
-							}
-
-							param.shareWithUser = mydigitalstructure._util.security.share.link_.util.data.getUser;
-							mydigitalstructure._util.onComplete(param);
-						}
+							mydigitalstructure._util.log.add({message: 'mydigitalstructure._util.security.share.link._util.getUser: Missing shareWithGUID:', keep: true });
+						}	
 					}
 					else
 					{
-						mydigitalstructure._util.log.add({message: 'mydigitalstructure._util.security.share.link.add: Missing shareWithGUID:', keep: true });
+						if (response.data.rows.length != 0)
+						{
+							mydigitalstructure._util.security.share.link._util.data.getUser = response.data.rows[0];
+						}
+
+						param.shareWithUser = mydigitalstructure._util.security.share.link._util.data.getUser;
+						mydigitalstructure._util.onComplete(param);
 					}
+					
 				}
 			},
 
@@ -3544,7 +3546,7 @@ mydigitalstructure._util.security =
 									{
 										name: 'relationshipmanager',
 										comparison: 'EQUAL_TO',
-										value1: mydigitalstructure._scope.user.id
+										value1: mydigitalstructure._scope.user.contactperson
 									}
 								],
 								options: {rows: 1000}
