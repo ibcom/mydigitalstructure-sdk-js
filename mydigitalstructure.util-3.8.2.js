@@ -2161,12 +2161,17 @@ if (mydigitalstructure._util.data == undefined) {mydigitalstructure._util.data =
 
 mydigitalstructure._util.data.find = function (param)
 {
-	var controller = mydigitalstructure._util.param.get(param, 'controller').value; 
+	var controller = mydigitalstructure._util.param.get(param, 'controller').value;
+	var scope = mydigitalstructure._util.param.get(param, 'scope').value;
+
 	var context = mydigitalstructure._util.param.get(param, 'context').value;
 	
 	var dataController = mydigitalstructure._util.param.get(param, 'dataController', {'default': 'setup'}).value;
+	var dataController = mydigitalstructure._util.param.get(param, 'dataController', {'default': 'setup'}).value;
 	var dataContext = mydigitalstructure._util.param.get(param, 'dataContext').value; 
 	
+	if (controller == undefined) {controller = scope}
+
 	if (dataContext == undefined && dataController == 'setup')
 	{
 		dataContext = context;
@@ -2236,11 +2241,14 @@ mydigitalstructure._util.data.find = function (param)
 
 mydigitalstructure._util.view.set = function (param)
 {
-	var controller = mydigitalstructure._util.param.get(param, 'controller').value; 
+	var controller = mydigitalstructure._util.param.get(param, 'controller').value;
+	var scope = mydigitalstructure._util.param.get(param, 'scope').value; 
 	var context = mydigitalstructure._util.param.get(param, 'context').value;
 	var value = mydigitalstructure._util.param.get(param, 'value').value;
 	var id = mydigitalstructure._util.param.get(param, 'id').value;
 	var contexts = mydigitalstructure._util.param.get(param, 'contexts', {"default": []}).value;
+
+	if (controller == undefined) {controller = scope}
 
 	if (_.isEmpty(contexts))
 	{
@@ -2969,11 +2977,14 @@ mydigitalstructure._util.data =
 			{
 				var controller = mydigitalstructure._util.param.get(param, 'controller').value;
 				var scope = mydigitalstructure._util.param.get(param, 'scope').value;
-				var context = mydigitalstructure._util.param.get(param, 'context').value;
+				var context = mydigitalstructure._util.param.get(param, 'context', {'default': 'id'}).value;
 				var setContext = mydigitalstructure._util.param.get(param, 'setContext', {'default': 'dataContext'}).value;  
 				
 				var dataController = mydigitalstructure._util.param.get(param, 'dataController', {'default': 'setup'}).value;
-				var dataContext = mydigitalstructure._util.param.get(param, 'dataContext').value;
+				var dataScope = mydigitalstructure._util.param.get(param, 'dataScope', {'default': 'setup'}).value;
+				var dataContext = mydigitalstructure._util.param.get(param, 'dataContext', {'default': 'all'}).value;
+
+				if (dataController == undefined) {dataController = dataScope}
 
 				if (controller == undefined) {controller = scope}
 
@@ -3194,7 +3205,7 @@ mydigitalstructure._util.validate =
 		var formats = mydigitalstructure._scope.app.options.dateFormats;
 		if (formats == undefined) {formats = ['DD MMM YYYY', 'D MMM YYYY', 'D/MM/YYYY', 'DD/MM/YYYY', 'DD MMM YYYY HH:mm:ss']}
 		return moment(date, formats).isValid()
-	},
+	}
 }
 
 mydigitalstructure._util.factory = {};
@@ -4138,6 +4149,7 @@ mydigitalstructure._util.factory.core = function (param)
 			var options = mydigitalstructure._util.param.get(param, 'options').value;
 			var object = mydigitalstructure._util.param.get(param, 'object').value;
 			var controller = mydigitalstructure._util.param.get(param, 'controller').value;
+			var scope = mydigitalstructure._util.param.get(param, 'scope').value;
 			var container = mydigitalstructure._util.param.get(param, 'container').value;
 			var deleteConfirm = mydigitalstructure._util.param.get(param, 'deleteConfirm').value;
 
@@ -4151,6 +4163,12 @@ mydigitalstructure._util.factory.core = function (param)
 			if (context == undefined && controller != undefined)
 			{
 				context = '_table-' +  controller;
+				param = mydigitalstructure._util.param.set(param, 'context', context)
+			}
+
+			if (context == undefined && controller == undefined && scope != undefined)
+			{
+				context = scope;
 				param = mydigitalstructure._util.param.set(param, 'context', context)
 			}
 
@@ -4282,7 +4300,7 @@ mydigitalstructure._util.factory.core = function (param)
 					{
 						var data = app._util.data.get(
 						{
-							controller: context,
+							scope: context,
 							valueDefault: {}
 						});
 
@@ -4306,7 +4324,7 @@ mydigitalstructure._util.factory.core = function (param)
 
 							app._util.data.set(
 							{
-								controller: context,
+								scope: context,
 								context: 'count',
 								value: _.toNumber(response.summary.count)
 							});
@@ -4339,7 +4357,7 @@ mydigitalstructure._util.factory.core = function (param)
 
 										app._util.data.set(
 										{
-											controller: context,
+											scope: context,
 											context: 'lastProcessedRow',
 											value: row
 										});
@@ -4354,7 +4372,7 @@ mydigitalstructure._util.factory.core = function (param)
 
 										row._previous = app._util.data.get(
 										{
-											controller: context,
+											scope: context,
 											context: 'lastProcessedRow',
 											clone: false
 										});
@@ -4363,7 +4381,7 @@ mydigitalstructure._util.factory.core = function (param)
 
 										app._util.data.set(
 										{
-											controller: context,
+											scope: context,
 											context: 'lastProcessedRow',
 											value: row
 										});
@@ -4375,7 +4393,7 @@ mydigitalstructure._util.factory.core = function (param)
 							{
 								app._util.data.set(
 								{
-									controller: context,
+									scope: context,
 									context: 'all',
 									value: response.data.rows
 								});

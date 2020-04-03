@@ -2093,6 +2093,8 @@ mydigitalstructure._util =
 										var queue = mydigitalstructure._util.param.get(param, 'queue').value;
 										var append = mydigitalstructure._util.param.get(param, 'append', {"default": false}).value;
 										var appendSelector = mydigitalstructure._util.param.get(param, 'appendSelector', {"default": 'table tr:last'}).value;
+										var disableSelector = mydigitalstructure._util.param.get(param, 'disable').value;
+										var enableSelector = mydigitalstructure._util.param.get(param, 'enabler').value;
 
 										if (queue == undefined)
 										{
@@ -2133,6 +2135,9 @@ mydigitalstructure._util =
 													}
 												}	
 											}
+
+											if (disableSelector) {mydigitalstructure._util.view.queue._util.disable(disableSelector, param)};
+											if (enableSelector) {mydigitalstructure._util.view.queue._util.enable(enableSelector, param)};
 		
 											mydigitalstructure._util.view.queue.reset(param);
 										}
@@ -2628,8 +2633,6 @@ mydigitalstructure._util =
 					properties:
 							function (param, response)
 							{
-								console.log(response)
-
 								var objectTitle = mydigitalstructure._util.param.get(param, 'context', {index: 2, split: '/'}).value;
 								if (objectTitle == undefined) {var objectTitle = mydigitalstructure._util.param.get(param, 'objectTitle').value}
 
@@ -2671,11 +2674,7 @@ mydigitalstructure._util =
 									},
 									callback: mydigitalstructure._util.object.properties
 								});
-							},	
-								
-					methods:
-							function (param)
-							{}
+							}
 				},
 
 	attachment:
@@ -3285,6 +3284,281 @@ mydigitalstructure._util.log =
 				}
 			}
 		});
+	}
+}
+
+mydigitalstructure._util.security =
+{
+	data: {users: []},
+
+	init: function (param, response)
+	{
+		//Might not need
+
+		var user = mydigitalstructure._scope.user;
+		var searchGUID;
+
+		var filters =
+		[
+			{
+				name: 'user.contactbusiness',
+				comparison: 'EQUAL_TO',
+				value1: objectTitle
+			}
+		]
+
+		if (onlySearchbyGUID)
+		{
+			filters.push(
+			{
+				name: 'user.contactbusiness.guid',
+				comparison: 'EQUAL_TO',
+				value1: searchGUID
+			});
+		}
+
+		if (response == undefined)
+		{
+			mydigitalstructure.retrieve(
+			{
+				object: 'setup_user',
+				data:
+				{
+					criteria:
+					{
+						fields:
+						[
+							{name: 'user.contactbusiness.tradname'},
+							{name: 'user.contactbusiness.id'},
+							{name: 'user.contactperson.firstname'},
+							{name: 'user.contactperson.surname'},
+							{name: 'user.contactperson.email'},
+							{name: 'user.contactperson.id'},
+							{name: 'manager'},
+							{name: 'notes'},
+							{name: 'relationshipmanager'},
+							{name: 'relationshipmanagertext'}
+						],
+						filters: filters,
+						options: {rows: 1000}
+					}
+				},
+				callback: mydigitalstructure._util
+			});	
+		}
+		else
+		{
+
+		}
+	},
+
+	share:
+	{
+		link: 
+		{ 
+			add: function (param)
+			{
+				var shareAs; //= [business, person];
+				var shareAsMe; //= [true, false];  // check if super user
+				var shareWith; // = [person] //could be array of people, as contactpersons - is it linked to a user account?
+				var shareGUID; //user guid that sharing with 
+
+				var shareWithGUID = mydigitalstructure._util.param.get(param, 'shareWithGUID').value;
+
+				if (shareWithGUID != undefined)
+				{
+					mydigitalstructure._util.security.share.link_.util.add.init(param);
+				}
+				else
+				{
+					mydigitalstructure._util.log.add({message: 'mydigitalstructure._util.security.share.link.add: Missing shareWithGUID:', keep: true });
+				}
+			},
+
+			_util:
+			{
+				data:
+				{
+					shareWithGUIDTypes:
+					{
+						user: {field: 'user.guid'},
+						contact_business: {field: 'user.contactbusiness.guid'},
+						contact_person: {field: 'user.contactperson.guide'}
+					}
+				},
+
+				request:
+				{
+					init: function (param, response)
+					{
+						var requestObject = ['email', 'action', 'conversation_post', 'conversation_comment'];
+						var requestObjectContext; //actiontypeid, conversationpostid
+						var preserve = [true, false];
+						var lock = [true, false]
+
+						var data ={};
+
+						mydigitalstructure.save(
+						{
+							object: requestObject,
+							data: data
+						});
+					}
+				},
+
+				add: 
+				{
+					init: function (param, response)
+					{
+						param = mydigitalstructure._util.param.set(param, 'onComplete', mydigitalstructure._util.security.share.link_.util.add.process);
+						mydigitalstructure._util.security.share.link_.util.getUser(param)
+					},
+
+					process: function (param, response)
+					{
+						var shareWithUser = mydigitalstructure._util.param.get(param, 'shareWithUser').value;
+						var sharedByContact = mydigitalstructure._util.param.get(param, 'sharedByContact').value;
+						var sharedByContactType = mydigitalstructure._util.param.get(param, 'sharedByContactType', {default: 'person'}).value;
+
+						if (shareWithUser != undefined && mydigitalstructure._scope.user != undefined)
+						{
+							var data = 
+							{
+								relationshipmanager: shareWithUser.contactperson,
+								contactbusiness: mydigitalstructure._scope.user.contactbusiness,
+								notes: 'Shared with ' + shareWithUser['user.contactperson.email'] + ' by ' + mydigitalstructure._scope.user.userlogonname
+							}
+
+							if (sharedByContactType == 'person')
+							{
+								data.contactperson = mydigitalstructure._scope.user.contactperson
+							}
+
+							mydigitalstructure.save(
+							{
+								object: 'contact_secondary_relationship',
+								data: data,
+								callback: mydigitalstructure._util.security.share.link_.util.add.finalise
+							});
+						}
+					},
+
+					finalise: function (param, response)
+					{
+						//Complete request if all OK.
+						//do onComplete
+					}
+				},
+
+				getUser: function (param, response)
+				{
+					var shareWithGUID = mydigitalstructure._util.param.get(param, 'shareWithGUID').value;
+					var shareWithGUIDType = mydigitalstructure._util.param.get(param, 'shareWithGUIDType', {default: 'user'}).value;
+
+					if (shareWithGUID != undefined)
+					{
+						if (response == undefined)
+						{
+							mydigitalstructure._util.security.share.link_.util.getUser = undefined;
+
+							var filters = [];
+
+							if (shareWithGUID != undefined)
+							{
+								filters.push(
+								{
+									name: mydigitalstructure._util.security.share.link_.util.data.shareWithGUIDTypes[shareWithGUIDType].field,
+									comparison: 'EQUAL_TO',
+									value1: shareWithGUID
+								});
+							}
+
+							mydigitalstructure.retrieve(
+							{
+								object: 'setup_user',
+								data:
+								{
+									criteria:
+									{
+										fields:
+										[
+											{name: 'user.contactbusiness.tradname'},
+											{name: 'user.contactbusiness.id'},
+											{name: 'user.contactperson.firstname'},
+											{name: 'user.contactperson.surname'},
+											{name: 'user.contactperson.email'},
+											{name: 'user.contactperson.id'},
+											{name: 'manager'},
+											{name: 'notes'},
+											{name: 'relationshipmanager'},
+											{name: 'relationshipmanagertext'}
+										],
+										filters: filters,
+										options: {rows: 1}
+									}
+								},
+								callback: mydigitalstructure._util.security.share.link_.util.getUser
+							});	
+						}
+						else
+						{
+							if (oResponse.data.rows.length != 0)
+							{
+								mydigitalstructure._util.security.share.link_.util.data.getUser = oResponse.data.rows[0];
+							}
+
+							param.shareWithUser = mydigitalstructure._util.security.share.link_.util.data.getUser;
+							mydigitalstructure._util.onComplete(param);
+						}
+					}
+					else
+					{
+						mydigitalstructure._util.log.add({message: 'mydigitalstructure._util.security.share.link.add: Missing shareWithGUID:', keep: true });
+					}
+				}
+			},
+
+			find: function (param, response)
+			{
+				if (response == undefined)
+				{
+					mydigitalstructure.retrieve(
+					{
+						object: 'contact_secondary_relationship',
+						data:
+						{
+							criteria:
+							{
+								fields:
+								[
+									{name: 'contactbusiness'},
+									{name: 'contactbusinesstext'},
+									{name: 'contactperson'},
+									{name: 'contactpersontext'},
+									{name: 'notes'},
+									{name: 'relationshipmanager'},
+									{name: 'relationshipmanagertext'}
+								],
+								filters:
+								[
+									{
+										name: 'relationshipmanager',
+										comparison: 'EQUAL_TO',
+										value1: mydigitalstructure._scope.user.id
+									}
+								],
+								options: {rows: 1000}
+							}
+						},
+						callback: mydigitalstructure._util.security.share.link.find
+					});
+				}
+				else
+				{
+					console.log(response)
+				}
+			}
+		}
 	}
 }
 
