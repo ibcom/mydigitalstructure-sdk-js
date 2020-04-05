@@ -3848,6 +3848,19 @@ mydigitalstructure._util.factory.core = function (param)
 			name: 'util-on-complete',
 			code: function (param)
 			{
+				var onCompleteController = mydigitalstructure._util.param.get(param, 'onCompleteController').value;
+				var onCompleteControllerWhenCan = mydigitalstructure._util.param.get(param, 'onCompleteControllerWhenCan').value;
+				
+				if (onCompleteController != undefined)
+				{
+					mydigitalstructure._util.param.set(param, 'onComplete', onCompleteController);
+				}
+
+				if (onCompleteControllerWhenCan != undefined)
+				{
+					mydigitalstructure._util.param.set(param, 'onCompleteWhenCan', onCompleteControllerWhenCan);
+				}
+
 				mydigitalstructure._util.onComplete(param)
 			}
 		}
@@ -3859,8 +3872,8 @@ mydigitalstructure._util.factory.core = function (param)
 		var scope = mydigitalstructure._util.param.get(param, 'scope').value;
 		var data = mydigitalstructure._util.param.get(param, 'data').value;
 		
-		if (controller == undefined) {scope = controller}
-			
+		if (controller == undefined) {controller = scope}
+
 		if (data)
 		{
 			app._util.data.reset(param)	
