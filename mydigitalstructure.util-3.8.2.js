@@ -1314,6 +1314,7 @@ if (typeof $.fn.collapse == 'function')
 		var id = event.target.id;
 
 		var controller = $(event.target).attr('data-controller')
+		if (controller == undefined) {controller = $(event.target).attr('data-scope')}
 		if (controller == undefined) {controller = id}
 
 		if (id != '')
@@ -1334,7 +1335,11 @@ if (typeof $.fn.collapse == 'function')
 			{
 				if (app.data[controller] == undefined) {app.data[controller] = {}};
 				app.data[controller] = _.extend(app.data[controller], {status: 'hidden'});
-				app.controller[controller]({status: 'hidden'});
+
+				if (typeof app.controller[controller] == 'function')
+				{
+					app.controller[controller]({status: 'hidden'});
+				}
 			}
 		}	
     });
@@ -1343,10 +1348,14 @@ if (typeof $.fn.collapse == 'function')
 	.on('shown.bs.collapse', '.myds-collapse', function (event)
 	{
 		var id = event.target.id;
-		if ($(event.target).attr('data-controller') != undefined)
-		{
-			id = $(event.target).attr('data-controller')
-		}
+		//if ($(event.target).attr('data-controller') != undefined)
+		//{
+		//	id = $(event.target).attr('data-controller')
+		//}
+
+		var controller = $(event.target).attr('data-controller')
+		if (controller == undefined) {controller = $(event.target).attr('data-scope')}
+		if (controller != undefined) {id = controller}
 		
 		if (id != '')
 		{	
@@ -1367,11 +1376,15 @@ if (typeof $.fn.collapse == 'function')
 				if (app.data[id] == undefined) {app.data[id] = {}};
 				app.data[id].viewStatus = 'shown';
 				app.data[id].dataContext = $(event.target).data();
-				app.controller[id](
+
+				if (typeof app.controller[id] == 'function')
 				{
-					status: 'shown',
-					dataContext: $(event.target).data()
-				});
+					app.controller[id](
+					{
+						status: 'shown',
+						dataContext: $(event.target).data()
+					});
+				}
 			}
 		}	
     });
