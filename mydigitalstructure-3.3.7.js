@@ -455,12 +455,14 @@ mydigitalstructure.retrieve = function (param)
 				{
 					if (filter.value1 == undefined && filter.value != undefined)
 					{
-						filter.value1 = filter.value
+						filter.value1 = filter.value;
+						delete filter.value;
 					}
 
 					if (filter.name == undefined && filter.field != undefined)
 					{
-						filter.name = filter.field
+						filter.name = filter.field;
+						delete filter.field;
 					}
 				})
 			}
@@ -3291,78 +3293,12 @@ mydigitalstructure._util.security =
 {
 	data: {users: []},
 
-	init: function (param, response)
-	{
-		//Might not need
-
-		var user = mydigitalstructure._scope.user;
-		var searchGUID;
-
-		var filters =
-		[
-			{
-				name: 'user.contactbusiness',
-				comparison: 'EQUAL_TO',
-				value1: objectTitle
-			}
-		]
-
-		if (onlySearchbyGUID)
-		{
-			filters.push(
-			{
-				name: 'user.contactbusiness.guid',
-				comparison: 'EQUAL_TO',
-				value1: searchGUID
-			});
-		}
-
-		if (response == undefined)
-		{
-			mydigitalstructure.retrieve(
-			{
-				object: 'setup_user',
-				data:
-				{
-					criteria:
-					{
-						fields:
-						[
-							{name: 'user.contactbusiness.tradname'},
-							{name: 'user.contactbusiness.id'},
-							{name: 'user.contactperson.firstname'},
-							{name: 'user.contactperson.surname'},
-							{name: 'user.contactperson.email'},
-							{name: 'user.contactperson.id'},
-							{name: 'manager'},
-							{name: 'notes'},
-							{name: 'relationshipmanager'},
-							{name: 'relationshipmanagertext'}
-						],
-						filters: filters,
-						options: {rows: 1000}
-					}
-				},
-				callback: mydigitalstructure._util
-			});	
-		}
-		else
-		{
-
-		}
-	},
-
 	share:
 	{
 		link: 
 		{ 
 			add: function (param)
 			{
-				var shareAs; //= [business, person];
-				var shareAsMe; //= [true, false];  // check if super user
-				var shareWith; // = [person] //could be array of people, as contactpersons - is it linked to a user account?
-				var shareGUID; //user guid that sharing with 
-
 				var shareWithGUID = mydigitalstructure._util.param.get(param, 'shareWithGUID').value;
 
 				if (shareWithGUID != undefined)
@@ -3389,6 +3325,89 @@ mydigitalstructure._util.security =
 				}
 			},
 
+			find: function (param, response)
+			{
+				var shareType = mydigitalstructure._util.param.get(param, 'shareType', {default: 'shared_by_me'}).value;
+
+				if (response == undefined)
+				{
+					var filters = [];
+					
+					if (shareType == 'shared_by_me')
+					{
+						filters.push(
+						{
+							name: 'contactperson',
+							comparison: 'EQUAL_TO',
+							value1: mydigitalstructure._scope.user.contactperson
+						});
+					}
+
+					if (shareType == 'shared_by_my_business')
+					{
+						filters.push(
+						{
+							name: 'contactbusiness',
+							comparison: 'EQUAL_TO',
+							value1: mydigitalstructure._scope.user.contactbusiness
+						});
+					}
+
+					if (shareType == 'shared_with_me')
+					{
+						filters.push(
+						{
+							name: 'relationshipmanager',
+							comparison: 'EQUAL_TO',
+							value1: mydigitalstructure._scope.user.contactperson
+						});
+					}
+
+					mydigitalstructure.retrieve(
+					{
+						object: 'contact_secondary_relationship',
+						data:
+						{
+							criteria:
+							{
+								fields:
+								[
+									{name: 'contactbusiness'},
+									{name: 'contactbusinesstext'},
+									{name: 'contactperson'},
+									{name: 'contactpersontext'},
+									{name: 'notes'},
+									{name: 'relationshipmanager'},
+									{name: 'relationshipmanagertext'},
+									{name: 'guid'}
+								],
+								filters: filters,
+								options: {rows: 1000}
+							}
+						},
+						callback: mydigitalstructure._util.security.share.link.find
+					});
+				}
+				else
+				{
+					console.log(response.data.rows)
+				}
+			},
+
+			request: function (param)
+			{
+				var shareRequestGUID = mydigitalstructure._util.param.get(param, 'shareRequestGUID').value; 
+
+				if (shareRequestGUID != undefined)
+				{
+					mydigitalstructure._util.security.share.link._util.request.init(param);
+				}
+				else
+				{
+					mydigitalstructure._util.log.add({message: 'mydigitalstructure._util.security.share.link.request: Missing shareRequestGUID:', keep: true });
+				}
+			},
+
 			_util:
 			{
 				data:
@@ -3397,7 +3416,7 @@ mydigitalstructure._util.security =
 					{
 						user: {field: 'user.guid'},
 						contact_business: {field: 'user.contactbusiness.guid'},
-						contact_person: {field: 'user.contactperson.guide'}
+						contact_person: {field: 'user.contactperson.guid'}
 					},
 
 					shareTypes:
@@ -3419,7 +3438,7 @@ mydigitalstructure._util.security =
 
 						var data = {};
 
-						mydigitalstructure.save(
+						mydigitalstructure.invoke(
 						{
 							object: requestObject,
 							data: data
@@ -3439,7 +3458,7 @@ mydigitalstructure._util.security =
 					{
 						var shareWithUser = mydigitalstructure._util.param.get(param, 'shareWithUser').value;
 						var sharedByContact = mydigitalstructure._util.param.get(param, 'sharedByContact').value;
-						var sharedByType = mydigitalstructure._util.param.get(param, 'sharedByType', {default: 'person'}).value;
+						var sharedByType = mydigitalstructure._util.param.get(param, 'sharedByType', {default: 'contact_person'}).value;
 
 						if (shareWithUser != undefined && mydigitalstructure._scope.user != undefined)
 						{
@@ -3450,7 +3469,7 @@ mydigitalstructure._util.security =
 								notes: 'Shared with ' + shareWithUser['username'] + ' by ' + mydigitalstructure._scope.user.userlogonname
 							}
 
-							if (sharedByType == 'person')
+							if (sharedByType == 'contact_person')
 							{
 								data.contactperson = mydigitalstructure._scope.user.contactperson
 							}
@@ -3459,7 +3478,8 @@ mydigitalstructure._util.security =
 							{
 								object: 'contact_secondary_relationship',
 								data: data,
-								callback: mydigitalstructure._util.security.share.link._util.add.finalise
+								callback: mydigitalstructure._util.security.share.link._util.add.finalise,
+								callbackParam: param
 							});
 						}
 					},
@@ -3467,7 +3487,8 @@ mydigitalstructure._util.security =
 					finalise: function (param, response)
 					{
 						//Complete request if all OK.
-						//do onComplete
+						//do onComplete\
+						mydigitalstructure._util.onComplete(param);
 					}
 				},
 
@@ -3632,75 +3653,378 @@ mydigitalstructure._util.security =
 					}
 					
 				}
+			}
+		},
+
+		//[[user]], [[contactperson]] or [[contactbusiness]]
+
+		setup:
+		{
+			data:
+			{
+				roles:
+				{
+					sharedBy:
+					{
+						title: 'Shared By',
+						methods:
+						[
+							{
+								title: 'SETUP_USER_SEARCH',
+								canuse: 'Y',
+								guidmandatory: 'Y'
+							},
+							{
+								title: 'CONTACT_SECONDARY_RELATIONSHIP_SEARCH',
+								canuse: 'Y',
+								guidmandatory: 'N'
+							},
+							{
+								title: 'CONTACT_SECONDARY_RELATIONSHIP_MANAGE',
+								canadd: 'Y',
+								canupdate: 'Y',
+								canremove: 'Y',
+								guidmandatory: 'N'
+							}
+						],
+						properties:
+						[
+							{
+								methodtitle: 'CONTACT_SECONDARY_RELATIONSHIP_MANAGE',
+								name: 'contactperson',
+								allowedvalues: '[[contactperson]]',
+								disallowedvalues: '',
+								notes: 'As user can only add sharing for self.',
+								type: undefined
+							},
+							{
+								methodtitle: 'CONTACT_SECONDARY_RELATIONSHIP_MANAGE',
+								name: 'contactbusiness',
+								allowedvalues: '[[contactbusiness]]',
+								disallowedvalues: '',
+								notes: 'As user can only add sharing for own contact business',
+								type: undefined
+							},
+							{
+								methodtitle: 'CONTACT_SECONDARY_RELATIONSHIP_SEARCH',
+								name: 'contactperson',
+								allowedvalues: '[[contactperson]]',
+								notes: 'As user can only search for sharing for self.',
+								type: undefined
+							},
+							{
+								methodtitle: 'CONTACT_SECONDARY_RELATIONSHIP_SEARCH',
+								name: 'contactbusiness',
+								allowedvalues: '[[contactbusiness]]',
+								disallowedvalues: '',
+								notes: 'As user can only search for sharing for own contact business',
+								type: undefined
+							}
+						]
+					},
+
+					sharedWith:
+					{
+						title: 'Shared With',
+						methods:
+						[
+							{
+								title: 'SETUP_USER_SEARCH',
+								canuse: 'Y'
+							},
+							{
+								title: 'CONTACT_SECONDARY_RELATIONSHIP_SEARCH',
+								canuse: 'Y'
+							}
+						],
+						properties:
+						[
+							{
+								methodtitle: 'SETUP_USER_SEARCH',
+								name: 'id',
+								allowedvalues: '[[user]]',
+								disallowedvalues: '',
+								notes: 'As user can only see own user details.'
+							},
+							{
+								methodtitle: 'CONTACT_SECONDARY_RELATIONSHIP_SEARCH',
+								name: 'relationshipmanager',
+								allowedvalues: '[[contactperson]]',
+								notes: 'As user can only search for sharing where shared with them.'
+							}
+						]
+					}
+				}
 			},
 
-			find: function (param, response)
+			//user relationship manager type: disabled//tight
+
+			init: function (param)
 			{
-				var shareType = mydigitalstructure._util.param.get(param, 'shareType', {default: 'shared_by_me'}).value;
+				var shareUserRoleTitle = mydigitalstructure._util.param.get(param, 'shareUserRoleTitle').value;
+				var shareType = mydigitalstructure._util.param.get(param, 'shareType', {default: 'sharedBy'}).value;
+				var accessRole = mydigitalstructure._util.security.share.setup.data.roles[shareType];
 
-				if (response == undefined)
+				if (accessRole != undefined)
 				{
-					var filters = [];
-					
-					if (shareType == 'shared_by_me')
-					{
-						filters.push(
-						{
-							name: 'contactperson',
-							comparison: 'EQUAL_TO',
-							value1: mydigitalstructure._scope.user.contactperson
-						});
-					}
+					mydigitalstructure._util.security.share.setup.import.data.accessRole = accessRole;
 
-					if (shareType == 'shared_by_my_business')
+					if (shareUserRoleTitle == undefined)
 					{
-						filters.push(
-						{
-							name: 'contactbusiness',
-							comparison: 'EQUAL_TO',
-							value1: mydigitalstructure._scope.user.contactbusiness
-						});
+						mydigitalstructure._util.security.share.setup.import.userRole()
 					}
-
-					if (shareType == 'shared_with_me')
+					else
 					{
-						filters.push(
-						{
-							name: 'relationshipmanager',
-							comparison: 'EQUAL_TO',
-							value1: mydigitalstructure._scope.user.contactperson
-						});
-					}
-
-					mydigitalstructure.retrieve(
-					{
-						object: 'contact_secondary_relationship',
-						data:
-						{
-							criteria:
+						var filters =
+						[
 							{
-								fields:
-								[
-									{name: 'contactbusiness'},
-									{name: 'contactbusinesstext'},
-									{name: 'contactperson'},
-									{name: 'contactpersontext'},
-									{name: 'notes'},
-									{name: 'relationshipmanager'},
-									{name: 'relationshipmanagertext'},
-									{name: 'guid'}
-								],
-								filters: filters,
-								options: {rows: 1000}
+								filter: 'title',
+								comparison: 'EQUAL_TO',
+								value: shareUserRoleTitle
 							}
-						},
-						callback: mydigitalstructure._util.security.share.link.find
-					});
+						]
+
+						mydigitalstructure.retrieve(
+						{
+							object: 'setup_role',
+							fields: {name: 'title'},
+							filters: filters,
+							callback: mydigitalstructure._util.security.share.setup.import.userRole
+						});
+					}
 				}
-				else
+			},
+
+			import:
+			{
+				data: {},
+
+				userRole: function (param, response)
 				{
-					console.log(response.data.rows)
+					if (response == undefined)
+					{
+						var data =
+						{
+							title: mydigitalstructure._util.security.share.setup.import.data.accessRole.title
+						}
+
+						mydigitalstructure.create(
+						{
+							object: 'setup_role',
+							data: data,
+							callback: mydigitalstructure._util.security.share.setup.import.userRole
+						});
+					}
+					else
+					{
+						if (response.status == 'ER')
+						{}
+						else
+						{
+							if (_.has(response, 'data'))
+							{
+								if (response.data.rows.length > 0)
+								{
+									mydigitalstructure._util.security.share.setup.import.data.roleID = _.first(response.data.rows).id;
+								}
+							}
+							else
+							{
+								mydigitalstructure._util.security.share.setup.import.data.roleID = response.id;
+							}
+
+							mydigitalstructure._util.security.share.setup.import.methods(param);
+						}
+					}
+				},
+
+				methods: function (param, response)
+				{
+					if (response == undefined)
+					{
+						var methodTitles = _.map(mydigitalstructure._util.security.share.setup.import.data.accessRole.methods, 'title');
+						var propertyMethodTitles = _.map(mydigitalstructure._util.security.share.setup.import.data.accessRole.properties, 'methpdtitle');
+
+						var filters =
+						[
+							{
+								field: 'title',
+								comparison: 'IN_LIST',
+								value: _.join(_.concat(methodTitles, propertyMethodTitles), ',')
+							}
+						]
+
+						mydigitalstructure.retrieve(
+						{
+							object: 'setup_method',
+							fields: {name: 'title'},
+							filters: filters,
+							callback: mydigitalstructure._util.security.share.setup.import.methods
+						});
+					}
+					else
+					{
+						mydigitalstructure._util.security.share.setup.import.data.methods = response.data.rows;
+
+						if (mydigitalstructure._util.security.share.setup.import.data.methods.length != 0)
+						{
+							mydigitalstructure._util.security.share.setup.import.userRoleMethods()
+						}
+					}
+				},
+
+				userRoleMethods: function (param, response)
+				{
+					if (mydigitalstructure._util.security.share.setup.import.data.roleID == undefined)
+					{}
+					else
+					{
+						var userRoleMethodIndex = mydigitalstructure._util.param.get(param, 'userRoleMethodIndex', {default: 0}).value;
+						var userRoleMethods = mydigitalstructure._util.security.share.setup.import.data.accessRole.methods;
+						var userRoleMethod;
+
+						if (userRoleMethodIndex < userRoleMethods.length)
+						{
+							param = mydigitalstructure._util.param.set(param, 'userRoleMethodIndex', userRoleMethodIndex + 1);
+							userRoleMethod = userRoleMethods[userRoleMethodIndex];
+
+							var method = _.find(mydigitalstructure._util.security.share.setup.import.data.methods,
+															function (method) {return method.title == userRoleMethod.title});
+
+							if (method != undefined)
+							{
+								var data =
+								{
+									role: mydigitalstructure._util.security.share.setup.import.data.roleID,
+									accessmethod: method.id,
+									canuse: userRoleMethod.canuse,
+									canadd: userRoleMethod.canadd,
+									canupdate: userRoleMethod.canupdate,
+									canremove: userRoleMethod.canremove,
+									guidmandatory: userRoleMethod.guidmandatory
+								}
+
+								mydigitalstructure.create(
+								{
+									object: 'setup_role_method_access',
+									data: data,
+									callback: mydigitalstructure._util.security.share.setup.import.userRoleMethods,
+									callbackParam: param
+								});
+							}
+						}
+						else
+						{
+							if (mydigitalstructure._util.security.share.setup.import.data.accessRole.properties != undefined)
+							{
+								mydigitalstructure._util.security.share.setup.import.userRoleProperties()
+							}
+							else
+							{
+								mydigitalstructure._util.security.share.setup.import.finalise()
+							}
+						}
+					}
+				},
+
+				userRoleProperties: function (param, response)
+				{
+					if (mydigitalstructure._util.security.share.setup.import.data.roleID == undefined)
+					{}
+					else
+					{
+						var userRolePropertyIndex = mydigitalstructure._util.param.get(param, 'userRolePropertyIndex', {default: 0}).value;
+						var userRoleProperties = mydigitalstructure._util.security.share.setup.import.data.accessRole.properties;
+						var userRoleProperty;
+
+						if (userRolePropertyIndex < userRoleProperties.length)
+						{
+							param = mydigitalstructure._util.param.set(param, 'userRolePropertyIndex', userRolePropertyIndex + 1);
+							userRoleProperty = userRoleProperties[userRolePropertyIndex];
+
+							var method = _.find(mydigitalstructure._util.security.share.setup.import.data.methods,
+															function (method) {return method.title == userRoleProperty.methodtitle});
+
+							if (method != undefined)
+							{
+								var data =
+								{
+									role: mydigitalstructure._util.security.share.setup.import.data.roleID,
+									accessmethod: method.id,
+									parameter: userRoleProperty.name,
+									allowedvalues: userRoleProperty.allowedvalues,
+									disallowedvalues: userRoleProperty.disallowedvalues,
+									notes: userRoleProperty.notes,
+									type: userRoleProperty.type
+								}
+
+								mydigitalstructure.create(
+								{
+									object: 'setup_role_parameter_access',
+									data: data,
+									callback: mydigitalstructure._util.security.share.setup.import.userRoleProperties,
+									callbackParam: param
+								});
+							}
+						}
+						else
+						{
+							mydigitalstructure._util.security.share.setup.import.finalise()
+						}
+					}
+				},
+
+				finalise: function (param)
+				{
+					mydigitalstructure._util.onComplete(param);
 				}
+			}
+		},
+
+		// Check to see if rules have been set up OK
+		check:
+		{
+			init: function (param)
+			{
+
+			}
+		},
+
+		user: 
+		{
+			init: function (param)
+			{
+				var userID = mydigitalstructure._util.param.get(param, 'userID').value;
+
+				//userID =
+
+				// Access policy:
+
+				// - Can see all data (user)
+				// - Can only see own linked data (user)
+
+				// - Can set up shares with other users (user-role)
+				// - Can see other contact data shared with them (user-role)
+
+				/*
+				userDataPolicy =
+				{
+					access:
+					{
+						all: true
+						onlyOwn: true
+					},
+
+					share:
+					{
+						canRequestShare: true,
+						canSetupShare: true,
+						canAcceptShare: true 
+					}
+				}
+				*/
+
+
 			}
 		}
 	}
@@ -3708,3 +4032,5 @@ mydigitalstructure._util.security =
 
 mydigitalstructure.upload = mydigitalstructure._util.attachment.upload;
 mydigitalstructure.cloud.upload = mydigitalstructure.upload;
+mydigitalstructure.security = {share: mydigitalstructure._util.security.share.link}
+
