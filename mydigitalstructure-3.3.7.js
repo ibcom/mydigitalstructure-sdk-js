@@ -3986,7 +3986,7 @@ mydigitalstructure._util.security =
 		{
 			init: function (param)
 			{
-
+				//Based on a access policy check/validate the users set up - for security auditing.
 			}
 		},
 
