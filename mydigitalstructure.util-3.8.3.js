@@ -582,22 +582,6 @@ $(document).off('keypress', '.myds-text')
     }
 });
 
-$(document).off('focusout', '.myds-text-select')
-.on('focusout', '.myds-text-select', function (event)
-{
-	if ($(this).val() == '')
-	{
-		var scope = $(this).data('scope');
-		if (_.isUndefined(scope)) {scope = $(this).data('controller')}
-		var context = $(this).data('context');
-		
-		if (scope != undefined && context != undefined)
-		{
-			if (!_.isUndefined(app.data[scope])) {app.data[scope][context] = ''}
-			$(this).attr('data-id', '');
-		}
-	}
-});
 
 $(document).off('focusout', '.myds-focus')
 .on('focusout', '.myds-focus', function (event)
@@ -644,6 +628,23 @@ $(document).off('focusout', '.myds-focus')
 			});
 		}
 	}		
+});
+
+$(document).off('focusout', '.myds-text-select')
+.on('focusout', '.myds-text-select', function (event)
+{
+	if ($(this).val() == '')
+	{
+		var scope = $(this).data('scope');
+		if (_.isUndefined(scope)) {scope = $(this).data('controller')}
+		var context = $(this).data('context');
+		
+		if (scope != undefined && context != undefined)
+		{
+			if (!_.isUndefined(app.data[scope])) {app.data[scope][context] = ''}
+			$(this).attr('data-id', '');
+		}
+	}
 });
 
 $(document).off('change', '.myds-text-select')
@@ -733,8 +734,8 @@ $(document).off('change', '.myds-text-select')
 		{
  			app.data[controller][context] = val;
  			app.data[controller]['_' + context] = data;
- 			delete app.data[controller]['_' + context].chosen;
- 			app.data[controller]['_' + context]._type = 'focusout';
+ 			delete app.data[controller]['_' + context].chosen;  //?
+ 			app.data[controller]['_' + context]._type = 'change';
  			app.data[controller]['_' + context][context] = val;
  			app.data[controller]['_' + context]._value = val;
  		}	
@@ -4137,6 +4138,140 @@ mydigitalstructure._util.factory.core = function (param)
 	app.controller['util-security-share-setup'] = function (param)
 	{
 		mydigitalstructure.cloud.security.share.setup.init(param);
+	}
+
+	app.controller['util-view-select'] = function (param, response)
+	{
+		var scope = mydigitalstructure._util.param.get(param, 'scope').value;
+		var context = mydigitalstructure._util.param.get(param, 'context').value;
+		var useCache = mydigitalstructure._util.param.get(param, 'useCache', {default: false}).value;
+		var container = mydigitalstructure._util.param.get(param, 'container').value;
+		var object = mydigitalstructure._util.param.get(param, 'object').value;
+		var controller = mydigitalstructure._util.param.get(param, 'sourceController').value;
+		var field = mydigitalstructure._util.param.get(param, 'field').value;
+		var data = mydigitalstructure._util.param.get(param, 'data').value;
+		var element;
+
+		if (container != undefined)
+		{
+			element = $('#' + container);
+
+			if (scope == undefined)
+			{
+				scope = element.attr('data-scope');
+			}
+
+			if (context == undefined)
+			{
+				context = element.attr('data-context');
+			}
+
+			if (controller == undefined)
+			{
+				controller = element.attr('data-source-controller');
+			}
+		}
+		else if (scope != undefined && context != undefined)
+		{
+			element = $('[data-scope="' + scope + '"][data-context="' + context + '"]');
+		}
+		else if (scope != undefined)
+		{
+			element = $('[data-scope="' + scope + '"]');
+		}
+
+		if (object == undefined)
+		{
+			object = element.attr('data-object');
+		}
+
+		if (element != undefined)
+		{
+			if (field == undefined)
+			{
+				field = element.attr('data-field');
+			}
+
+			if (field == undefined)
+			{
+				field = 'title'
+			}
+
+			if (typeof $.fn.select2 == 'function')
+			{
+				var selectParam = 
+				{
+					theme: 'bootstrap4',
+					allowClear: false,
+					language:
+					{
+					  searching: function ()
+					  {
+					    return 'Searching ...';
+					  }
+					},
+				}
+
+				selectParam = _.assign(selectParam, param.options);
+
+				if (data != undefined)
+				{
+					selectParam.data = data;
+				}
+				else if (controller != undefined)
+				{
+					selectParam.data = mydigitalstructure._util.controller.invoke(controller, param);
+				}	
+				else if (object != undefined)
+				{
+					var endpoint = object.split('_')[0];	
+
+					var ajax = 
+					{
+					    url: '/rpc/' + endpoint + '/?method=' + object + '_search',
+					    type: 'POST',
+					    delay: 250,
+					    data: function (query)
+					    {
+					      var dataQuery =
+					      {
+								criteria: JSON.stringify(
+								{
+									fields:
+									[
+										{name: field}
+									],
+									filters:
+									[
+										{name: field, comparison: 'TEXT_IS_LIKE', value1: query.term}
+									]
+								})
+					      }
+					  
+				      	return dataQuery;
+				    	},
+
+				    	processResults: function (response)
+				    	{
+				    		_.each(response.data.rows, function (row)
+		               {
+		                 row.text = row[field];
+		               });
+
+					     return { results: response.data.rows };
+					   }
+				  	}
+
+				  	selectParam.ajax = ajax;
+				}
+				else
+				{
+					selectParam.data = mydigitalstructure._util.data.get(param);
+				}
+
+				$(element).select2(selectParam);
+			}
+		}
 	}
 
 	app.controller['util-view-table'] = function (param, response)
