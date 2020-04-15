@@ -4221,7 +4221,11 @@ mydigitalstructure._util.factory.core = function (param)
 				else if (controller != undefined)
 				{
 					selectParam.data = mydigitalstructure._util.controller.invoke(controller, param);
-				}	
+				}
+				else if (scope != undefined)
+				{
+					selectParam.data = mydigitalstructure._util.data.get(param);
+				}
 				else if (object != undefined)
 				{
 					var endpoint = object.split('_')[0];	
