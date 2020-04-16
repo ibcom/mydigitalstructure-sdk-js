@@ -4156,18 +4156,25 @@ mydigitalstructure._util.factory.core = function (param)
 		var hideSearch = mydigitalstructure._util.param.get(param, 'hideSearch', {default: false}).value;
 		var objectFilters = mydigitalstructure._util.param.get(param, 'filter').value;
 		var responseController = mydigitalstructure._util.param.get(param, 'responseController').value;
+		var queryController = mydigitalstructure._util.param.get(param, 'queryController').value;
+		var fields = mydigitalstructure._util.param.get(param, 'fields').value;
+
+		if (fields == undefined && field != undefined)
+		{
+			fields = [{name: field, sortBy: true}]
+		}
 
 		var filters = [];
 
 		if (objectFilters != undefined)
 		{
-			if (_.isObject(objectFilters))
-			{
-				filters.push(objectFilters)
-			}
-			else if (_.isArray(objectFilters))
+			if (_.isArray(objectFilters))
 			{
 				filters = _.concat(filters, objectFilters)
+			}
+			else if (_.isObject(objectFilters))
+			{
+				filters.push(objectFilters)
 			}
 			else
 			{
@@ -4307,62 +4314,117 @@ mydigitalstructure._util.factory.core = function (param)
 
 					var ajax = 
 					{
-					    url: '/rpc/' + endpoint + '/?method=' + object + '_search',
-					    type: 'POST',
-					    delay: 250,
-					    data: function (query)
-					    {
-					    	var dataQueryFilters = [];
+						url: '/rpc/' + endpoint + '/?method=' + object + '_search',
+						type: 'POST',
+						delay: 250,
+						data: function (query)
+						{
+							var dataQuery = {};
 
-					    	var _dataQueryFilters = $(element).data('_objectfilters');
+							if (queryController != undefined)
+				    		{
+				    			var _dataQuery = mydigitalstructure._util.controller.invoke(queryController, {search: query.term})
 
-					    	if (_dataQueryFilters != undefined)
-					    	{
-					    		_.each(_dataQueryFilters, function (dataQueryFilter)
-					    		{
-					    			var dataParam = {};
+				    			if (_.isObject(_dataQuery))
+				    			{
+				    				var _criteria;
 
-					    			if (dataQueryFilter.valueScope != undefined)
-					    			{
-					    				dataParam.scope = dataQueryFilter.valueScope;
-					    			}
+				    				if (_.has(_dataQuery, 'criteria'))
+				    				{
+				    					_criteria = _dataQuery.criteria;
+				    				}
+				    				else
+				    				{
+				    					_criteria = _dataQuery;
+				    				}
 
-					    			if (dataQueryFilter.valueContext != undefined)
-					    			{
-					    				dataParam.context = dataQueryFilter.valueContext;
-					    			}
+				    				if (_.isObject(_criteria))
+			    					{
+			    						dataQuery.criteria = JSON.stringify(_criteria);
+			    					}
+			    					else
+			    					{
+			    						dataQuery.criteria = _criteria;
+			    					}
+				    			}
+				    		}
+				    		else
+				    		{
+						    	var dataQueryFields = [];
+						    	var dataQuerySorts = [];
 
-					    			if (dataQueryFilter.valueName != undefined)
-					    			{
-					    				dataParam.name = dataQueryFilter.valueName;
-					    			}
+						    	_.each(fields, function (field)
+						    	{
+						    		dataQueryFields.push({name: field.name});
 
-					    			if (!_.isEmpty(dataParam))
-					    			{
-					    				dataQueryFilter.value1 = mydigitalstructure._util.data.get(dataParam)
-					    			}
+						    		if (field.sortBy)
+						    		{
+						    			dataQuerySorts.push({name: field.name, direction: 'asc'});
+						    		}
+						    	});
 
-					    		});
+						    	if (dataQuerySorts.length == 0)
+						    	{
+						    		dataQuerySorts.push({name: _.first(fields).name, direction: 'asc'});
+						    	}
 
-					    		dataQueryFilters = _.concat(dataQueryFilters, _dataQueryFilters)
-					    	}
+						    	var dataQueryFilters = [];
 
-					    	if (query.term != undefined)
-					    	{
-					    		dataQueryFilters.push({name: field, comparison: 'TEXT_IS_LIKE', value1: query.term});
-					    	}
+						    	var _dataQueryFilters = $(element).data('_objectfilters');
 
-					      var dataQuery =
-					      {
-								criteria: JSON.stringify(
-								{
-									fields:
-									[
-										{name: field}
-									],
-									filters: dataQueryFilters
-								})
-					      }
+						    	if (_dataQueryFilters != undefined)
+						    	{
+						    		_.each(_dataQueryFilters, function (dataQueryFilter)
+						    		{
+						    			var dataParam = {};
+
+						    			if (dataQueryFilter.valueScope != undefined)
+						    			{
+						    				dataParam.scope = dataQueryFilter.valueScope;
+						    			}
+
+						    			if (dataQueryFilter.valueContext != undefined)
+						    			{
+						    				dataParam.context = dataQueryFilter.valueContext;
+						    			}
+
+						    			if (dataQueryFilter.valueName != undefined)
+						    			{
+						    				dataParam.name = dataQueryFilter.valueName;
+						    			}
+
+						    			if (!_.isEmpty(dataParam))
+						    			{
+						    				dataQueryFilter.value1 = mydigitalstructure._util.data.get(dataParam)
+						    			}
+
+						    		});
+
+						    		dataQueryFilters = _.concat(dataQueryFilters, _dataQueryFilters)
+						    	}
+
+						    	if (query.term != undefined)
+						    	{
+						    		_.each(fields, function (field, f)
+						    		{
+						    			if (f != 0)
+						    			{
+						    				dataQueryFilters.push({name: 'or'});
+						    			}
+						    			dataQueryFilters.push({name: field.name, comparison: 'TEXT_IS_LIKE', value1: query.term});
+						    		});
+						    	}
+
+						      dataQuery =
+						      {
+									criteria: JSON.stringify(
+									{
+										fields: dataQueryFields,
+										filters: dataQueryFilters,
+										sorts: dataQuerySorts
+									})
+						      }
+						    }
 					  
 				      	return dataQuery;
 				    	},
@@ -4379,7 +4441,13 @@ mydigitalstructure._util.factory.core = function (param)
 				    		{
 					    		_.each(response.data.rows, function (row)
 			               {
-			                 row.text = _.unescape(row[field]);
+			               	var text = [];
+			               	_.each(fields, function (field)
+			               	{
+			               		text.push(_.unescape(row[field.name]));
+			               	})
+
+									row.text = _.join(text, ' ');
 			               });
 
 			               results = response.data.rows;
