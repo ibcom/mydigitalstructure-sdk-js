@@ -4379,7 +4379,7 @@ mydigitalstructure._util.factory.core = function (param)
 				    		{
 					    		_.each(response.data.rows, function (row)
 			               {
-			                 row.text = row[field];
+			                 row.text = _.unescape(row[field]);
 			               });
 
 			               results = response.data.rows;
