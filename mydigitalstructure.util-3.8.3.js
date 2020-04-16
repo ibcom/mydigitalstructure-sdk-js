@@ -4142,33 +4142,75 @@ mydigitalstructure._util.factory.core = function (param)
 
 	app.controller['util-view-select'] = function (param, response)
 	{
-		var scope = mydigitalstructure._util.param.get(param, 'scope').value;
-		var context = mydigitalstructure._util.param.get(param, 'context').value;
+		var scope = mydigitalstructure._util.param.get(param, 'sourceScope').value;
+		var context = mydigitalstructure._util.param.get(param, 'sourceContext').value;
+		var name = mydigitalstructure._util.param.get(param, 'sourceName').value;
 		var useCache = mydigitalstructure._util.param.get(param, 'useCache', {default: false}).value;
 		var container = mydigitalstructure._util.param.get(param, 'container').value;
 		var object = mydigitalstructure._util.param.get(param, 'object').value;
 		var controller = mydigitalstructure._util.param.get(param, 'sourceController').value;
 		var field = mydigitalstructure._util.param.get(param, 'field').value;
 		var data = mydigitalstructure._util.param.get(param, 'data').value;
+		var optionsExist = mydigitalstructure._util.param.get(param, 'optionsExist').value;
+		var defaultValue =  mydigitalstructure._util.param.get(param, 'defaultValue').value;
+		var hideSearch = mydigitalstructure._util.param.get(param, 'hideSearch', {default: false}).value;
+		var objectFilters = mydigitalstructure._util.param.get(param, 'filter').value;
+		var responseController = mydigitalstructure._util.param.get(param, 'responseController').value;
+
+		var filters = [];
+
+		if (objectFilters != undefined)
+		{
+			if (_.isObject(objectFilters))
+			{
+				filters.push(objectFilters)
+			}
+			else if (_.isArray(objectFilters))
+			{
+				filters = _.concat(filters, objectFilters)
+			}
+			else
+			{
+				var _objectFilters = _.attempt(JSON.parse.bind(null, objectFilters));
+
+				if (!_.isError(_objectFilters))
+				{
+					if (_.isObject(_objectFilters))
+					{
+						filters.push(_objectFilters)
+					}
+					else if (_.isArray(_objectFilters))
+					{
+						filters = _.concat(filters, _objectFilters)
+					}
+				}
+			}
+
+			_.each(filters, function (filter) {filter.value1 = filter.value})
+		}
+
 		var element;
 
 		if (container != undefined)
 		{
 			element = $('#' + container);
 
-			if (scope == undefined)
+			if (element != undefined)
 			{
-				scope = element.attr('data-scope');
-			}
+				if (scope == undefined)
+				{
+					scope = element.attr('data-source-scope');
+				}
 
-			if (context == undefined)
-			{
-				context = element.attr('data-context');
-			}
+				if (context == undefined)
+				{
+					context = element.attr('data-source-context');
+				}
 
-			if (controller == undefined)
-			{
-				controller = element.attr('data-source-controller');
+				if (controller == undefined)
+				{
+					controller = element.attr('data-source-controller');
+				}
 			}
 		}
 		else if (scope != undefined && context != undefined)
@@ -4187,6 +4229,34 @@ mydigitalstructure._util.factory.core = function (param)
 
 		if (element != undefined)
 		{
+			$(element).data('_objectfilters', filters);
+
+			if (optionsExist == undefined)
+			{
+				optionsExist = (element.find('option').length != 0)
+			}
+
+			if (defaultValue == undefined)
+			{
+				defaultValue = 
+				{ 
+					id: element.attr('data-id'),
+					text: element.attr('data-text')
+				}
+			}
+			else
+			{
+				if (defaultValue.id == undefined) 
+				{ 
+					defaultValue.id = element.attr('data-id')
+				}
+
+				if (defaultValue.text == undefined) 
+				{ 
+					defaultValue.text = element.attr('data-text')
+				}
+			}
+
 			if (field == undefined)
 			{
 				field = element.attr('data-field');
@@ -4224,9 +4294,14 @@ mydigitalstructure._util.factory.core = function (param)
 				}
 				else if (scope != undefined)
 				{
-					selectParam.data = mydigitalstructure._util.data.get(param);
+					selectParam.data = mydigitalstructure._util.data.get(
+					{
+						scope: scope,
+						context: context,
+						name: name
+					});
 				}
-				else if (object != undefined)
+				else if (object != undefined && !optionsExist)
 				{
 					var endpoint = object.split('_')[0];	
 
@@ -4237,6 +4312,46 @@ mydigitalstructure._util.factory.core = function (param)
 					    delay: 250,
 					    data: function (query)
 					    {
+					    	var dataQueryFilters = [];
+
+					    	var _dataQueryFilters = $(element).data('_objectfilters');
+
+					    	if (_dataQueryFilters != undefined)
+					    	{
+					    		_.each(_dataQueryFilters, function (dataQueryFilter)
+					    		{
+					    			var dataParam = {};
+
+					    			if (dataQueryFilter.valueScope != undefined)
+					    			{
+					    				dataParam.scope = dataQueryFilter.valueScope;
+					    			}
+
+					    			if (dataQueryFilter.valueContext != undefined)
+					    			{
+					    				dataParam.context = dataQueryFilter.valueContext;
+					    			}
+
+					    			if (dataQueryFilter.valueName != undefined)
+					    			{
+					    				dataParam.name = dataQueryFilter.valueName;
+					    			}
+
+					    			if (!_.isEmpty(dataParam))
+					    			{
+					    				dataQueryFilter.value1 = mydigitalstructure._util.data.get(dataParam)
+					    			}
+
+					    		});
+
+					    		dataQueryFilters = _.concat(dataQueryFilters, _dataQueryFilters)
+					    	}
+
+					    	if (query.term != undefined)
+					    	{
+					    		dataQueryFilters.push({name: field, comparison: 'TEXT_IS_LIKE', value1: query.term});
+					    	}
+
 					      var dataQuery =
 					      {
 								criteria: JSON.stringify(
@@ -4245,10 +4360,7 @@ mydigitalstructure._util.factory.core = function (param)
 									[
 										{name: field}
 									],
-									filters:
-									[
-										{name: field, comparison: 'TEXT_IS_LIKE', value1: query.term}
-									]
+									filters: dataQueryFilters
 								})
 					      }
 					  
@@ -4257,23 +4369,59 @@ mydigitalstructure._util.factory.core = function (param)
 
 				    	processResults: function (response)
 				    	{
-				    		_.each(response.data.rows, function (row)
-		               {
-		                 row.text = row[field];
-		               });
+				    		var results;
 
-					     return { results: response.data.rows };
+				    		if (responseController != undefined)
+				    		{
+				    			results = mydigitalstructure._util.controller.invoke(responseController, param, response)
+				    		}
+				    		else
+				    		{
+					    		_.each(response.data.rows, function (row)
+			               {
+			                 row.text = row[field];
+			               });
+
+			               results = response.data.rows;
+			            }
+
+					     return { results: results };
 					   }
 				  	}
 
 				  	selectParam.ajax = ajax;
 				}
-				else
+				else if (!optionsExist)
 				{
 					selectParam.data = mydigitalstructure._util.data.get(param);
 				}
 
+				if (selectParam.minimumResultsForSearch == undefined && (optionsExist || hideSearch))
+				{
+					selectParam.minimumResultsForSearch = Infinity;
+				}
+
 				$(element).select2(selectParam);
+
+				if ($(element).find("option[value='" + defaultValue.id + "']").length != 0)
+				{
+				    $(element).val(defaultValue.id).trigger('change');
+				}
+				else
+				{ 
+				    var newOption = new Option(defaultValue.text, defaultValue.id, true, true);
+				    $(element).append(newOption).trigger('change');
+				} 
+			}
+
+			else if (typeof $.fn.chosen == 'function')
+			{
+				console.log('Chosen not supported yet.')
+			}
+
+			else if (typeof $.fn.typeahead == 'function')
+			{
+				console.log('Chosen not supported yet.')
 			}
 		}
 	}
