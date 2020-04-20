@@ -4158,12 +4158,6 @@ mydigitalstructure._util.factory.core = function (param)
 		var responseController = mydigitalstructure._util.param.get(param, 'responseController').value;
 		var queryController = mydigitalstructure._util.param.get(param, 'queryController').value;
 		var fields = mydigitalstructure._util.param.get(param, 'fields').value;
-
-		if (fields == undefined && field != undefined)
-		{
-			fields = [{name: field, sortBy: true}]
-		}
-
 		var filters = [];
 
 		if (objectFilters != undefined)
@@ -4274,6 +4268,11 @@ mydigitalstructure._util.factory.core = function (param)
 				field = 'title'
 			}
 
+			if (fields == undefined && field != undefined)
+			{
+				fields = [{name: field, sortBy: true}]
+			}
+
 			if (typeof $.fn.select2 == 'function')
 			{
 				var selectParam = 
@@ -4365,7 +4364,7 @@ mydigitalstructure._util.factory.core = function (param)
 
 						    	if (dataQuerySorts.length == 0)
 						    	{
-						    		dataQuerySorts.push({name: _.first(fields).name, direction: 'asc'});
+						    		dataQuerySorts.push({name: _.first(dataQueryFields).name, direction: 'asc'});
 						    	}
 
 						    	var dataQueryFilters = [];
