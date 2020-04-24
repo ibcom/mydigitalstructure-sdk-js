@@ -7,12 +7,20 @@ mydigitalstructure._util.factory.import = function (param)
 		code: function (param)
 		{	
 			var context = mydigitalstructure._util.param.get(param.dataContext, 'context').value;
+			var validate = mydigitalstructure._util.param.get(param.dataContext, 'validate', {default: false}).value;
 
 			mydigitalstructure._util.data.set(
 			{
 				scope: 'util-import',
 				context: 'context',
 				value: context
+			});
+
+			mydigitalstructure._util.data.set(
+			{
+				scope: 'util-import',
+				context: 'validate',
+				value: validate
 			});
 
 			if ($('#myds-util-attachment-upload-import-file0').val() == '')
@@ -234,10 +242,16 @@ mydigitalstructure._util.factory.import = function (param)
 					param = mydigitalstructure._util.param.set(param, 'import', utilImport);
 
 					var processController = utilImport.processController;
+					var validateController = utilImport.validateController;
 
 					if (processController == undefined)
 					{
 						processController = 'util-import-process' + context
+					}
+
+					if (validateController == undefined)
+					{
+						validateController = 'util-import-process-validate' + context
 					}
 
 					if (_.isFunction(app.controller[processController]))
@@ -250,6 +264,29 @@ mydigitalstructure._util.factory.import = function (param)
 						}
 						else
 						{
+							if (response != undefined)
+							{
+								if (response.status == 'OK')
+								{
+									if (_.last(app.data['util-import'].processing) != undefined)
+									{
+										_.last(app.data['util-import'].processing)._status = 'imported-' + 
+												_.lowerCase(response.notes)
+										
+										_.last(app.data['util-import'].processing).response = response;
+									}
+								}
+								else
+								{
+									_.last(app.data['util-import'].processing)._status = 'error-' + 
+											_.lowerCase(response.error.errornotes)
+								}
+							}
+							else
+							{
+								_.last(app.data['util-import'].processing)._status = 'matched-not-updated'							
+							}
+
 							app.data["util-import"].dataIndex++;
 						}	
 
@@ -273,13 +310,22 @@ mydigitalstructure._util.factory.import = function (param)
 
 							param = mydigitalstructure._util.param.set(param, 'processing', _.last(app.data['util-import'].processing))
 
-							app.invoke(processController, param, rawData);
+							if (app.data["util-import"].validate)
+							{
+								app.invoke(validateController, param, rawData);
+							}
+							else
+							{
+								app.invoke(processController, param, rawData);
+							}	
 						}
 						else
 						{
 							app.vq.show('#util-import-status', 'Complete');
 
-							mydigitalstructure._util.controller.invoke(utilImport.completedController, param, app.data["util-import"].raw)
+							app.data["util-import"].status = _.groupBy(app.data['util-import'].processing, '_status');
+
+							mydigitalstructure._util.controller.invoke(utilImport.completedController, param, app.data["util-import"])
 						}	
 					}
 				}
