@@ -1102,7 +1102,13 @@ if (typeof $.fn.metisMenu == 'function')
 			//$('.metismenu').find('ul').not($(this)).removeClass('in');
 		}	
 	});
-}	
+}
+
+$(document).on('change', '.custom-file-input', function()
+{
+   let fileName = $(this).val().split('\\').pop();
+   $(this).next('.custom-file-label').addClass("selected").html(fileName);
+}); 
 
 if (typeof $.fn.tab == 'function')
 { 
@@ -4158,6 +4164,12 @@ mydigitalstructure._util.factory.core = function (param)
 		var responseController = mydigitalstructure._util.param.get(param, 'responseController').value;
 		var queryController = mydigitalstructure._util.param.get(param, 'queryController').value;
 		var fields = mydigitalstructure._util.param.get(param, 'fields').value;
+
+		if (objectFilters == undefined)
+		{
+			objectFilters = mydigitalstructure._util.param.get(param, 'filters').value;
+		}
+
 		var filters = [];
 
 		if (objectFilters != undefined)
@@ -4322,7 +4334,13 @@ mydigitalstructure._util.factory.core = function (param)
 
 							if (queryController != undefined)
 				    		{
-				    			var _dataQuery = mydigitalstructure._util.controller.invoke(queryController, {search: query.term})
+				    			var _dataQuery = mydigitalstructure._util.controller.invoke(queryController,
+				    			{
+				    				search: query.term,
+				    				fields: fields,
+				    				filters: filters,
+				    				dataContext: $(element).data()
+				    			})
 
 				    			if (_.isObject(_dataQuery))
 				    			{
@@ -5242,6 +5260,11 @@ mydigitalstructure._util.factory.core = function (param)
 	if (_.isFunction(mydigitalstructure._util.factory.export))
 	{
 		mydigitalstructure._util.factory.export(param)
+	}
+
+	if (_.isFunction(mydigitalstructure._util.factory.import))
+	{
+		mydigitalstructure._util.factory.import(param)
 	}	
 
 	if (_.isFunction(mydigitalstructure._util.factory.local))

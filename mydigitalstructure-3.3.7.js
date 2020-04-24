@@ -1488,6 +1488,7 @@ mydigitalstructure._util =
 											{
 												scope: set.scope,
 												context: set.context,
+												name: set.name,
 												value: response.data.rows
 											});
 										}
