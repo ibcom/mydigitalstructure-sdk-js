@@ -20,10 +20,13 @@ if (_.isObject(XLSX))
   			mydigitalstructure._util.import.excel.data.controller = $(e.target).attr('data-controller');
   			mydigitalstructure._util.import.excel.data.scope = $(e.target).attr('data-scope');
   			mydigitalstructure._util.import.excel.data.validate = $(e.target).attr('data-validate');
+  			mydigitalstructure._util.import.excel.data.userNameIfExists = $(e.target).attr('data-use-name-if-exists');
+
   			if (mydigitalstructure._util.import.excel.data.validate == undefined)
   			{
   				mydigitalstructure._util.import.excel.data.validate = false;
   			}
+
 
   			if (mydigitalstructure._util.import.excel.data.scope == undefined)
   			{
@@ -49,15 +52,20 @@ if (_.isObject(XLSX))
    			if (mydigitalstructure._util.import.excel.data.controller != undefined)
    			{
    				mydigitalstructure._util.import.excel.data.names = workbook.Workbook.Names;
-   				mydigitalstructure._util.import.excel.data.lastmodifieddate = moment(workbook.Props.ModifiedDate).format('LT');
+   				mydigitalstructure._util.import.excel.data.lastmodifieddate = moment(workbook.Props.ModifiedDate).format('DD MMM YYYY HH:mm:ss');
 
    				_.each(mydigitalstructure._util.import.excel.data.names, function (name)
    				{
-   					name.sheet = _.first(_.split(name.Ref, '!'));
+   					name.sheet = _.replaceAll(_.first(_.split(name.Ref, '!')), "'", '');
    					name.cell = _.replaceAll(_.last(_.split(name.Ref, '!')), '\\$', '');
 
    					_.each(mydigitalstructure._util.import.excel.data.format, function (format)
    					{
+   						if (format.name == undefined)
+   						{
+   							format.name = _.camelCase(format.caption).toLowerCase()
+   						}
+
    						if (format.name == name.Name)
    						{
    							if (format.sheet == undefined && format.cell == undefined)
@@ -71,6 +79,11 @@ if (_.isObject(XLSX))
    								{
    									format.cell = name.cell;
    								}
+   							}
+   							else if (mydigitalstructure._util.import.excel.data.userNameIfExists)
+   							{
+   								format.sheet = name.sheet;
+   								format.cell = name.cell;
    							}
    						}
    					})
@@ -92,6 +105,7 @@ if (_.isObject(XLSX))
 						var value;
 						var comments;
 						var parent;
+						var cell;
 
 						_.each(importFormat, function (format)
 						{
@@ -105,12 +119,19 @@ if (_.isObject(XLSX))
 
 								if (cell != undefined)
 								{
-									value = cell.v
+									value = cell.w;
+									if (value == undefined) {value = cell.v}
 									comments = cell.c;
 								}
 							}
 
+							if (value == undefined)
+							{
+								value = format.defaultValue;
+							}
+
 							format._value = value;
+							format._cell = cell;
 
 							format._comments = _.map(comments, function (comment)
 							{
