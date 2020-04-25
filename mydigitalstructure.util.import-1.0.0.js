@@ -91,7 +91,7 @@ if (_.isObject(XLSX))
 						var worksheet;
 						var value;
 						var comments;
-
+						var parent;
 
 						_.each(importFormat, function (format)
 						{
@@ -124,7 +124,15 @@ if (_.isObject(XLSX))
 								return comment;
 							});
 
-							mydigitalstructure._util.import.excel.data.processed[format.name] = value;
+							parent = format.parent;
+							if (parent == undefined) {parent = _.camelCase(format.sheet)}
+
+							if (mydigitalstructure._util.import.excel.data.processed[parent] == undefined)
+							{
+								mydigitalstructure._util.import.excel.data.processed[parent] = {}
+							}
+
+							mydigitalstructure._util.import.excel.data.processed[parent][format.name] = value;
 						});
    				}
 
