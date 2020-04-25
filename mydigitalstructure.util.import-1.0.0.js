@@ -48,6 +48,34 @@ if (_.isObject(XLSX))
 
    			if (mydigitalstructure._util.import.excel.data.controller != undefined)
    			{
+   				mydigitalstructure._util.import.excel.data.names = workbook.Workbook.Names;
+   				mydigitalstructure._util.import.excel.data.lastmodifieddate = moment(workbook.Props.ModifiedDate).format('LT');
+
+   				_.each(mydigitalstructure._util.import.excel.data.names, function (name)
+   				{
+   					name.sheet = _.first(_.split(name.Ref, '!'));
+   					name.cell = _.replaceAll(_.last(_.split(name.Ref, '!')), '\\$', '');
+
+   					_.each(mydigitalstructure._util.import.excel.data.format, function (format)
+   					{
+   						if (format.name == name.Name)
+   						{
+   							if (format.sheet == undefined && format.cell == undefined)
+   							{
+   								format.sheet = name.sheet;
+   								format.cell = name.cell;
+   							}
+   							else if (format.sheet != undefined && format.cell == undefined)
+   							{
+   								if (format.sheet == name.sheet)
+   								{
+   									format.cell = name.cell;
+   								}
+   							}
+   						}
+   					})
+   				});
+
    				var param = 
    				{
    					context: mydigitalstructure._util.import.excel.data.context,
@@ -63,6 +91,7 @@ if (_.isObject(XLSX))
 						var worksheet;
 						var value;
 						var comments;
+
 
 						_.each(importFormat, function (format)
 						{
