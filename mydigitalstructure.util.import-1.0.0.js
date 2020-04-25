@@ -1,4 +1,124 @@
 
+if (mydigitalstructure._util.import == undefined)
+{
+	mydigitalstructure._util.import = {}
+}
+
+//https://github.com/sheetjs/sheetjs
+if (_.isObject(XLSX))
+{
+	mydigitalstructure._util.import.excel =
+	{
+		data: {},
+
+		init: function (e)
+ 		{
+  			var files = e.target.files
+  			var file = files[0];
+  			var reader = new FileReader();
+
+  			mydigitalstructure._util.import.excel.data.controller = $(e.target).attr('data-controller');
+  			mydigitalstructure._util.import.excel.data.scope = $(e.target).attr('data-scope');
+  			mydigitalstructure._util.import.excel.data.validate = $(e.target).attr('data-validate');
+  			if (mydigitalstructure._util.import.excel.data.validate == undefined)
+  			{
+  				mydigitalstructure._util.import.excel.data.validate = false;
+  			}
+
+  			if (mydigitalstructure._util.import.excel.data.scope == undefined)
+  			{
+  				mydigitalstructure._util.import.excel.data.scope = mydigitalstructure._util.import.excel.data.controller
+  			}
+
+  			mydigitalstructure._util.import.excel.data.context = $(e.target).attr('data-context');
+
+  			mydigitalstructure._util.import.excel.data.format = mydigitalstructure._util.data.get(
+  			{
+  				scope: mydigitalstructure._util.import.excel.data.scope,
+  				context: mydigitalstructure._util.import.excel.data.context,
+  				name: 'import-format'
+  			})
+
+  			reader.onload = function(e)
+  			{
+				var data = new Uint8Array(e.target.result);
+				var workbook = XLSX.read(data, {type: 'array'});
+
+   			mydigitalstructure._util.import.excel.data.workbook = workbook;
+
+   			if (mydigitalstructure._util.import.excel.data.controller != undefined)
+   			{
+   				var param = 
+   				{
+   					context: mydigitalstructure._util.import.excel.data.context,
+   					format: 'excel'
+   				}
+
+   				var importFormat = mydigitalstructure._util.import.excel.data.format;
+
+   				if (importFormat != undefined)
+   				{
+   					mydigitalstructure._util.import.excel.data.processed = {};
+
+						var worksheet;
+						var value;
+						var comments;
+
+						_.each(importFormat, function (format)
+						{
+							worksheet = workbook.Sheets[format.sheet];
+							value = undefined;
+							comments = [];
+
+							if (worksheet != undefined)
+							{
+								cell = worksheet[format.cell];
+
+								if (cell != undefined)
+								{
+									value = cell.v
+									comments = cell.c;
+								}
+							}
+
+							format._value = value;
+
+							format._comments = _.map(comments, function (comment)
+							{
+								var comment = _.last(_.split(comment.t, 'Comment:'))
+
+								if (comment != undefined)
+								{
+									comment = _.trim(comment.replace(/[^a-zA-Z ]/g,""))
+								}
+
+								return comment;
+							});
+
+							mydigitalstructure._util.import.excel.data.processed[format.name] = value;
+						});
+   				}
+
+   				mydigitalstructure._util.controller.invoke(mydigitalstructure._util.import.excel.data.controller, param, mydigitalstructure._util.import.excel.data)
+   			}
+
+				/*
+					Example controller code @
+					https://webapp-quickstart-next.mydigitalstructure.cloud/site/1987/1901.util.import-1.0.0.js
+				*/
+ 			};
+
+  			reader.readAsArrayBuffer(file);
+  		}
+  	}
+
+	$(document).off('change', '#myds-util-import-excel-file')
+	.on('change', '#myds-util-import-excel-file', function(event)
+	{
+		mydigitalstructure._util.import.excel.init(event);
+	});
+}
+
 mydigitalstructure._util.factory.import = function (param)
 {
 	mydigitalstructure._util.controller.add(
@@ -332,5 +452,4 @@ mydigitalstructure._util.factory.import = function (param)
 			}
 		}
 	});
-
 }
