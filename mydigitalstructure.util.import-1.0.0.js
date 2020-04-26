@@ -20,7 +20,7 @@ if (_.isObject(XLSX))
   			mydigitalstructure._util.import.excel.data.controller = $(e.target).attr('data-controller');
   			mydigitalstructure._util.import.excel.data.scope = $(e.target).attr('data-scope');
   			mydigitalstructure._util.import.excel.data.validate = $(e.target).attr('data-validate');
-  			mydigitalstructure._util.import.excel.data.userNameIfExists = $(e.target).attr('data-use-name-if-exists');
+  			mydigitalstructure._util.import.excel.data.useNameIfExists = $(e.target).attr('data-use-name-if-exists');
 
   			if (mydigitalstructure._util.import.excel.data.validate == undefined)
   			{
@@ -54,38 +54,91 @@ if (_.isObject(XLSX))
    				mydigitalstructure._util.import.excel.data.names = workbook.Workbook.Names;
    				mydigitalstructure._util.import.excel.data.lastmodifieddate = moment(workbook.Props.ModifiedDate).format('DD MMM YYYY HH:mm:ss');
 
-   				_.each(mydigitalstructure._util.import.excel.data.names, function (name)
+   				_.each(mydigitalstructure._util.import.excel.data.format, function (format, f)
+   				{
+						format._processing = {notes: {cell: 'not-set', sheet:'not-set'}}
+				
+						//if (format.name == undefined)
+						//{
+							format.namebasedoncaption = _.camelCase(format.caption).toLowerCase();
+							format.namebasedoncaption_ = format.caption.replace(/[- )(]/g,'_').replace(/[- )(]/g,'').toLowerCase()
+						//}
+
+						format._processing.name = format.name;
+   					format._processing.namebasedoncaption = format.namebasedoncaption;
+   					format._processing.namebasedoncaption_ = format.namebasedoncaption_
+					})
+
+   				_.each(mydigitalstructure._util.import.excel.data.names, function (name, n)
    				{
    					name.sheet = _.replaceAll(_.first(_.split(name.Ref, '!')), "'", '');
    					name.cell = _.replaceAll(_.last(_.split(name.Ref, '!')), '\\$', '');
 
-   					_.each(mydigitalstructure._util.import.excel.data.format, function (format)
+   					_.each(mydigitalstructure._util.import.excel.data.format, function (format, f)
    					{
-   						if (format.name == undefined)
+   						if (format.name == name.Name.toLowerCase() ||
+   								format.namebasedoncaption == name.Name.toLowerCase() || 
+   								format.namebasedoncaption_ == name.Name.toLowerCase())
    						{
-   							format.name = _.camelCase(format.caption).toLowerCase()
-   						}
+   							//format._processing.name = format.name;
+   							//format._processing.namebasedoncaption = format.namebasedoncaption;
+   							//format._processing.namebasedoncaption_ = format.namebasedoncaption_
 
-   						if (format.name == name.Name)
-   						{
+   							var suffix = '';
+
+   							if (format.name != name.Name.toLowerCase())
+   							{
+   								if (format.namebasedoncaption == name.Name.toLowerCase())
+   								{
+   									suffix = '-based-on-caption';
+   									format._processing.name = format.namebasedoncaption;
+   								}
+   								else if (format.namebasedoncaption_ == name.Name.toLowerCase())
+   								{
+   									suffix = '-based-on-caption-underscore'
+   									format._processing.name = format.namebasedoncaption_;
+   								}
+   							}
+  						
    							if (format.sheet == undefined && format.cell == undefined)
    							{
    								format.sheet = name.sheet;
    								format.cell = name.cell;
+
+   								format._processing.notes.cell = 'based-on-name' + suffix;
+   								format._processing.notes.sheet = 'based-on-name' + suffix;
    							}
    							else if (format.sheet != undefined && format.cell == undefined)
    							{
    								if (format.sheet == name.sheet)
    								{
    									format.cell = name.cell;
+
+   									format._processing.notes.cell = 'based-on-name' + suffix;
    								}
    							}
-   							else if (mydigitalstructure._util.import.excel.data.userNameIfExists)
+   							else if (mydigitalstructure._util.import.excel.data.useNameIfExists)
    							{
    								format.sheet = name.sheet;
    								format.cell = name.cell;
-   							}
+
+   								format._processing.notes.cell = 'based-on-name-as-exists' + suffix;
+   								format._processing.notes.sheet = 'based-on-name-as-exists' + suffix;
+   							}	
    						}
+   						
+   						if (format.type == 'many' && format.range != undefined)
+   						{
+   							if (format.range.header.name.toLowerCase() == name.Name.toLowerCase())
+   							{
+   								format.range.header.cell = name.cell;
+   							}
+
+   							if (format.range.footer.name.toLowerCase() == name.Name.toLowerCase())
+   							{
+   								format.range.footer.cell = name.cell;
+   							}
+   						}		
    					})
    				});
 
@@ -103,35 +156,84 @@ if (_.isObject(XLSX))
 
 						var worksheet;
 						var value;
+						var valueFormatted;
 						var comments;
 						var parent;
 						var cell;
 
 						_.each(importFormat, function (format)
 						{
+   						if (format._processing.notes.cell == 'not-set' && format.cell != undefined)
+   						{ 
+   							format._processing.notes.cell = 'as-set'
+   						}
+
+   						if (format._processing.notes.sheet == 'not-set' && format.sheet != undefined)
+   						{ 
+   							format._processing.notes.sheet = 'as-set'
+   						}
+
+							if (format.sheet != undefined)
+							{
+								mydigitalstructure._util.import.excel.data.currentSheetName = format.sheet;
+							}
+							else
+							{
+								format.sheet = mydigitalstructure._util.import.excel.data.currentSheetName;
+
+								if (format.sheet != undefined)
+	   						{ 
+	   							format._processing.notes.sheet = 'based-on-preceding-format'
+	   						}
+							}
+
 							worksheet = workbook.Sheets[format.sheet];
+
 							value = undefined;
+							valueFormatted = undefined;
 							comments = [];
 
 							if (worksheet != undefined)
 							{
-								cell = worksheet[format.cell];
-
-								if (cell != undefined)
+								if (format.type != 'many')
 								{
-									value = cell.w;
-									if (value == undefined) {value = cell.v}
-									comments = cell.c;
+									cell = worksheet[format.cell];
+
+									if (cell != undefined)
+									{
+										value = cell.w;
+										if (value == undefined)
+										{
+											value = cell.v
+										}
+
+										valueFormatted = value;
+
+										if (format.format != undefined)
+										{
+											if (format.format.date != undefined)
+											{
+												valueFormatted = moment(valueFormatted, format.format.date.in).format(format.format.date.out)
+											}
+										}
+
+										comments = cell.c;
+									}
+								}
+								else
+								{
+									//valueFormatted = XLSX.utils.sheet_to_json(worksheet, { range: format.range, raw: false, header:1, defval: '', blankrows: false })
 								}
 							}
 
-							if (value == undefined)
+							if (valueFormatted == undefined)
 							{
-								value = format.defaultValue;
+								valueFormatted = format.defaultValue;
 							}
 
 							format._value = value;
 							format._cell = cell;
+							format.value = valueFormatted;
 
 							format._comments = _.map(comments, function (comment)
 							{
@@ -153,7 +255,7 @@ if (_.isObject(XLSX))
 								mydigitalstructure._util.import.excel.data.processed[parent] = {}
 							}
 
-							mydigitalstructure._util.import.excel.data.processed[parent][format.name] = value;
+							mydigitalstructure._util.import.excel.data.processed[parent][format.name] = valueFormatted;
 						});
    				}
 
