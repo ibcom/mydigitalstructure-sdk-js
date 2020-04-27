@@ -7,9 +7,215 @@ if (mydigitalstructure._util.import == undefined)
 //https://github.com/sheetjs/sheetjs
 if (_.isObject(XLSX))
 {
-	mydigitalstructure._util.import.excel =
+	mydigitalstructure._util.import.sheet =
 	{
 		data: {},
+
+		validate: function (field, valueFormatted)
+		{
+			var processingErrors = [];
+			var validateErrors = {};
+			var validateControllerErrors;
+
+			if (field.validate != undefined)
+			{	
+				if (field.validate.mandatory && (valueFormatted == '' || valueFormatted == undefined))
+				{
+					processingErrors.push('mandatory');
+					validateErrors['mandatory'] = true;
+				}
+
+				if (field.validate.numeral)
+				{
+					if (_.isNull(numeral(valueFormatted).value()))
+					{
+						processingErrors.push('numeral')
+						validateErrors['numeral'] = true;
+					}
+				}
+
+				var maximum = field.validate.numeralMaximum;
+
+				if (maximum != undefined &&  !_.isNull(numeral(maximum).value()))
+				{
+					if (!_.isNull(numeral(valueFormatted).value()))
+					{
+						if (numeral(valueFormatted).value() > numeral(maximum).value())
+						{
+							processingErrors.push('numeral-maximum')
+							validateErrors['numeral-maximum'] = true;
+						}
+					}
+				}
+
+				var minimum = field.validate.numeralMinimum;
+
+				if (minimum != undefined && !_.isNull(numeral(minimum).value()))
+				{
+					if (!_.isNull(numeral(valueFormatted).value()))
+					{
+						if (numeral(valueFormatted).value() < numeral(minimum).value())
+						{
+							processingErrors.push('numeral-minimum')
+							validateErrors['numeral-minimum'] = true;
+						}
+					}
+				}
+
+				var maximumLength = field.validate.maximumLength;
+
+				if (maximumLength != undefined)
+				{
+					if (numeral(valueFormatted.length).value() > numeral(maximumLength).value())
+					{
+						processingErrors.push('maximum-length')
+						validateErrors['maximum-length'] = true;
+					}
+				}
+
+				var minimumLength = field.validate.minimumLength;
+
+				if (minimumLength != undefined)
+				{
+					if (numeral(valueFormatted.length).value() < numeral(minimumLength).value())
+					{
+						processingErrors.push('minimum-length')
+						validateErrors['minimum-length'] = true;
+					}
+				}
+
+				if (field.validate.email)
+				{
+					if (!mydigitalstructure._util.validate.isEmail(valueFormatted))
+					{
+						processingErrors.push('email')
+						validateErrors['email'] = true;
+					}
+				}
+
+				if (field.validate.date)
+				{
+					if (!mydigitalstructure._util.validate.isDate(valueFormatted))
+					{
+						processingErrors.push('date')
+						validateErrors['date'] = true;
+					}
+				}
+
+				if (field.validate.controller != undefined)
+				{
+					validateControllerErrors = mydigitalstructure._util.controller.invoke(field.validate.controller, field, valueFormatted);
+					validateErrors = _.assign(validateErrors, validateControllerErrors);
+
+					_.each(validateControllerErrors, function (value, key)
+					{
+						if (value == true)
+						{
+							processingErrors.push(key);
+						}
+					})
+				}
+
+				if (processingErrors.length != 0)
+				{
+					if (field._processing.name != undefined)
+					{
+						mydigitalstructure._util.import.sheet.data.validate._errors[field._processing.name] = validateErrors;
+					}
+				
+					field._processing.validate.errors = (processingErrors.length != 0);
+					field._processing.validate._errors = validateErrors;
+					field._processing.validate._errorsList = processingErrors;
+				}
+			}
+		},
+
+		range: function (format, worksheet)
+ 		{
+ 			//Use range header to get cells to work through
+ 			//Assume cells have been resolved
+
+ 			var headerCell = format.range.header.cell; // A45
+ 			var headerRow = numeral(format.range.header.cell).value(); //45
+
+ 			var footerCell = format.range.footer.cell; // A53
+ 			var footerRow = numeral(format.range.footer.cell).value(); //53
+
+ 			var fieldsStartRow = headerRow + 1; //46
+ 			var fieldsEndRow = footerRow - 1; //52
+
+ 			var fields = format.range.fields;
+
+ 			var importData = []
+
+ 			var rows = _.range(fieldsStartRow, fieldsEndRow + 1);
+ 			var value;
+ 			var valueFormatted;
+
+ 			if (format.name == undefined)
+ 			{
+ 				format.name = _.camelCase(format.caption).toLowerCase();
+ 			}
+
+ 			_.each(rows, function (row, r)
+ 			{
+ 				rowFields = _.cloneDeep(fields);
+ 				
+ 				_.each(rowFields, function (field)
+ 				{
+ 					valueFormatted = undefined;
+ 					value = undefined;
+
+ 					field.suffix = (r + 1);
+ 					field.row = row;
+ 					field.cell = field.column + field.row;  
+
+ 					field._cell = worksheet[field.cell];
+ 					field._processing = {name: format.name + '-' + field.name + '-' + field.suffix, validate: {}, notes: {}}
+
+					if (field._cell != undefined)
+					{
+						value = field._cell.w;
+						if (value == undefined)
+						{
+							value = field._cell.v
+						}
+
+						valueFormatted = value;
+
+						if (field.format != undefined)
+						{
+							if (field.format.date != undefined)
+							{
+								valueFormatted = moment(valueFormatted, field.format.date.in).format(field.format.date.out)
+							}
+
+							if (field.format.contoller != undefined)
+							{
+								valueFormatted = mydigitalstructure._util.controller.invoke(field.format.contoller, field, valueFormatted)
+							}
+						}
+
+						field._comments = field._cell.c;
+					}
+
+					if (valueFormatted == undefined)
+					{
+						valueFormatted = field.defaultValue;
+					}
+
+					field.value = valueFormatted;
+					field._value = value;
+
+					//VALIDATION
+					mydigitalstructure._util.import.sheet.validate(field, valueFormatted);
+ 				});
+
+ 				importData.push(_.cloneDeep(rowFields));
+ 			});
+
+ 			return importData;
+ 		},
 
 		init: function (e)
  		{
@@ -17,28 +223,28 @@ if (_.isObject(XLSX))
   			var file = files[0];
   			var reader = new FileReader();
 
-  			mydigitalstructure._util.import.excel.data.controller = $(e.target).attr('data-controller');
-  			mydigitalstructure._util.import.excel.data.scope = $(e.target).attr('data-scope');
-  			mydigitalstructure._util.import.excel.data.validate = $(e.target).attr('data-validate');
-  			mydigitalstructure._util.import.excel.data.useNameIfExists = $(e.target).attr('data-use-name-if-exists');
+  			mydigitalstructure._util.import.sheet.data.controller = $(e.target).attr('data-controller');
+  			mydigitalstructure._util.import.sheet.data.scope = $(e.target).attr('data-scope');
+  			mydigitalstructure._util.import.sheet.data.validate = {errors: false, _errors: {}, status: $(e.target).attr('data-validate')};
+  			mydigitalstructure._util.import.sheet.data.useNameIfExists = $(e.target).attr('data-use-name-if-exists');
 
-  			if (mydigitalstructure._util.import.excel.data.validate == undefined)
+  			if (mydigitalstructure._util.import.sheet.data.validate == undefined)
   			{
-  				mydigitalstructure._util.import.excel.data.validate = false;
+  				mydigitalstructure._util.import.sheet.data.validate = false;
   			}
 
 
-  			if (mydigitalstructure._util.import.excel.data.scope == undefined)
+  			if (mydigitalstructure._util.import.sheet.data.scope == undefined)
   			{
-  				mydigitalstructure._util.import.excel.data.scope = mydigitalstructure._util.import.excel.data.controller
+  				mydigitalstructure._util.import.sheet.data.scope = mydigitalstructure._util.import.sheet.data.controller
   			}
 
-  			mydigitalstructure._util.import.excel.data.context = $(e.target).attr('data-context');
+  			mydigitalstructure._util.import.sheet.data.context = $(e.target).attr('data-context');
 
-  			mydigitalstructure._util.import.excel.data.format = mydigitalstructure._util.data.get(
+  			mydigitalstructure._util.import.sheet.data.format = mydigitalstructure._util.data.get(
   			{
-  				scope: mydigitalstructure._util.import.excel.data.scope,
-  				context: mydigitalstructure._util.import.excel.data.context,
+  				scope: mydigitalstructure._util.import.sheet.data.scope,
+  				context: mydigitalstructure._util.import.sheet.data.context,
   				name: 'import-format'
   			})
 
@@ -47,16 +253,16 @@ if (_.isObject(XLSX))
 				var data = new Uint8Array(e.target.result);
 				var workbook = XLSX.read(data, {type: 'array'});
 
-   			mydigitalstructure._util.import.excel.data.workbook = workbook;
+   			mydigitalstructure._util.import.sheet.data.workbook = workbook;
 
-   			if (mydigitalstructure._util.import.excel.data.controller != undefined)
+   			if (mydigitalstructure._util.import.sheet.data.controller != undefined)
    			{
-   				mydigitalstructure._util.import.excel.data.names = workbook.Workbook.Names;
-   				mydigitalstructure._util.import.excel.data.lastmodifieddate = moment(workbook.Props.ModifiedDate).format('DD MMM YYYY HH:mm:ss');
+   				mydigitalstructure._util.import.sheet.data.names = workbook.Workbook.Names;
+   				mydigitalstructure._util.import.sheet.data.lastmodifieddate = moment(workbook.Props.ModifiedDate).format('DD MMM YYYY HH:mm:ss');
 
-   				_.each(mydigitalstructure._util.import.excel.data.format, function (format, f)
+   				_.each(mydigitalstructure._util.import.sheet.data.format, function (format, f)
    				{
-						format._processing = {notes: {cell: 'not-set', sheet:'not-set'}}
+						format._processing = {notes: {cell: 'not-set', sheet:'not-set'}, validate: {errors: false}}
 				
 						//if (format.name == undefined)
 						//{
@@ -69,14 +275,14 @@ if (_.isObject(XLSX))
    					format._processing.namebasedoncaption_ = format.namebasedoncaption_
 					})
 
-   				_.each(mydigitalstructure._util.import.excel.data.names, function (name, n)
+   				_.each(mydigitalstructure._util.import.sheet.data.names, function (name, n)
    				{
    					name.sheet = _.replaceAll(_.first(_.split(name.Ref, '!')), "'", '');
    					name.cell = _.replaceAll(_.last(_.split(name.Ref, '!')), '\\$', '');
 
-   					_.each(mydigitalstructure._util.import.excel.data.format, function (format, f)
+   					_.each(mydigitalstructure._util.import.sheet.data.format, function (format, f)
    					{
-   						if (format.name == name.Name.toLowerCase() ||
+   						if ((format.name!=undefined?format.name:'').toLowerCase() == name.Name.toLowerCase() ||
    								format.namebasedoncaption == name.Name.toLowerCase() || 
    								format.namebasedoncaption_ == name.Name.toLowerCase())
    						{
@@ -86,7 +292,7 @@ if (_.isObject(XLSX))
 
    							var suffix = '';
 
-   							if (format.name != name.Name.toLowerCase())
+   							if ((format.name!=undefined?format.name:'').toLowerCase() != name.Name.toLowerCase())
    							{
    								if (format.namebasedoncaption == name.Name.toLowerCase())
    								{
@@ -117,7 +323,7 @@ if (_.isObject(XLSX))
    									format._processing.notes.cell = 'based-on-name' + suffix;
    								}
    							}
-   							else if (mydigitalstructure._util.import.excel.data.useNameIfExists)
+   							else if (mydigitalstructure._util.import.sheet.data.useNameIfExists)
    							{
    								format.sheet = name.sheet;
    								format.cell = name.cell;
@@ -127,7 +333,7 @@ if (_.isObject(XLSX))
    							}	
    						}
    						
-   						if (format.type == 'many' && format.range != undefined)
+   						if (format.range != undefined)
    						{
    							if (format.range.header.name.toLowerCase() == name.Name.toLowerCase())
    							{
@@ -144,15 +350,15 @@ if (_.isObject(XLSX))
 
    				var param = 
    				{
-   					context: mydigitalstructure._util.import.excel.data.context,
-   					format: 'excel'
+   					context: mydigitalstructure._util.import.sheet.data.context,
+   					format: 'sheet'
    				}
 
-   				var importFormat = mydigitalstructure._util.import.excel.data.format;
+   				var importFormat = mydigitalstructure._util.import.sheet.data.format;
 
    				if (importFormat != undefined)
    				{
-   					mydigitalstructure._util.import.excel.data.processed = {};
+   					mydigitalstructure._util.import.sheet.data.processed = {};
 
 						var worksheet;
 						var value;
@@ -175,11 +381,11 @@ if (_.isObject(XLSX))
 
 							if (format.sheet != undefined)
 							{
-								mydigitalstructure._util.import.excel.data.currentSheetName = format.sheet;
+								mydigitalstructure._util.import.sheet.data.currentSheetName = format.sheet;
 							}
 							else
 							{
-								format.sheet = mydigitalstructure._util.import.excel.data.currentSheetName;
+								format.sheet = mydigitalstructure._util.import.sheet.data.currentSheetName;
 
 								if (format.sheet != undefined)
 	   						{ 
@@ -195,7 +401,7 @@ if (_.isObject(XLSX))
 
 							if (worksheet != undefined)
 							{
-								if (format.type != 'many')
+								if (format.range == undefined)
 								{
 									cell = worksheet[format.cell];
 
@@ -215,6 +421,11 @@ if (_.isObject(XLSX))
 											{
 												valueFormatted = moment(valueFormatted, format.format.date.in).format(format.format.date.out)
 											}
+
+											if (format.format.contoller != undefined)
+											{
+												valueFormatted = mydigitalstructure._util.controller.invoke(format.format.contoller, format, valueFormatted)
+											}
 										}
 
 										comments = cell.c;
@@ -222,7 +433,7 @@ if (_.isObject(XLSX))
 								}
 								else
 								{
-									//valueFormatted = XLSX.utils.sheet_to_json(worksheet, { range: format.range, raw: false, header:1, defval: '', blankrows: false })
+									valueFormatted = mydigitalstructure._util.import.sheet.range(format, worksheet);
 								}
 							}
 
@@ -250,16 +461,32 @@ if (_.isObject(XLSX))
 							parent = format.parent;
 							if (parent == undefined) {parent = _.camelCase(format.sheet)}
 
-							if (mydigitalstructure._util.import.excel.data.processed[parent] == undefined)
+							//VALIDATION
+							mydigitalstructure._util.import.sheet.validate(format, valueFormatted);
+
+							//PROCESSED
+							if (mydigitalstructure._util.import.sheet.data.processed[parent] == undefined)
 							{
-								mydigitalstructure._util.import.excel.data.processed[parent] = {}
+								mydigitalstructure._util.import.sheet.data.processed[parent] = {}
 							}
 
-							mydigitalstructure._util.import.excel.data.processed[parent][format.name] = valueFormatted;
+							mydigitalstructure._util.import.sheet.data.processed[parent][format.name] = valueFormatted;
 						});
+
+						mydigitalstructure._util.import.sheet.data.validate.errors =
+							!_.isEmpty(mydigitalstructure._util.import.sheet.data.validate._errors)
    				}
 
-   				mydigitalstructure._util.controller.invoke(mydigitalstructure._util.import.excel.data.controller, param, mydigitalstructure._util.import.excel.data)
+   				mydigitalstructure._util.data.set(
+   				{
+   					scope: mydigitalstructure._util.import.sheet.data.scope,
+   					context: mydigitalstructure._util.import.sheet.data.context,
+   					name: 'dataContext',
+   					value: mydigitalstructure._util.import.sheet.data.processed
+   				})
+   				
+
+   				mydigitalstructure._util.controller.invoke(mydigitalstructure._util.import.sheet.data.controller, param, mydigitalstructure._util.import.sheet.data)
    			}
 
 				/*
@@ -272,10 +499,10 @@ if (_.isObject(XLSX))
   		}
   	}
 
-	$(document).off('change', '#myds-util-import-excel-file')
-	.on('change', '#myds-util-import-excel-file', function(event)
+	$(document).off('change', '#myds-util-import-sheet-file')
+	.on('change', '#myds-util-import-sheet-file', function(event)
 	{
-		mydigitalstructure._util.import.excel.init(event);
+		mydigitalstructure._util.import.sheet.init(event);
 	});
 }
 

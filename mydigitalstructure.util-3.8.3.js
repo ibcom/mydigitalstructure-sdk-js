@@ -2414,7 +2414,6 @@ mydigitalstructure._util.view._refresh = function (param)
 				mydigitalstructure._util.controller.invoke(dataController, dataInScopeAll)
 			}
 		}
-		
 	}
 
 	if (template)
@@ -2752,7 +2751,7 @@ mydigitalstructure._util.access =
 
 mydigitalstructure._util.data = 
 {
-	reset: 	function (param)
+	reset: function (param)
 			{
 				var controller = mydigitalstructure._util.param.get(param, 'controller').value;
 				var scope = mydigitalstructure._util.param.get(param, 'scope').value;
@@ -3093,6 +3092,9 @@ mydigitalstructure._util.data =
 mydigitalstructure._util.reset = function (param)
 {
 	var controller = mydigitalstructure._util.param.get(param, 'controller').value;
+	var scope = mydigitalstructure._util.param.get(param, 'scope').value;
+	if (controller == undefined) {controller = scope}
+
 	var data = mydigitalstructure._util.param.get(param, 'data').value;
 	
 	if (data)
@@ -3108,6 +3110,7 @@ mydigitalstructure._util.reset = function (param)
 		$('#' + controller + ' .myds-data-view').html(mydigitalstructure._scope.app.options.working);
 		$('#' + controller + ' .myds-text-select').val('');
 		$('#' + controller + ' .myds-text-select').removeAttr('data-id');
+		$('#' + controller).removeClass('myds-validate-error');
 	}	
 }
 
@@ -3903,6 +3906,9 @@ mydigitalstructure._util.factory.core = function (param)
 		$('#' + controller + ' .myds-check').attr('checked', false);
 		$('#' + controller + ' .myds-data').html('...');
 		$('#' + controller + ' .myds-data-view').html(app.options.working);
+		$('#' + controller + ' .myds-text-select').val('');
+		$('#' + controller + ' .myds-text-select').removeAttr('data-id');
+		$('#' + controller + ' input').removeClass('myds-validate-error');
 	}
 
 	app.controller['util-attachment-check'] = function (param)
@@ -4327,7 +4333,7 @@ mydigitalstructure._util.factory.core = function (param)
 					{
 						url: '/rpc/' + endpoint + '/?method=' + object + '_search',
 						type: 'POST',
-						delay: 250,
+						delay: 500,
 						data: function (query)
 						{
 							var dataQuery = {};
