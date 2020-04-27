@@ -2344,6 +2344,9 @@ mydigitalstructure._util.view._refresh = function (param)
 	var selector = mydigitalstructure._util.param.get(param, 'selector').value;
 	var dataScope = mydigitalstructure._util.param.get(param, 'dataScope').value;
 	var dataController = mydigitalstructure._util.param.get(param, 'dataController').value;
+	var resetScope = mydigitalstructure._util.param.get(param, 'resetScope', {default: true}).value;
+	var resetScopeNew = mydigitalstructure._util.param.get(param, 'resetScopeNew', {default: true}).value;
+
 	var includeDates = mydigitalstructure._util.param.get(param, 'includeDates', {default: true}).value;
 
 	if (_.isUndefined(template) && !_.isUndefined(selector)) {template = true}
@@ -2414,6 +2417,16 @@ mydigitalstructure._util.view._refresh = function (param)
 				mydigitalstructure._util.controller.invoke(dataController, dataInScopeAll)
 			}
 		}
+	}
+
+	if (resetScope && scope != undefined)
+	{
+		mydigitalstructure._util.data.reset({scope: scope})
+	}
+
+	if (resetScopeNew && scope != undefined)
+	{
+		mydigitalstructure._util.data.reset({scope: scope + '-'})
 	}
 
 	if (template)
@@ -3096,12 +3109,18 @@ mydigitalstructure._util.reset = function (param)
 	if (controller == undefined) {controller = scope}
 
 	var data = mydigitalstructure._util.param.get(param, 'data').value;
+	var includeNew = mydigitalstructure._util.param.get(param, 'includeNew', {default: true}).value;
 	
 	if (data)
 	{
-		app._util.data.reset(param)	
+		app._util.data.reset(param);
+
+		if (includeNew)
+		{
+			app._util.data.reset({scope: scope + '-'});
+		}
 	}
-	
+
 	if (controller != '' && controller != undefined)
 	{
 		$('#' + controller + ' .myds-text').val('');
@@ -3894,12 +3913,18 @@ mydigitalstructure._util.factory.core = function (param)
 		var controller = mydigitalstructure._util.param.get(param, 'controller').value;
 		var scope = mydigitalstructure._util.param.get(param, 'scope').value;
 		var data = mydigitalstructure._util.param.get(param, 'data').value;
-		
+		var includeNew = mydigitalstructure._util.param.get(param, 'includeNew', {default: true}).value;
+
 		if (controller == undefined) {controller = scope}
 
 		if (data)
 		{
-			app._util.data.reset(param)	
+			app._util.data.reset(param);
+
+			if (includeNew)
+			{
+				app._util.data.reset({scope: scope + '-'});
+			}
 		}
 		
 		$('#' + controller + ' .myds-text').val('');
