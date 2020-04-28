@@ -246,6 +246,13 @@ if (_.isObject(XLSX))
   				scope: mydigitalstructure._util.import.sheet.data.scope,
   				context: mydigitalstructure._util.import.sheet.data.context,
   				name: 'import-format'
+  			});
+
+  			mydigitalstructure._util.import.sheet.data.formatTemplate = mydigitalstructure._util.data.get(
+  			{
+  				scope: mydigitalstructure._util.import.sheet.data.scope,
+  				context: mydigitalstructure._util.import.sheet.data.context,
+  				name: 'import-format-template'
   			})
 
   			reader.onload = function(e)
@@ -260,21 +267,38 @@ if (_.isObject(XLSX))
    				mydigitalstructure._util.import.sheet.data.names = workbook.Workbook.Names;
    				mydigitalstructure._util.import.sheet.data.lastmodifieddate = moment(workbook.Props.ModifiedDate).format('DD MMM YYYY HH:mm:ss');
 
+   				//PROCESS TEMPLATES
+   				_.each(mydigitalstructure._util.import.sheet.data.formatTemplate, function (formatTemplate)
+   				{
+						_.each(formatTemplate.names, function (name)
+						{
+							mydigitalstructure._util.import.sheet.data.format.push(
+							{
+								sheet: formatTemplate.sheet,
+								cell: (formatTemplate.cell!=undefined?_.replaceAll(formatTemplate.cell, '{{name}}', name):undefined),
+								name: formatTemplate.prefix + name,
+								format: formatTemplate.format,
+								caption: (formatTemplate.caption!=undefined?_.replaceAll(formatTemplate.caption, '{{name}}', name):undefined),
+								controller: formatTemplate.controller,
+								validate: formatTemplate.validate
+							});
+						});
+					});
+
+   				//PROCESS FORMATS
    				_.each(mydigitalstructure._util.import.sheet.data.format, function (format, f)
    				{
 						format._processing = {notes: {cell: 'not-set', sheet:'not-set'}, validate: {errors: false}}
 				
-						//if (format.name == undefined)
-						//{
-							format.namebasedoncaption = _.camelCase(format.caption).toLowerCase();
-							format.namebasedoncaption_ = format.caption.replace(/[- )(]/g,'_').replace(/[- )(]/g,'').toLowerCase()
-						//}
-
+						format.namebasedoncaption = _.camelCase(format.caption).toLowerCase();
+						format.namebasedoncaption_ = format.caption.replace(/[- )(]/g,'_').replace(/[- )(]/g,'').toLowerCase()
+				
 						format._processing.name = format.name;
    					format._processing.namebasedoncaption = format.namebasedoncaption;
    					format._processing.namebasedoncaption_ = format.namebasedoncaption_
-					})
+					});
 
+   				//RESOLVE NAMES
    				_.each(mydigitalstructure._util.import.sheet.data.names, function (name, n)
    				{
    					name.sheet = _.replaceAll(_.first(_.split(name.Ref, '!')), "'", '');

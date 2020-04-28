@@ -20,6 +20,6 @@
 
 .myds-validate-error
 {
-	border-color: red;
-	color: red;
+	border-color: red !important;
+	color: red !important;
 }
