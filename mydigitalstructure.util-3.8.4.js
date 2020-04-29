@@ -422,31 +422,60 @@ $(document).off('click', '.myds-check')
 			app.controller[controllerBefore](param);
 		}
 
+		var ids = [];
+		var uncheckedids = [];
+
+		if (selected)
+		{
+			ids.push(dataID)
+		}
+		else
+		{
+			uncheckedids.push(dataID)
+		}
+		
 		if (controller != undefined)
 		{
 			var inputs = $('input.myds-check[data-controller="' + controller + '"][data-context="' + context + '"]:visible');
-			var ids = [dataID];
+		
 			
 			if (inputs.length != 1)
 			{
 	 			var checked = $('input.myds-check[data-controller="' + controller + '"][data-context="' + context + '"]:checked:visible');
-	 			ids = $.map(checked, function (c) {return $(c).data('id')});
+	 			ids = $.map(checked, function (c)
+	 			{
+	 				return $(c).data('id')}
+	 			);
+
+	 			var unchecked = $('input.myds-check[data-controller="' + controller + '"][data-context="' + context + '"]:not(:checked):visible');
+	 			uncheckedids = $.map(unchecked, function (c)
+	 			{
+	 				return $(c).data('id')}
+	 			);
 			}
 		}
 		else
 		{
 			var inputs = $('input.myds-check[data-scope="' + scope + '"][data-context="' + context + '"]:visible');
-			var ids = [dataID];
 			
 			if (inputs.length != 1)
 			{
 	 			var checked = $('input.myds-check[data-scope="' + scope + '"][data-context="' + context + '"]:checked:visible');
 	 			ids = $.map(checked, function (c) {return $(c).data('id')});
+
+	 			var unchecked = $('input.myds-check[data-scope="' + scope + '"][data-context="' + context + '"]:not(:checked):visible');
+	 			uncheckedids = $.map(unchecked, function (c)
+	 			{
+	 				return $(c).data('id')}
+	 			);
 			}
 		}
 		
  		app.data[scope][context] = (ids.length==0?'':ids.join(','));
  		app.data[scope]['_' + context] = ids;
+
+ 		app.data[scope][context + '-unselected'] = (uncheckedids.length==0?'':ids.join(','));
+ 		app.data[scope]['_' + context + '-unselected'] = uncheckedids;
 
 		if (controller != undefined)
 		{	
@@ -2220,7 +2249,7 @@ mydigitalstructure._util.view._refresh = function (param)
 	var selector = mydigitalstructure._util.param.get(param, 'selector').value;
 	var dataScope = mydigitalstructure._util.param.get(param, 'dataScope').value;
 	var dataController = mydigitalstructure._util.param.get(param, 'dataController').value;
-	var resetScope = mydigitalstructure._util.param.get(param, 'resetScope', {default: true}).value;
+	var resetScope = mydigitalstructure._util.param.get(param, 'resetScope', {default: false}).value;
 	var resetScopeNew = mydigitalstructure._util.param.get(param, 'resetScopeNew', {default: true}).value;
 
 	var includeDates = mydigitalstructure._util.param.get(param, 'includeDates', {default: true}).value;

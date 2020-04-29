@@ -430,7 +430,16 @@ $(document).off('click', '.myds-check')
 			if (inputs.length != 1)
 			{
 	 			var checked = $('input.myds-check[data-controller="' + controller + '"][data-context="' + context + '"]:checked:visible');
-	 			ids = $.map(checked, function (c) {return $(c).data('id')});
+	 			ids = $.map(checked, function (c)
+	 			{
+	 				return $(c).data('id')}
+	 			);
+
+	 			var unchecked = $('input.myds-check[data-controller="' + controller + '"][data-context="' + context + '"]:not(:checked):visible');
+	 			uncheckedids = $.map(unchecked, function (c)
+	 			{
+	 				return $(c).data('id')}
+	 			);
 			}
 		}
 		else
@@ -442,11 +451,20 @@ $(document).off('click', '.myds-check')
 			{
 	 			var checked = $('input.myds-check[data-scope="' + scope + '"][data-context="' + context + '"]:checked:visible');
 	 			ids = $.map(checked, function (c) {return $(c).data('id')});
+
+	 			var unchecked = $('input.myds-check[data-scope="' + scope + '"][data-context="' + context + '"]:not(:checked):visible');
+	 			uncheckedids = $.map(unchecked, function (c)
+	 			{
+	 				return $(c).data('id')}
+	 			);
 			}
 		}
 		
  		app.data[scope][context] = (ids.length==0?'':ids.join(','));
  		app.data[scope]['_' + context] = ids;
+
+ 		app.data[scope][context + '-unselected'] = (ids.length==0?'':ids.join(','));
+ 		app.data[scope]['_' + context + '-unselected'] = ids;
 
 		if (controller != undefined)
 		{	

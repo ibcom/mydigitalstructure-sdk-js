@@ -258,7 +258,7 @@ if (_.isObject(XLSX))
   			reader.onload = function(e)
   			{
 				var data = new Uint8Array(e.target.result);
-				var workbook = XLSX.read(data, {type: 'array'});
+				var workbook = XLSX.read(data, {type: 'array', bookImages: true});
 
    			mydigitalstructure._util.import.sheet.data.workbook = workbook;
 
@@ -266,6 +266,29 @@ if (_.isObject(XLSX))
    			{
    				mydigitalstructure._util.import.sheet.data.names = workbook.Workbook.Names;
    				mydigitalstructure._util.import.sheet.data.lastmodifieddate = moment(workbook.Props.ModifiedDate).format('DD MMM YYYY HH:mm:ss');
+
+   				//PROCESS SHEETS
+   				mydigitalstructure._util.import.sheet.data.sheets = {};
+
+   				_.each(mydigitalstructure._util.import.sheet.data.workbook.SheetNames, function (sheetName)
+   				{
+   					var sheet = mydigitalstructure._util.import.sheet.data.workbook.Sheets[sheetName];
+   					var rows = [];
+
+   					_.each(sheet, function (value, key)
+   					{
+   						if (!_.startsWith(key, '!'))
+   						{
+   							rows.push(numeral(key).value())
+   						}
+   					});
+
+   					mydigitalstructure._util.import.sheet.data.sheets[sheetName] =
+   					{
+   						rows: rows,
+   						maximumRow: _.max(rows)
+   					}
+   				});
 
    				//PROCESS TEMPLATES
    				_.each(mydigitalstructure._util.import.sheet.data.formatTemplate, function (formatTemplate)
@@ -359,15 +382,33 @@ if (_.isObject(XLSX))
    						
    						if (format.range != undefined)
    						{
-   							if (format.range.header.name.toLowerCase() == name.Name.toLowerCase())
-   							{
-   								format.range.header.cell = name.cell;
-   							}
+   							if (format.range.header != undefined)
+		   					{
+		   						if (format.range.header.name != undefined)
+		   						{
+		   							if (format.range.header.name.toLowerCase() == name.Name.toLowerCase())
+		   							{
+		   								format.range.header.cell = name.cell;
+		   							}
+		   						}
+	   						}
 
-   							if (format.range.footer.name.toLowerCase() == name.Name.toLowerCase())
-   							{
-   								format.range.footer.cell = name.cell;
-   							}
+   							if (format.range.footer != undefined)
+		   					{
+		   						if (format.range.footer.name != undefined)
+		   						{
+		   							if (format.range.footer.name.toLowerCase() == name.Name.toLowerCase())
+		   							{
+		   								format.range.footer.cell = name.cell;
+		   							}
+		   						}
+
+		   						if (format.range.footer.lastRow)
+		   						{
+		   							format.range.footer.cell = (format.lastRowColumn!=undefined?format.lastRowColumn:'A') +
+		   									(numeral(mydigitalstructure._util.import.sheet.data.sheets[format.sheet].maximumRow).value() + 1);
+		   						}
+		   					}
    						}		
    					})
    				});
