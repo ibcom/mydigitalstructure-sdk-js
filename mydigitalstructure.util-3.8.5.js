@@ -1002,15 +1002,10 @@ if (typeof $.fn.metisMenu == 'function')
 	$(document).off('click', '.myds-menu a')
 	.on('click', '.myds-menu a', function (e)
 	{
-		//$(this).parent().siblings().removeClass('active')
-		$('.metismenu').find('li').not($(this).parents('li')).removeClass('active');
-
-		if ($(this).attr('href') != '#')
+		mydigitalstructure._util.menu.set(
 		{
-			$(this).parent().addClass('active');
-			$(this).parent().siblings().find('ul').removeClass('in')
-			//$('.metismenu').find('ul').not($(this)).removeClass('in');
-		}	
+			element: $(this)
+		});
 	});
 }
 
@@ -3151,6 +3146,56 @@ mydigitalstructure._util._clean = function(param)
 	return returnVal;
 }
 
+mydigitalstructure._util.menu =
+{
+	set: function (param)
+	{
+		var element = mydigitalstructure._util.param.get(param, 'element').value;
+		var selector = mydigitalstructure._util.param.get(param, 'selector').value;
+		var href = mydigitalstructure._util.param.get(param, 'href').value;
+		var scope = mydigitalstructure._util.param.get(param, 'scope').value;
+		var uriContext = mydigitalstructure._util.param.get(param, 'uriContext').value;
+		var active = mydigitalstructure._util.param.get(param, 'active', {default: true}).value;
+
+		if (element == undefined)
+		{
+			if (selector == undefined)
+			{
+				if (href != undefined)
+				{
+					selector = '[href="' + href + '"]' 
+				}
+				else if (scope != undefined)
+				{
+					selector = '[href="' + mydigitalstructure._scope.app.options.startURI + 
+													'/#' + scope + '"]' 
+				}
+				else if (uriContext != undefined)
+				{
+					selector = '[href="' + mydigitalstructure._scope.app.options.startURI + 
+													'/' + uriContext + '"]' 
+				}
+			}
+
+			if (selector != undefined)
+			{
+				element = $(selector);
+			}
+		}
+
+		if ($('.metismenu').length != 0 )
+		{
+			$('.metismenu').find('li').not(element.parents('li')).removeClass('active');
+
+			if (element.attr('href') != '#')
+			{
+				element.parent().addClass('active');
+				element.parent().siblings().find('ul').removeClass('in')
+			}
+		}
+	}
+}
+
 mydigitalstructure._util.validate =
 {
 	isEmail: function (emailAddress)
@@ -3389,8 +3434,14 @@ mydigitalstructure._util.factory.core = function (param)
 			code: function (param)
 			{
 				var controller = mydigitalstructure._util.param.get(param, 'controller').value;
+				var scope = mydigitalstructure._util.param.get(param, 'scope').value;
 				var target = mydigitalstructure._util.param.get(param, 'target').value;
 				var context = mydigitalstructure._util.param.get(param, 'context').value;
+
+				if (controller == undefined)
+				{
+					controller = scope;
+				}
 
 				if (_.isUndefined(controller) && !_.isUndefined(target))
 				{
@@ -4024,7 +4075,14 @@ mydigitalstructure._util.factory.core = function (param)
 			{
 				mydigitalstructure._util.validate.check(param)
 			}
-		}
+		},
+		{
+			name: 'util-view-menu-set-active',
+			code: function (param)
+			{
+				mydigitalstructure._util.menu.set(param);
+			}
+		}	
 	]);
 
 	app.controller['util-view-reset'] = function (param)

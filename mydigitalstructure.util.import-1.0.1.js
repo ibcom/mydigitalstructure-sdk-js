@@ -504,6 +504,13 @@ if (_.isObject(XLSX))
 											{
 												value = image._img;
 												valueFormatted = image.src;
+											
+												format._processing.filename = format.filename;
+
+												if (format._processing.filename == undefined)
+												{
+													format._processing.filename = (format.name!=undefined?format.name:format.namebasedoncaption) + '.' + image.type;
+												}
 											}
 										}
 									}
