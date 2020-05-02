@@ -1045,63 +1045,68 @@ if (typeof $.fn.tab == 'function')
 	{
 		var uriContext = $(event.target).attr('href').replace('#', '');
 		var controller = $(event.target).attr('data-controller');
+		var onshow = $(event.target).attr('data-on-show');
+
 		var status = event.type;
 
-		if (controller == undefined)
+		if (onshow != undefined && event.type == 'show' || event.type == 'shown')
 		{
-			controller = $(event.target).parent().parent().attr('data-controller');
-		}
-
-		if (_.has(mydigitalstructure._scope.app.view, 'data'))
-		{
-			mydigitalstructure._util.view.track(
+			if (controller == undefined)
 			{
-				view: mydigitalstructure._scope.app.view.data,
-				uri: mydigitalstructure._scope.app.uri,
-				uriContext: uriContext
-			});
-		}
-
-		if (controller != undefined)
-		{
-			var param =
-			{
-				uriContext: uriContext,
-				status: status,
-				dataContext: $(event.target).data()
+				controller = $(event.target).parent().parent().attr('data-controller');
 			}
 
-			app.data[controller] = param;
-
-			if (app.controller[controller] != undefined)
+			if (_.has(mydigitalstructure._scope.app.view, 'data'))
 			{
-				app.controller[controller](param);
-			}
-			else
-			{
-				mydigitalstructure._util.log.add(
+				mydigitalstructure._util.view.track(
 				{
-					message: 'Controller not defined',
-					controller: controller,
-					param: param
+					view: mydigitalstructure._scope.app.view.data,
+					uri: mydigitalstructure._scope.app.uri,
+					uriContext: uriContext
 				});
 			}
-		}
-		else
-		{
-			if (app.controller[uriContext] != undefined)
+
+			if (controller != undefined)
 			{
-				if (app.data[uriContext] == undefined) {app.data[uriContext] = {}};
-				app.controller[uriContext]();
+				var param =
+				{
+					uriContext: uriContext,
+					status: status,
+					dataContext: $(event.target).data()
+				}
+
+				app.data[controller] = param;
+
+				if (app.controller[controller] != undefined)
+				{
+					app.controller[controller](param);
+				}
+				else
+				{
+					mydigitalstructure._util.log.add(
+					{
+						message: 'Controller not defined',
+						controller: controller,
+						param: param
+					});
+				}
 			}
 			else
 			{
-				var uriContext = uriContext.split('_');
-
-				if (app.controller[uriContext[0]] != undefined)
+				if (app.controller[uriContext] != undefined)
 				{
-					if (app.data[uriContext[0]] == undefined) {app.data[uriContext[0]] = {}};
-					app.controller[uriContext[0]]({context: uriContext[1]})
+					if (app.data[uriContext] == undefined) {app.data[uriContext] = {}};
+					app.controller[uriContext]();
+				}
+				else
+				{
+					var uriContext = uriContext.split('_');
+
+					if (app.controller[uriContext[0]] != undefined)
+					{
+						if (app.data[uriContext[0]] == undefined) {app.data[uriContext[0]] = {}};
+						app.controller[uriContext[0]]({context: uriContext[1]})
+					}
 				}
 			}
 		}
@@ -4055,10 +4060,22 @@ mydigitalstructure._util.factory.core = function (param)
 			{
 				var onCompleteController = mydigitalstructure._util.param.get(param, 'onCompleteController').value;
 				var onCompleteControllerWhenCan = mydigitalstructure._util.param.get(param, 'onCompleteControllerWhenCan').value;
+				var controller = mydigitalstructure._util.param.get(param, 'controller').value;
+				var callback = mydigitalstructure._util.param.get(param, 'callback').value;
 				
 				if (onCompleteController != undefined)
 				{
 					mydigitalstructure._util.param.set(param, 'onComplete', onCompleteController);
+				}
+
+				if (controller != undefined)
+				{
+					mydigitalstructure._util.param.set(param, 'onComplete', controller);
+				}
+
+				if (callback != undefined)
+				{
+					mydigitalstructure._util.param.set(param, 'onComplete', callback);
 				}
 
 				if (onCompleteControllerWhenCan != undefined)

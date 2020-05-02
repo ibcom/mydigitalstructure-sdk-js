@@ -2221,9 +2221,10 @@ mydigitalstructure._util =
 									var type = mydigitalstructure._util.param.get(param, 'type', {"default": 'content'}).value;
 									var queue = mydigitalstructure._util.param.get(param, 'queue').value;
 									
-									if (param.queue == undefined)
+									if (queue == undefined)
 									{
-										param.queue = mydigitalstructure._util.param.get(param, 'controller', {"default": mydigitalstructure._scope.data.defaultQueue}).value;
+										queue = mydigitalstructure._util.param.get(param, 'controller', {"default": mydigitalstructure._scope.data.defaultQueue}).value;
+										param = mydigitalstructure._util.param.set(param, 'queue', queue);
 									}
 
 									var content = mydigitalstructure._scope.viewQueue[type][queue];
@@ -2257,9 +2258,9 @@ mydigitalstructure._util =
 									var type = mydigitalstructure._util.param.get(param, 'type', {"default": 'data'}).value;
 									var queue = mydigitalstructure._util.param.get(param, 'queue').value;
 
-									if (param.queue == undefined)
+									if (queue == undefined)
 									{
-										param.queue = mydigitalstructure._util.param.get(param, 'controller', {"default": mydigitalstructure._scope.data.defaultQueue}).value;
+										queue = mydigitalstructure._util.param.get(param, 'controller', {"default": mydigitalstructure._scope.data.defaultQueue}).value;
 									}
 
 									return (mydigitalstructure._scope.viewQueue[type][queue].length!=0);

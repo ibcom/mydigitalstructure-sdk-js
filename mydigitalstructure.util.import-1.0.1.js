@@ -102,6 +102,18 @@ if (_.isObject(XLSX))
 					}
 				}
 
+				if (field.validate.data != undefined)
+				{
+					var values = app.get(field.validate.data);
+
+
+					if (_.find(values, valueFormatted) == undefined)
+					{
+						processingErrors.push('data')
+						validateErrors['data'] = true;
+					}
+				}
+
 				if (field.validate.controller != undefined)
 				{
 					validateControllerErrors = mydigitalstructure._util.controller.invoke(field.validate.controller, field, valueFormatted);
@@ -187,7 +199,10 @@ if (_.isObject(XLSX))
 						{
 							if (field.format.date != undefined)
 							{
-								valueFormatted = moment(valueFormatted, field.format.date.in).format(field.format.date.out)
+								if (moment(valueFormatted, field.format.date.in).isValid())
+								{
+									valueFormatted = moment(valueFormatted, field.format.date.in).format(field.format.date.out)
+								}
 							}
 
 							if (field.format.contoller != undefined)
@@ -225,7 +240,7 @@ if (_.isObject(XLSX))
 
   			mydigitalstructure._util.import.sheet.data.controller = $(e.target).attr('data-controller');
   			mydigitalstructure._util.import.sheet.data.scope = $(e.target).attr('data-scope');
-  			mydigitalstructure._util.import.sheet.data.validate = {errors: false, _errors: {}, status: $(e.target).attr('data-validate')};
+  			mydigitalstructure._util.import.sheet.data.validate = {errors: false, _errors: {}, status: ($(e.target).attr('data-validate') == 'true')};
   			mydigitalstructure._util.import.sheet.data.useNameIfExists = $(e.target).attr('data-use-name-if-exists');
 
   			if (mydigitalstructure._util.import.sheet.data.validate == undefined)
@@ -456,6 +471,11 @@ if (_.isObject(XLSX))
 
 						_.each(importFormat, function (format)
 						{
+							if (format.name == undefined)
+							{
+								format.name = format.namebasedoncaption
+							}
+
    						if (format._processing.notes.cell == 'not-set' && format.cell != undefined)
    						{ 
    							format._processing.notes.cell = 'as-set'
@@ -532,7 +552,10 @@ if (_.isObject(XLSX))
 											{
 												if (format.format.date != undefined)
 												{
-													valueFormatted = moment(valueFormatted, format.format.date.in).format(format.format.date.out)
+													if (moment(valueFormatted, format.format.date.in).isValid())
+													{
+														valueFormatted = moment(valueFormatted, format.format.date.in).format(format.format.date.out)
+													}
 												}
 
 												if (format.format.contoller != undefined)
@@ -599,12 +622,31 @@ if (_.isObject(XLSX))
    					value: mydigitalstructure._util.import.sheet.data.processed
    				})
    				
-   				mydigitalstructure._util.controller.invoke(mydigitalstructure._util.import.sheet.data.controller, param, mydigitalstructure._util.import.sheet.data)
+   				param = mydigitalstructure._util.param.set(param, 'dataContext', mydigitalstructure._util.import.sheet.data.processed);
+
+   				mydigitalstructure._util.data.set(
+   				{
+   					scope: (mydigitalstructure._util.import.sheet.data.controller!=undefined?mydigitalstructure._util.import.sheet.data.controller:mydigitalstructure._util.import.sheet.data.scope),
+   					context: mydigitalstructure._util.import.sheet.data.context,
+   					name: 'dataContext',
+   					value: mydigitalstructure._util.import.sheet.data.processed
+   				});
+
+   				mydigitalstructure._util.data.set(
+   				{
+   					scope: (mydigitalstructure._util.import.sheet.data.controller!=undefined?mydigitalstructure._util.import.sheet.data.controller:mydigitalstructure._util.import.sheet.data.scope),
+   					context: mydigitalstructure._util.import.sheet.data.context,
+   					name: '_dataContext',
+   					value: mydigitalstructure._util.import.sheet.data
+   				});
+
+   				mydigitalstructure._util.controller.invoke(mydigitalstructure._util.import.sheet.data.controller,
+   																			param, mydigitalstructure._util.import.sheet.data)
    			}
 
 				/*
 					Example controller code @
-					https://webapp-quickstart-next.mydigitalstructure.cloud/site/1987/1901.util.import-1.0.0.js
+					https://webapp-quickstart-next.mydigitalstructure.cloud/site/1987/1901.util.import-1.0.1.js
 				*/
  			};
 
