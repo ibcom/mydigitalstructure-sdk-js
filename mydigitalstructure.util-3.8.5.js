@@ -3752,7 +3752,7 @@ mydigitalstructure._util.factory.core = function (param)
 
 							if (instructionMatch)
 							{
-								if (instruction.onlyApplyIfURIDataContextNotEmpty)
+								if (instruction.onlyApplyIfURIDataContextNotEmpty || instruction.onlyApplyIfURIDataContextSet)
 								{
 									instructionMatch = !_.isEmpty(mydigitalstructure._scope.app.dataContext)
 								}
@@ -5112,7 +5112,8 @@ mydigitalstructure._util.factory.core = function (param)
 
 								var html = [];
 
-								html.push('<tr' + (format.row.class==undefined?'':' class="' + format.row.class + '"') + '>');
+								html.push('<tr' + (format.row.class==undefined?'':' class="' + format.row.class + '"') + 
+										(format.row.data==undefined?'':' ' + format.row.data) + '>');
 
 								$.each(columns, function (c, column)
 								{
@@ -5365,12 +5366,12 @@ mydigitalstructure._util.factory.core = function (param)
 										  		' data-context="popover"' +
 										  		' data-controller="' + (_.isUndefined(options.deleteConfirm.controller)?context + '-delete-ok':options.deleteConfirm.controller) + '"' +
 										  		' data-id="' + $(button).attr('data-id') + '"' +
-										  	'>Delete</button>' +
+										  	'>' + (_.isUndefined(options.deleteConfirm.buttonText)?'Delete':options.deleteConfirm.buttonText) + '</button>' +
 										  	'</div>';
 
 									$(button).popover(
 									{
-										title: 'Delete',
+										title: (_.isUndefined(options.deleteConfirm.headerText)?'Delete':options.deleteConfirm.headerText),
 										content: content,
 										html: true,
 										placement: (_.isUndefined(options.deleteConfirm.position)?'left':options.deleteConfirm.position),
@@ -5382,7 +5383,7 @@ mydigitalstructure._util.factory.core = function (param)
 							{
 								$('#' + container + ' .myds-delete').popConfirm(
 								{
-									title: 'Delete',
+									title: (_.isUndefined(options.deleteConfirm.headerText)?'Delete':options.deleteConfirm.headerText),
 									content: options.deleteConfirm.text,
 									placement: (_.isUndefined(options.deleteConfirm.position)?'left':options.deleteConfirm.position),
 									controller: (_.isUndefined(options.deleteConfirm.controller)?context + '-delete-ok':options.deleteConfirm.controller),
