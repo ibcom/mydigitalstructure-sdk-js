@@ -527,6 +527,12 @@ if (_.isObject(XLSX))
 											
 												format._processing.filename = format.filename;
 
+												if (format.storage != undefined)
+												{
+													format._processing.object = format.storage.object;
+													image.storage = format.storage;
+												}
+
 												if (format._processing.filename == undefined)
 												{
 													format._processing.filename = (format.name!=undefined?format.name:format.namebasedoncaption) + '.' + image.type;
