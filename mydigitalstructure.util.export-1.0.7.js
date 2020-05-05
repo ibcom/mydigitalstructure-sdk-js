@@ -638,7 +638,7 @@ if (_.isObject(XLSX))
 								{
 									if (storageData.value != undefined)
 									{
-										value = storageData.value
+										value = _.unescape(_.unescape(storageData.value))
 									}
 								}
 					  		}

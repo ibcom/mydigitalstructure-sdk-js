@@ -2166,6 +2166,7 @@ mydigitalstructure._util =
 										var appendSelector = mydigitalstructure._util.param.get(param, 'appendSelector', {"default": 'table tr:last'}).value;
 										var disableSelector = mydigitalstructure._util.param.get(param, 'disable').value;
 										var enableSelector = mydigitalstructure._util.param.get(param, 'enabler').value;
+										var includeDates = mydigitalstructure._util.param.get(param, 'includeDates', {"default": true}).value;
 
 										if (queue == undefined)
 										{
@@ -2210,6 +2211,12 @@ mydigitalstructure._util =
 											if (disableSelector) {mydigitalstructure._util.view.queue._util.disable(disableSelector, param)};
 											if (enableSelector) {mydigitalstructure._util.view.queue._util.enable(enableSelector, param)};
 		
+											if (includeDates)
+											{
+												mydigitalstructure._util.view.datepicker({selector: '.myds-date', format: 'D MMM YYYY'})
+												mydigitalstructure._util.view.datepicker({selector: '.myds-date-time', format: 'D MMM YYYY LT'})
+											}
+
 											mydigitalstructure._util.view.queue.reset(param);
 										}
 									}	
