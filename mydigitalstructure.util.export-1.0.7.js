@@ -543,7 +543,7 @@ if (_.isObject(XLSX))
 			var exportData = mydigitalstructure._util.param.get(param, 'data').value;
 			var templateAttachment = mydigitalstructure._util.param.get(param, 'templateAttachment').value;
 
-			var file = mydigitalstructure._util.param.get(param, 'file', {default: false}).value;
+			var download = mydigitalstructure._util.param.get(param, 'download', {default: false}).value;
 			var store = mydigitalstructure._util.param.get(param, 'store', {default: false}).value;
 
 			var url = mydigitalstructure._util.param.get(param, 'url').value; 
@@ -571,106 +571,122 @@ if (_.isObject(XLSX))
 				}
 			}
 
-			/* Convert to $.ajax with beforeSend: to set responseType */
-			var req = new XMLHttpRequest();
-			req.open("GET", url, true);
-			req.responseType = "arraybuffer";
-
-			req.onload = function(e)
+			if (url == undefined)
 			{
-				var data = new Uint8Array(req.response);
-			  	var workbook = XLSX.read(data, {type: "array", cellStyles: true, bookImages: true});
-
-			  	//RESOLVE NAMES TO CELLS
-
-			  	if (workbook.Workbook != undefined)
-			  	{
-				  	mydigitalstructure._util.export.sheet.data.names = workbook.Workbook.Names;
-
-				  	_.each(mydigitalstructure._util.export.sheet.data.names,  function (name)
-				  	{
-				  		name.sheet = _.replaceAll(_.first(_.split(name.Ref, '!')), "'", '');
-	   				name.cell = _.replaceAll(_.last(_.split(name.Ref, '!')), '\\$', '');
-
-				  		_.each(exportFormats, function (format)
-						{
-							if (format.name.toLowerCase() == name.Name.toLowerCase() 
-									&& format.sheet == name.sheet)
-							{
-	   						format.cell = name.cell;
-							}
-						});
-				  	});
-				}
-
-			  	// GO THROUGH FORMATS AND WRITE VALUES TO WORKSHEETS
-
-			  	var worksheet;
-			  	var cell;
-			  	var value;
-
-			  	_.each(exportFormats, function (format)
-			  	{
-			  		value = format.value;
-
-			  		if (format.storage != undefined)
-			  		{
-		  				var storageData = _.find(exportData, function (data)
-						{
-							return data.field == format.storage.field;
-						});
-
-						if (storageData != undefined)
-						{
-							if (storageData.value != undefined)
-							{
-								value = storageData.value
-							}
-						}
-			  		}
-
-				  	worksheet = workbook.Sheets[format.sheet];
-
-				  	if (worksheet != undefined)
-				  	{
-				  		cell = worksheet[format.cell];
-
-						if (cell == undefined)
-						{
-							cell = {t: 's'};
-						}
-
-						if (format.type != undefined)
-						{
-							cell.t = format.type;
-						}
-					
-						cell.v = value;
-					}
+				mydigitalstructure._util.log.add(
+				{
+					message: 'mydigitalstructure._util.export.sheet; no template URL'
 				});
-
-			  	mydigitalstructure._util.export.sheet.data.workbook = workbook;
-
-			  	mydigitalstructure._util.export.sheet.data.base64 = XLSX.write(workbook, {type: 'base64', cellStyles: true, bookImages: true});
-
-			  	//https://github.com/sheetjs/sheetjs#writing-options
-		
-				if (store)
-				{
-					mydigitalstructure._util.export.sheet.store.save(param, mydigitalstructure._util.export.sheet.data.base64)
-				}
-				else
-				{
-					if (file) {XLSX.writeFile(workbook, filename, {cellStyles: true, bookImages: true});}
-				
-					mydigitalstructure._util.controller.invoke(
-						controller,
-   					param,
-   					mydigitalstructure._util.export.sheet.data);
-				}
 			}
+			else
+			{
+				/* Convert to $.ajax with beforeSend: to set responseType */
+				var req = new XMLHttpRequest();
+				req.open("GET", url, true);
+				req.responseType = "arraybuffer";
 
-			req.send();
+				req.onload = function(e)
+				{
+					var data = new Uint8Array(req.response);
+				  	var workbook = XLSX.read(data, {type: "array", cellStyles: true, bookImages: true});
+
+				  	//RESOLVE NAMES TO CELLS
+
+				  	if (workbook.Workbook != undefined)
+				  	{
+					  	mydigitalstructure._util.export.sheet.data.names = workbook.Workbook.Names;
+
+					  	_.each(mydigitalstructure._util.export.sheet.data.names,  function (name)
+					  	{
+					  		name.sheet = _.replaceAll(_.first(_.split(name.Ref, '!')), "'", '');
+							name.cell = _.replaceAll(_.last(_.split(name.Ref, '!')), '\\$', '');
+
+					  		_.each(exportFormats, function (format)
+							{
+								if (format.name != undefined)
+								{
+									if (format.name.toLowerCase() == name.Name.toLowerCase() 
+											&& format.sheet == name.sheet)
+									{
+			   						format.cell = name.cell;
+									}
+								}
+							});
+					  	});
+					}
+
+				  	// GO THROUGH FORMATS AND WRITE VALUES TO WORKSHEETS
+
+				  	var worksheet;
+				  	var cell;
+				  	var value;
+
+				  	_.each(exportFormats, function (format)
+				  	{
+				  		if (format.sheet != undefined)
+				  		{
+					  		value = format.value;
+
+					  		if (format.storage != undefined)
+					  		{
+				  				var storageData = _.find(exportData, function (data)
+								{
+									return data.field == format.storage.field;
+								});
+
+								if (storageData != undefined)
+								{
+									if (storageData.value != undefined)
+									{
+										value = storageData.value
+									}
+								}
+					  		}
+
+						  	worksheet = workbook.Sheets[format.sheet];
+
+						  	if (worksheet != undefined)
+						  	{
+						  		cell = worksheet[format.cell];
+
+								if (cell == undefined)
+								{
+									cell = {};
+								}
+
+								cell.t = 's';
+
+								if (format.type != undefined)
+								{
+									cell.t = format.type;
+								}
+							
+								cell.v = (value!=undefined?value:'');
+							}
+						}
+					});
+
+				  	mydigitalstructure._util.export.sheet.data.workbook = workbook;
+
+				  	//https://github.com/sheetjs/sheetjs#writing-options
+			
+					if (store)
+					{
+						mydigitalstructure._util.export.sheet.data.base64 = XLSX.write(workbook, {type: 'base64', cellStyles: true, bookImages: true});
+						mydigitalstructure._util.export.sheet.store.save(param, mydigitalstructure._util.export.sheet.data.base64)
+					}
+					
+					if (download)
+					{
+						XLSX.writeFile(workbook, filename, {cellStyles: true, bookImages: true}
+					);}
+					
+					param = mydigitalstructure._util.param.set(param, 'data', mydigitalstructure._util.export.sheet.data)
+					mydigitalstructure._util.onComplete(param);
+				}
+
+				req.send();
+			}
 		},
 
 		store:
@@ -710,10 +726,8 @@ if (_.isObject(XLSX))
 					}
 				}
 
-				mydigitalstructure._util.controller.invoke(
-						controller,
-   					param,
-   					mydigitalstructure._util.export.sheet.data);
+				param = mydigitalstructure._util.param.set(param, 'data', mydigitalstructure._util.export.sheet.data)
+				mydigitalstructure._util.onComplete(param);
 			}
 		}
 	}

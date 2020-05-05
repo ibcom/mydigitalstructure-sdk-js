@@ -2362,7 +2362,7 @@ mydigitalstructure._util.view._refresh = function (param)
 
 	if (includeDates)
 	{
-		mydigitalstructure._util.view.datepicker({selector: '.myds-date'})
+		mydigitalstructure._util.view.datepicker({selector: '.myds-date', format: 'D MMM YYYY'})
 		mydigitalstructure._util.view.datepicker({selector: '.myds-date-time', format: 'D MMM YYYY LT'})
 	}
 
@@ -2535,6 +2535,12 @@ mydigitalstructure._util.controller =
 					namespace = controller.namespace;
 					if (namespace == undefined) {namespace = mydigitalstructure._scope.app.options.namespace};
 					if (namespace == undefined) {namespace = window.app}
+
+					if (namespace.controller[controller.name] != undefined)
+					{
+						mydigitalstructure._util.log.add({message: 'Existing controller [' + controller.name + '] was just replaced.'})
+					}
+
 					namespace.controller[controller.name] = controller.code;
 
 					if (controller.alias != undefined)
