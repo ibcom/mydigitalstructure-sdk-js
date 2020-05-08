@@ -4,143 +4,156 @@ if (mydigitalstructure._util.import == undefined)
 	mydigitalstructure._util.import = {}
 }
 
+mydigitalstructure._util.import.validate = function (field, valueFormatted)
+{
+	var processingErrors = [];
+	var validateErrors = {};
+	var validateControllerErrors;
+	var returnData = {};
+
+	if (field.validate != undefined)
+	{	
+		if (field.validate.mandatory && (valueFormatted == '' || valueFormatted == undefined))
+		{
+			processingErrors.push('mandatory');
+			validateErrors['mandatory'] = true;
+		}
+
+		if (field.validate.numeral)
+		{
+			if (_.isNull(numeral(valueFormatted).value()))
+			{
+				processingErrors.push('numeral')
+				validateErrors['numeral'] = true;
+			}
+		}
+
+		var maximum = field.validate.numeralMaximum;
+
+		if (maximum != undefined &&  !_.isNull(numeral(maximum).value()))
+		{
+			if (!_.isNull(numeral(valueFormatted).value()))
+			{
+				if (numeral(valueFormatted).value() > numeral(maximum).value())
+				{
+					processingErrors.push('numeral-maximum')
+					validateErrors['numeral-maximum'] = true;
+				}
+			}
+		}
+
+		var minimum = field.validate.numeralMinimum;
+
+		if (minimum != undefined && !_.isNull(numeral(minimum).value()))
+		{
+			if (!_.isNull(numeral(valueFormatted).value()))
+			{
+				if (numeral(valueFormatted).value() < numeral(minimum).value())
+				{
+					processingErrors.push('numeral-minimum')
+					validateErrors['numeral-minimum'] = true;
+				}
+			}
+		}
+
+		var maximumLength = field.validate.maximumLength;
+
+		if (maximumLength != undefined)
+		{
+			if (numeral(valueFormatted.length).value() > numeral(maximumLength).value())
+			{
+				processingErrors.push('maximum-length')
+				validateErrors['maximum-length'] = true;
+			}
+		}
+
+		var minimumLength = field.validate.minimumLength;
+
+		if (minimumLength != undefined)
+		{
+			if (numeral(valueFormatted.length).value() < numeral(minimumLength).value())
+			{
+				processingErrors.push('minimum-length')
+				validateErrors['minimum-length'] = true;
+			}
+		}
+
+		if (field.validate.email)
+		{
+			if (!mydigitalstructure._util.validate.isEmail(valueFormatted))
+			{
+				processingErrors.push('email')
+				validateErrors['email'] = true;
+			}
+		}
+
+		if (field.validate.date)
+		{
+			if (!mydigitalstructure._util.validate.isDate(valueFormatted))
+			{
+				processingErrors.push('date')
+				validateErrors['date'] = true;
+			}
+		}
+
+		if (field.validate.allowed != undefined)
+		{
+			var values = field.validate.allowed.values;
+
+			if (values == undefined && field.validate.allowed.data)
+			{
+			 	values = app.get(field.validate.allowed.data);
+			}
+
+			if (_.indexOf(values, valueFormatted) == -1)
+			{
+				processingErrors.push('allowed-value')
+				validateErrors['allowed-value'] = true;
+			}
+		}
+
+		if (field.validate.controller != undefined)
+		{
+			validateControllerErrors = mydigitalstructure._util.controller.invoke(field.validate.controller, field, valueFormatted);
+			validateErrors = _.assign(validateErrors, validateControllerErrors);
+
+			_.each(validateControllerErrors, function (value, key)
+			{
+				if (value == true)
+				{
+					processingErrors.push(key);
+				}
+			})
+		}
+
+		if (processingErrors.length != 0)
+		{
+			if (field._processing != undefined)
+			{
+				if (field._processing.name != undefined)
+				{
+					mydigitalstructure._util.import.sheet.data.validate._errors[field._processing.name] = validateErrors;
+				}
+			}
+
+			returnData =
+			{
+				errors: (processingErrors.length != 0),
+				_errors: validateErrors,
+				_errorsList: processingErrors
+			}
+		}
+	}
+
+	return returnData;
+}
+
 //https://github.com/sheetjs/sheetjs
 if (_.isObject(XLSX))
 {
 	mydigitalstructure._util.import.sheet =
 	{
 		data: {},
-
-		validate: function (field, valueFormatted)
-		{
-			var processingErrors = [];
-			var validateErrors = {};
-			var validateControllerErrors;
-
-			if (field.validate != undefined)
-			{	
-				if (field.validate.mandatory && (valueFormatted == '' || valueFormatted == undefined))
-				{
-					processingErrors.push('mandatory');
-					validateErrors['mandatory'] = true;
-				}
-
-				if (field.validate.numeral)
-				{
-					if (_.isNull(numeral(valueFormatted).value()))
-					{
-						processingErrors.push('numeral')
-						validateErrors['numeral'] = true;
-					}
-				}
-
-				var maximum = field.validate.numeralMaximum;
-
-				if (maximum != undefined &&  !_.isNull(numeral(maximum).value()))
-				{
-					if (!_.isNull(numeral(valueFormatted).value()))
-					{
-						if (numeral(valueFormatted).value() > numeral(maximum).value())
-						{
-							processingErrors.push('numeral-maximum')
-							validateErrors['numeral-maximum'] = true;
-						}
-					}
-				}
-
-				var minimum = field.validate.numeralMinimum;
-
-				if (minimum != undefined && !_.isNull(numeral(minimum).value()))
-				{
-					if (!_.isNull(numeral(valueFormatted).value()))
-					{
-						if (numeral(valueFormatted).value() < numeral(minimum).value())
-						{
-							processingErrors.push('numeral-minimum')
-							validateErrors['numeral-minimum'] = true;
-						}
-					}
-				}
-
-				var maximumLength = field.validate.maximumLength;
-
-				if (maximumLength != undefined)
-				{
-					if (numeral(valueFormatted.length).value() > numeral(maximumLength).value())
-					{
-						processingErrors.push('maximum-length')
-						validateErrors['maximum-length'] = true;
-					}
-				}
-
-				var minimumLength = field.validate.minimumLength;
-
-				if (minimumLength != undefined)
-				{
-					if (numeral(valueFormatted.length).value() < numeral(minimumLength).value())
-					{
-						processingErrors.push('minimum-length')
-						validateErrors['minimum-length'] = true;
-					}
-				}
-
-				if (field.validate.email)
-				{
-					if (!mydigitalstructure._util.validate.isEmail(valueFormatted))
-					{
-						processingErrors.push('email')
-						validateErrors['email'] = true;
-					}
-				}
-
-				if (field.validate.date)
-				{
-					if (!mydigitalstructure._util.validate.isDate(valueFormatted))
-					{
-						processingErrors.push('date')
-						validateErrors['date'] = true;
-					}
-				}
-
-				if (field.validate.data != undefined)
-				{
-					var values = app.get(field.validate.data);
-
-
-					if (_.find(values, valueFormatted) == undefined)
-					{
-						processingErrors.push('data')
-						validateErrors['data'] = true;
-					}
-				}
-
-				if (field.validate.controller != undefined)
-				{
-					validateControllerErrors = mydigitalstructure._util.controller.invoke(field.validate.controller, field, valueFormatted);
-					validateErrors = _.assign(validateErrors, validateControllerErrors);
-
-					_.each(validateControllerErrors, function (value, key)
-					{
-						if (value == true)
-						{
-							processingErrors.push(key);
-						}
-					})
-				}
-
-				if (processingErrors.length != 0)
-				{
-					if (field._processing.name != undefined)
-					{
-						mydigitalstructure._util.import.sheet.data.validate._errors[field._processing.name] = validateErrors;
-					}
-				
-					field._processing.validate.errors = (processingErrors.length != 0);
-					field._processing.validate._errors = validateErrors;
-					field._processing.validate._errorsList = processingErrors;
-				}
-			}
-		},
 
 		range: function (format, worksheet)
  		{
@@ -223,7 +236,7 @@ if (_.isObject(XLSX))
 					field._value = value;
 
 					//VALIDATION
-					mydigitalstructure._util.import.sheet.validate(field, valueFormatted);
+					field._processing.validate = mydigitalstructure._util.import.validate(field, valueFormatted);
  				});
 
  				importData.push(_.cloneDeep(rowFields));
@@ -605,7 +618,7 @@ if (_.isObject(XLSX))
 							if (parent == undefined) {parent = _.camelCase(format.sheet)}
 
 							//VALIDATION
-							mydigitalstructure._util.import.sheet.validate(format, valueFormatted);
+							format._processing.validate = mydigitalstructure._util.import.validate(format, valueFormatted);
 
 							//PROCESSED
 							if (mydigitalstructure._util.import.sheet.data.processed[parent] == undefined)
@@ -924,7 +937,6 @@ mydigitalstructure._util.factory.import = function (param)
 
 					if (_.isFunction(app.controller[processController]))
 					{
-
 						if (app.data["util-import"].dataIndex == undefined)
 						{
 							app.data["util-import"].dataIndex = 0;
@@ -952,7 +964,7 @@ mydigitalstructure._util.factory.import = function (param)
 							}
 							else
 							{
-								_.last(app.data['util-import'].processing)._status = 'matched-not-updated'							
+								_.last(app.data['util-import'].processing)._status = 'validating'							
 							}
 
 							app.data["util-import"].dataIndex++;
@@ -989,11 +1001,93 @@ mydigitalstructure._util.factory.import = function (param)
 						}
 						else
 						{
-							app.vq.show('#util-import-status', 'Complete');
-
 							app.data["util-import"].status = _.groupBy(app.data['util-import'].processing, '_status');
 
-							mydigitalstructure._util.controller.invoke(utilImport.completedController, param, app.data["util-import"])
+							var importRawData = app.data["util-import"].raw;
+
+							//Process Fields for storage
+							
+							var storageFields = _.filter(utilImport.fields, function (field)
+							{
+								return field.storage != undefined
+							});
+
+							var importStorageData = [];
+							var importObjectData = [];
+							var storageData;
+
+							_.each(importRawData, function (rawData)
+							{
+								storageData = {};
+								objectData = {};
+
+								_.each(storageFields, function (storageField)
+								{
+									if (storageField.storage.object != undefined)
+									{
+										if (objectData[storageField.storage.object] == undefined)
+										{
+											objectData[storageField.storage.object] = {}
+										}
+									}
+
+									if (storageField.storage.field != undefined)
+									{
+										storageField._value = rawData[storageField.name];
+										storageField.valueFormatted = storageField._value;
+
+										if (storageField.format != undefined)
+										{
+											if (storageField.format.date != undefined)
+											{
+												if (moment(storageField.valueFormatted, storageField.format.date.in).isValid())
+												{
+													storageField.valueFormatted = moment(storageField.valueFormatted, storageField.format.date.in).format(storageField.format.date.out)
+												}
+											}
+
+											if (storageField.format.contoller != undefined)
+											{
+												storageField.valueFormatted = mydigitalstructure._util.controller.invoke(storageField.format.contoller, storageField, storageField.valueFormatted)
+											}
+
+											if (storageField.format.numeral)
+											{
+												storageField.valueFormatted = numeral(storageField.valueFormatted).format(storageField.format.numeral)
+											}
+
+										}
+
+										if (storageField.validate != undefined)
+										{
+											storageField.validate = _.assign(storageField.validate, mydigitalstructure._util.import.validate(storageField, storageField.valueFormatted))
+											storageField._processing = {validate: storageField.validate};
+										}
+
+										storageData[storageField.storage.field] = {value: storageField.valueFormatted, validate: storageField.validate, object: storageField.storage.object};
+										objectData[storageField.storage.object][storageField.storage.field] = storageField.valueFormatted
+									}
+								});
+
+								importStorageData.push(storageData);
+								importObjectData.push(objectData);
+							});
+
+							app.set(
+							{
+								scope: 'util-import',
+								context: 'storage',
+								value: importStorageData
+							});
+
+							app.set(
+							{
+								scope: 'util-import',
+								context: 'objects',
+								value: importObjectData
+							})
+
+							app.invoke(utilImport.completedController, param, app.data['util-import'])
 						}	
 					}
 				}

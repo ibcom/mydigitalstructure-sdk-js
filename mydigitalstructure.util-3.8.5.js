@@ -3174,16 +3174,16 @@ mydigitalstructure._util.menu =
 			{
 				if (href != undefined)
 				{
-					selector = '[href="' + href + '"]' 
+					selector = '.myds-menu [href="' + href + '"]' 
 				}
 				else if (scope != undefined)
 				{
-					selector = '[href="' + mydigitalstructure._scope.app.options.startURI + 
+					selector = '.myds-menu [href="' + mydigitalstructure._scope.app.options.startURI + 
 													'/#' + scope + '"]' 
 				}
 				else if (uriContext != undefined)
 				{
-					selector = '[href="' + mydigitalstructure._scope.app.options.startURI + 
+					selector = '.myds-menu [href="' + mydigitalstructure._scope.app.options.startURI + 
 													'/' + uriContext + '"]' 
 				}
 			}
@@ -3194,7 +3194,7 @@ mydigitalstructure._util.menu =
 			}
 		}
 
-		if ($('.metismenu').length != 0 )
+		if ($('.metismenu').length != 0 && element.length != 0 )
 		{
 			$('.metismenu').find('li').not(element.parents('li')).removeClass('active');
 

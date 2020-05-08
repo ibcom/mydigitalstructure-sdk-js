@@ -8,7 +8,7 @@
  "use strict";
 
 var mydigitalstructure =
-{_scope: {app: {options: {}}, sentToView: [], viewQueue: {content: {}, template: {}}, session: {}, data: {defaultQueue: 'base', loaded: false}}};
+{_scope: {app: {options: {}}, sentToView: [], viewQueue: {content: {}, template: {}}, session: {}, data: {defaultQueue: 'base', loaded: false}}, _cloud: {log: [], object: {}}};
 
 mydigitalstructure.init = function (data)
 {
@@ -1381,6 +1381,30 @@ mydigitalstructure._util =
 					var sameAsLastCount = 1;
 					var sameAsLastWarning = true;
 
+					object = object.toLowerCase();
+
+					var logData = param;
+					logData.when = moment();
+					logData.uri = mydigitalstructure._scope.app.uri;
+					logData.uriContext = mydigitalstructure._scope.app.uriContext;
+					logData.lastInvokedController = mydigitalstructure._util.controller.data.last;
+
+					mydigitalstructure._cloud.log.push(param);
+
+					if (object != undefined)
+					{
+						if (mydigitalstructure._cloud.object[object] == undefined)
+						{
+							mydigitalstructure._cloud.object[object] = {count: 1}
+						}
+						else
+						{
+							mydigitalstructure._cloud.object[object].count = mydigitalstructure._cloud.object[object].count + 1
+						}
+
+						mydigitalstructure._cloud.object[object].logIndex = mydigitalstructure._cloud.log.length - 1
+					}
+
 					if (mydigitalstructure._scope.app.options.sendSameAsLast != undefined)
 					{
 						if (mydigitalstructure._scope.app.options.sendSameAsLast.seconds != undefined)
@@ -1485,7 +1509,15 @@ mydigitalstructure._util =
 							name: 'FormatDecimal',
 							value: '2'
 						});
-					}	
+					}
+
+					if (object != undefined && data.criteria != undefined)
+					{
+						mydigitalstructure._cloud.object[object].fields =
+							_.assign(mydigitalstructure._cloud.object[object].fields, data.criteria.fields);
+						mydigitalstructure._cloud.object[object].filters =
+							_.assign(mydigitalstructure._cloud.object[object].filters, data.criteria.filters);
+					}
 
 					if (data.criteria != undefined)
 					{	
