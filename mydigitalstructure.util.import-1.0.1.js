@@ -688,20 +688,12 @@ mydigitalstructure._util.factory.import = function (param)
 		code: function (param)
 		{	
 			var context = mydigitalstructure._util.param.get(param.dataContext, 'context').value;
-			var validate = mydigitalstructure._util.param.get(param.dataContext, 'validate', {default: false}).value;
-
+	
 			mydigitalstructure._util.data.set(
 			{
 				scope: 'util-import',
 				context: 'context',
 				value: context
-			});
-
-			mydigitalstructure._util.data.set(
-			{
-				scope: 'util-import',
-				context: 'validate',
-				value: validate
 			});
 
 			if ($('#myds-util-attachment-upload-import-file0').val() == '')
@@ -853,7 +845,7 @@ mydigitalstructure._util.factory.import = function (param)
 					{
 						type: 'POST',
 						url: '/rpc/core/?method=CORE_ATTACHMENT_READ&rows=500',
-						data: JSON.stringify(data),
+						data: data,
 						dataType: 'json',
 						success: function(response)
 						{
@@ -870,10 +862,10 @@ mydigitalstructure._util.factory.import = function (param)
 								value: response.data.rows
 							});
 
-							if (utilImport.initialiseController != undefined)
+							if (utilImport.initialise.controller != undefined)
 							{
 								//It must invoke util-import-process controller when complete.
-								mydigitalstructure._util.controller.invoke(utilImport.initialiseController, param)
+								mydigitalstructure._util.controller.invoke(utilImport.initialise.controller, param)
 							}
 							else
 							{
@@ -923,16 +915,11 @@ mydigitalstructure._util.factory.import = function (param)
 					param = mydigitalstructure._util.param.set(param, 'import', utilImport);
 
 					var processController = utilImport.processController;
-					var validateController = utilImport.validateController;
+					var preProcessController = utilImport.preProcessController;
 
 					if (processController == undefined)
 					{
 						processController = 'util-import-process' + context
-					}
-
-					if (validateController == undefined)
-					{
-						validateController = 'util-import-process-validate' + context
 					}
 
 					if (_.isFunction(app.controller[processController]))
@@ -964,7 +951,7 @@ mydigitalstructure._util.factory.import = function (param)
 							}
 							else
 							{
-								_.last(app.data['util-import'].processing)._status = 'validating'							
+								_.last(app.data['util-import'].processing)._status = 'preprocessing'							
 							}
 
 							app.data["util-import"].dataIndex++;
@@ -990,13 +977,13 @@ mydigitalstructure._util.factory.import = function (param)
 
 							param = mydigitalstructure._util.param.set(param, 'processing', _.last(app.data['util-import'].processing))
 
-							if (app.data["util-import"].validate)
+							if (preProcessController != undefined)
 							{
-								app.invoke(validateController, param, rawData);
+								app.invoke(preProcessController, param, rawData);
 							}
 							else
 							{
-								app.invoke(processController, param, rawData);
+								app.invoke('util-import-process', param);
 							}	
 						}
 						else
@@ -1022,12 +1009,17 @@ mydigitalstructure._util.factory.import = function (param)
 								objectData = {};
 
 								_.each(storageFields, function (storageField)
-								{
+								{	
 									if (storageField.storage.object != undefined)
 									{
 										if (objectData[storageField.storage.object] == undefined)
 										{
 											objectData[storageField.storage.object] = {}
+										}
+
+										if (storageData[storageField.storage.object] == undefined)
+										{
+											storageData[storageField.storage.object] = {}
 										}
 									}
 
@@ -1064,7 +1056,7 @@ mydigitalstructure._util.factory.import = function (param)
 											storageField._processing = {validate: storageField.validate};
 										}
 
-										storageData[storageField.storage.field] = {value: storageField.valueFormatted, validate: storageField.validate, object: storageField.storage.object};
+										storageData[storageField.storage.object][storageField.storage.field] = {value: storageField.valueFormatted, validate: storageField.validate, object: storageField.storage.object};
 										objectData[storageField.storage.object][storageField.storage.field] = storageField.valueFormatted
 									}
 								});
@@ -1087,7 +1079,7 @@ mydigitalstructure._util.factory.import = function (param)
 								value: importObjectData
 							})
 
-							app.invoke(utilImport.completedController, param, app.data['util-import'])
+							app.invoke(utilImport.processController, param, app.data['util-import'])
 						}	
 					}
 				}

@@ -1375,6 +1375,7 @@ mydigitalstructure._util =
 					var noFormatting = mydigitalstructure._util.param.get(param, 'noFormatting').value;
 					var manageErrors = mydigitalstructure._util.param.get(param, 'manageErrors', {default: true}).value;
 					var callbackIncludeResponse = mydigitalstructure._util.param.get(param, 'callbackIncludeResponse', {default: true}).value;
+					var callbackResponseProcessController = mydigitalstructure._util.param.get(param, 'callbackResponseProcessController').value;
 					var set = mydigitalstructure._util.param.get(param, 'set').value;
 
 					var sameAsLastSeconds = 5;
@@ -1566,6 +1567,24 @@ mydigitalstructure._util =
 
 									if (callbackIncludeResponse)
 									{
+										if (managed && _.has(response.data, 'rows'))
+										{
+											_.each(response.data.rows, function (row)
+											{
+												_.each(row, function (value, field)
+												{
+													if (callbackResponseProcessController != undefined)
+													{
+														mydigitalstructure._util.controller.invoke(callbackResponseProcessController, {value: value}, value)
+													}
+													else
+													{
+														row[field] = _.unescape(value);
+													}
+												})
+											});
+										}
+
 										if (_.has(mydigitalstructure._util.data, 'set') && _.has(response.data, 'rows')
 												&& typeof(set) == 'object')
 										{
