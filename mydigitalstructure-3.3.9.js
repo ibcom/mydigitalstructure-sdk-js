@@ -1398,7 +1398,7 @@ mydigitalstructure._util =
 
 						if (mydigitalstructure._cloud.object[object] == undefined)
 						{
-							mydigitalstructure._cloud.object[object] = {count: 1}
+							mydigitalstructure._cloud.object[object] = {count: 1, fields: [], filters: []}
 						}
 						else
 						{
@@ -1516,10 +1516,23 @@ mydigitalstructure._util =
 
 					if (object != undefined && data.criteria != undefined)
 					{
-						mydigitalstructure._cloud.object[object].fields =
-							_.assign(mydigitalstructure._cloud.object[object].fields, data.criteria.fields);
-						mydigitalstructure._cloud.object[object].filters =
-							_.assign(mydigitalstructure._cloud.object[object].filters, data.criteria.filters);
+						mydigitalstructure._cloud.object[object].fields
+
+						_.each(data.criteria.fields, function (field)
+						{
+							if (_.find(mydigitalstructure._cloud.object[object].fields, field) == undefined)
+							{
+								mydigitalstructure._cloud.object[object].fields.push(field)
+							}
+						});
+
+						_.each(data.criteria.filters, function (filter)
+						{
+							if (_.find(mydigitalstructure._cloud.object[object].filters, filter) == undefined)
+							{
+								mydigitalstructure._cloud.object[object].filters.push(filter);
+							}
+						});
 					}
 
 					if (data.criteria != undefined)
