@@ -2467,6 +2467,7 @@ mydigitalstructure._util.controller =
 	data:
 	{
 		note: {},
+		build: {},
 		last: undefined
 	},
 
@@ -2550,6 +2551,11 @@ mydigitalstructure._util.controller =
 						mydigitalstructure._util.controller.data.note[controller.name] = controller.note;
 					}
 
+					if (controller.build != undefined)
+					{
+						mydigitalstructure._util.controller.data.build[controller.name] = controller.build;
+					}
+
 					namespace = controller.namespace;
 					if (namespace == undefined) {namespace = mydigitalstructure._scope.app.options.namespace};
 					if (namespace == undefined) {namespace = window.app}
@@ -2580,6 +2586,7 @@ mydigitalstructure._util.controller =
 			var code = mydigitalstructure._util.param.get(param, 'code').value;
 			var note = mydigitalstructure._util.param.get(param, 'note').value;
 			var alias = mydigitalstructure._util.param.get(param, 'alias').value;
+			var build = mydigitalstructure._util.param.get(param, 'build').value;
 
 			var namespace = mydigitalstructure._util.param.get(param, 'namespace').value;
 			if (namespace == undefined) {namespace = mydigitalstructure._scope.app.options.namespace};
@@ -2588,6 +2595,11 @@ mydigitalstructure._util.controller =
 			if (note != undefined)
 			{
 				mydigitalstructure._util.controller.data.note[name] = note;
+			}
+
+			if (build != undefined)
+			{
+				mydigitalstructure._util.controller.data.build[name] = build;
 			}
 
 			if (name != undefined)
