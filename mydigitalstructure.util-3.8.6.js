@@ -301,6 +301,11 @@ $(document).off('click', '.myds-dropdown')
 		button = $(this).parents('.dropdown').find('.dropdown-toggle');
 	}
 
+	if (button.length == 0)
+	{
+		button = $(this).parents('.dropdown-menu').siblings('.dropdown-toggle');
+	}
+
 	if (button.length != 0)
 	{
 		var buttonText = button.find('span.dropdown-text');
@@ -319,11 +324,24 @@ $(document).off('click', '.myds-dropdown')
 			controller = $(this).closest('ul.dropdown-menu').data('controller');
 		}
 
+		if (context == undefined)
+		{
+			context = $(this).closest('ul.dropdown-menu').data('context');
+		}
+
+		var otherData;
+
+		if ($(this).closest('ul.dropdown-menu').length != 0)
+		{
+			otherData = mydigitalstructure._util.data.clean($(this).closest('ul.dropdown-menu').data())
+		}
+
 		var param = {}
-		param.dataContext = mydigitalstructure._util.data.clean($(this).data());
+		param.dataContext = _.assign(otherData, mydigitalstructure._util.data.clean($(this).data()));
+		param._dataContext = _.assign(otherData, mydigitalstructure._util.data.clean($(this).data()));
 		
 		if (app.data[controller] == undefined) {app.data[controller] = {}}
-		app.data[controller].dataContext = mydigitalstructure._util.data.clean($(this).data());
+		app.data[controller].dataContext = _.assign(otherData, mydigitalstructure._util.data.clean($(this).data()));
 
 		if (context != undefined && $(this).data('id') != undefined)
 		{
@@ -4768,6 +4786,17 @@ mydigitalstructure._util.factory.core = function (param)
 				    	{
 				    		var results;
 
+				    		if (_.has(response.data, 'rows'))
+							{
+								_.each(response.data.rows, function (row)
+								{
+									_.each(row, function (value, field)
+									{
+										row[field] = _.unescape(value);
+									});
+								});
+							}
+
 				    		if (responseController != undefined)
 				    		{
 				    			results = mydigitalstructure._util.controller.invoke(responseController, param, response)
@@ -4779,7 +4808,7 @@ mydigitalstructure._util.factory.core = function (param)
 			               	var text = [];
 			               	_.each(fields, function (field)
 			               	{
-			               		text.push(_.unescape(row[field.name]));
+			               		text.push(row[field.name]);
 			               	})
 
 									row.text = _.join(text, ' ');
