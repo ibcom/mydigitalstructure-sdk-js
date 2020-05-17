@@ -3246,12 +3246,33 @@ mydigitalstructure._util.menu =
 
 		if ($('.metismenu').length != 0 && element.length != 0 )
 		{
+
+
 			$('.metismenu').find('li').not(element.parents('li')).removeClass('active');
 
 			if (element.attr('href') != '#')
 			{
-				element.parent().addClass('active');
-				element.parent().siblings().find('ul').removeClass('in')
+				if ($(element).parents('ul.nav-second-level').length == 0)
+				{
+					element.parent().addClass('active');
+					element.parent().siblings().find('ul').removeClass('in');
+				}
+				else
+				{
+					var parentElement = $(element).parents('ul.nav-second-level');
+					if (!parentElement.parent().hasClass('active'))
+					{
+						parentElement.parent().addClass('active');
+					}
+
+					if (!parentElement.hasClass('in'))
+					{
+						parentElement.addClass('in');
+					}
+					
+					element.parent().addClass('active');
+					parentElement.parent().siblings().find('ul').removeClass('in');
+				}
 			}
 		}
 	}
