@@ -164,6 +164,11 @@ $(document).off('click', '.myds-navigate')
 		controller = target.replace('#', '')
 	}
 
+	if (controller == undefined && $(this).attr('href') != undefined)
+	{
+		controller = $(this).attr('href').replace('#', '')
+	}
+
 	if (controller != undefined)
 	{
 		var routerElement = $('.myds-router');
@@ -2362,10 +2367,25 @@ mydigitalstructure._util.view._refresh = function (param)
 	{
 		app._util.view.queue.templateRender(param);
 
-		_.each(data, function (value, key)
+		var context;
+		var value;
+
+		_.each($(selector + ' input.myds-check[data-context][data-id]'),
+			function (element)
 		{
-			$(selector + ' input.myds-check[data-context="' + key + '"][data-id="' + value + '"]').attr('checked', 'checked')
+			var context = $(element).data('context');
+			var value = data[context];
+
+			if (value != undefined)
+			{
+				$(selector + ' input.myds-check[data-context="' + context + '"][data-id="' + value + '"]').attr('checked', 'checked')
+			}
 		});
+
+		//_.each(data, function (value, key)
+		//{
+		//	$(selector + ' input.myds-check[data-context="' + key + '"][data-id="' + value + '"]').attr('checked', 'checked')
+		//});
 	}
 
 	if (!_.isUndefined(show))
@@ -3746,6 +3766,9 @@ mydigitalstructure._util.factory.core = function (param)
 					if (!_.isError(_.attempt(JSON.parse.bind(null, app.data[controller].uriContext))))
 					{
 						app.data[controller].dataContext = _.assign(app.data[controller].dataContext,
+							_.attempt(JSON.parse.bind(null, app.data[controller].uriContext)));
+
+						app.data[controller] = _.assign(app.data[controller],
 							_.attempt(JSON.parse.bind(null, app.data[controller].uriContext)));
 					}
 					else
