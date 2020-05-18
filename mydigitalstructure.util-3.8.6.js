@@ -1333,26 +1333,32 @@ if (typeof $.fn.collapse == 'function')
 	.on('show.bs.collapse', '.myds-collapse', function (event)
 	{
 		var id = event.target.id;
-		if ($(event.target).attr('data-controller') != undefined)
+
+		var onshow = $(event.target).attr('data-on-show');
+
+		if (onshow)
 		{
-			id = $(event.target).attr('data-controller')
-		}
-		
-		if (id != '')
-		{	
-			if (app.controller[id] != undefined)
+			if ($(event.target).attr('data-controller') != undefined)
 			{
-				if (app.data[id] == undefined) {app.data[id] = {}};
-				app.data[id].viewStatus = 'show';
-				app.data[id].dataContext = $(event.target).data();
-				app.controller[id](
-				{
-					status: 'show',
-					dataContext: $(event.target).data()
-				});
+				id = $(event.target).attr('data-controller')
 			}
-		}	
-    });
+			
+			if (id != '')
+			{	
+				if (app.controller[id] != undefined)
+				{
+					if (app.data[id] == undefined) {app.data[id] = {}};
+					app.data[id].viewStatus = 'show';
+					app.data[id].dataContext = $(event.target).data();
+					app.controller[id](
+					{
+						status: 'show',
+						dataContext: $(event.target).data()
+					});
+				}
+			}	
+		}
+   });
 }    
 
 if (typeof $.fn.popover == 'function')
@@ -2280,6 +2286,7 @@ mydigitalstructure._util.view._refresh = function (param)
 	var resetScope = mydigitalstructure._util.param.get(param, 'resetScope', {default: false}).value;
 	var resetScopeNew = mydigitalstructure._util.param.get(param, 'resetScopeNew', {default: true}).value;
 	var validate = mydigitalstructure._util.param.get(param, 'validate', {default: true}).value;
+	var hidePopover = mydigitalstructure._util.param.get(param, 'hidePopover', {default: true}).value;
 
 	var includeDates = mydigitalstructure._util.param.get(param, 'includeDates', {default: true}).value;
 
@@ -2407,6 +2414,11 @@ mydigitalstructure._util.view._refresh = function (param)
 	if (validate)
 	{
 		mydigitalstructure._util.validate.check({scope: scope})
+	}
+
+	if (hidePopover)
+	{
+		$('.popover:visible').popover("hide")
 	}
 
 	if (!_.isUndefined(routeTo))
@@ -3246,8 +3258,6 @@ mydigitalstructure._util.menu =
 
 		if ($('.metismenu').length != 0 && element.length != 0 )
 		{
-
-
 			$('.metismenu').find('li').not(element.parents('li')).removeClass('active');
 
 			if (element.attr('href') != '#')
@@ -3800,6 +3810,8 @@ mydigitalstructure._util.factory.core = function (param)
 
 				uriContext = mydigitalstructure._scope.app.uriContext;
 
+				$('.popover:visible').popover('hide');
+
 				//looking for routing options
 
 				if (mydigitalstructure._scope.app.options.routing != undefined)
@@ -3951,6 +3963,7 @@ mydigitalstructure._util.factory.core = function (param)
 				}
 
 				$('a[href="' + uriContext + '-' + mydigitalstructure._scope.app.dataContext + '"]').click();
+
 			}
 		},
 		{
