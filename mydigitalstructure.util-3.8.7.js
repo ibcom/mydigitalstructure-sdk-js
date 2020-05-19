@@ -2438,21 +2438,27 @@ mydigitalstructure._util.view.datepicker = function (param)
 		datepicker.destroy();
 	}
 
+	var icons =
+	{
+		previous: 'icon icon-chevron-left fa fa-chevron-left',
+		next: 'icon icon-chevron-right fa fa-chevron-right',
+		time: "fa fa-clock-o",
+		date: "fa fa-calendar",
+		up: "fa fa-arrow-up",
+		down: "fa fa-arrow-down"
+	} 
+
+	if (_.has(mydigitalstructure, '_scope.app.options.styles.datePicker'))
+	{
+		icons = mydigitalstructure._scope.app.options.styles.datePicker.icons
+	}
+
 	$(selector).datetimepicker(
 	{
 		format: format,
-		icons:
-		{
-			previous: 'icon icon-chevron-left fa fa-chevron-left',
-			next: 'icon icon-chevron-right fa fa-chevron-right',
-			time: "fa fa-clock-o",
-			date: "fa fa-calendar",
-			up: "fa fa-arrow-up",
-			down: "fa fa-arrow-down"
-		}    
+		icons: icons
 	});
 }
-
 
 //CHECK
 if (mydigitalstructure._util.data == undefined)
