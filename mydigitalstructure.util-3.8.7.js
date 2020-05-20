@@ -3294,6 +3294,20 @@ mydigitalstructure._util.menu =
 	}
 }
 
+mydigitalstructure._util.uuid = function (param)
+{
+	var pattern = mydigitalstructure._util.param.get(param, 'pattern', {"default": 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'}).value;
+	var d = new Date().getTime();
+	var uuid = pattern.replace(/[xy]/g, function(c)
+	{
+		var r = (d + Math.random()*16)%16 | 0;
+		d = Math.floor(d/16);
+		return (c=='x' ? r : (r&0x7|0x8)).toString(16);
+	});
+
+	return uuid;
+}
+
 mydigitalstructure._util.validate =
 {
 	isEmail: function (emailAddress)
@@ -4563,6 +4577,11 @@ mydigitalstructure._util.factory.core = function (param)
 	app.controller['util-security-share-setup'] = function (param)
 	{
 		mydigitalstructure.cloud.security.share.setup.init(param);
+	}
+
+	app.controller['util-uuid'] = function (param)
+	{
+		return mydigitalstructure._util.uuid(param);
 	}
 
 	app.controller['util-view-select'] = function (param, response)
