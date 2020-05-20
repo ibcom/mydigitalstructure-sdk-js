@@ -3759,10 +3759,6 @@ mydigitalstructure._util.factory.core = function (param)
 										reload: true
 									})
 								}
-								else
-								{
-									
-								}			
 							}	
 						}	
 					}	
@@ -3800,17 +3796,33 @@ mydigitalstructure._util.factory.core = function (param)
 					app.data[controller].uriContext = 
 						decodeURI(mydigitalstructure._scope.app.dataContext);
 
-					if (!_.isError(_.attempt(JSON.parse.bind(null, app.data[controller].uriContext))))
-					{
-						app.data[controller].dataContext = _.assign(app.data[controller].dataContext,
-							_.attempt(JSON.parse.bind(null, app.data[controller].uriContext)));
+					app.data[controller].uriDataContext = 
+						decodeURI(mydigitalstructure._scope.app.dataContext);
 
-						app.data[controller] = _.assign(app.data[controller],
-							_.attempt(JSON.parse.bind(null, app.data[controller].uriContext)));
+					if (_.startsWith(app.data[controller].uriContext, '{') ||
+							_.startsWith(app.data[controller].uriContext, '['))
+					{
+						if (!_.isError(_.attempt(JSON.parse.bind(null, app.data[controller].uriContext))))
+						{
+							app.data[controller].dataContext = _.assign(app.data[controller].dataContext,
+								_.attempt(JSON.parse.bind(null, app.data[controller].uriContext)));
+
+							app.data[controller] = _.assign(app.data[controller],
+								_.attempt(JSON.parse.bind(null, app.data[controller].uriContext)));
+						}
+						else
+						{
+							app.data[controller].dataContext = app.data[controller].uriContext;
+						}
 					}
 					else
 					{
-						app.data[controller].dataContext = app.data[controller].uriContext
+						app.data[controller].dataContext = app.data[controller].uriContext;
+					}
+
+					if (_.isString(app.data[controller].dataContext))
+					{
+						app.data[controller].id = app.data[controller].dataContext
 					}
 				}	
 
@@ -3938,6 +3950,11 @@ mydigitalstructure._util.factory.core = function (param)
 				{
 					uriContext: mydigitalstructure._scope.app.uriContext,
 					dataContext: mydigitalstructure._scope.app.dataContext
+				}
+
+				if (!_.isEmpty(mydigitalstructure._scope.app.dataContext))
+				{
+					param.id = mydigitalstructure._scope.app.dataContext
 				}
 
 				if (_.isFunction(mydigitalstructure._scope.app.viewNavigation))

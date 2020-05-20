@@ -916,7 +916,7 @@ mydigitalstructure._util.factory.import = function (param)
 				name = app.get(
 				{
 					scope: 'util-import',
-					context: context
+					context: 'context'
 				});
 			}
 
@@ -945,14 +945,8 @@ mydigitalstructure._util.factory.import = function (param)
 				mydigitalstructure.cloud.retrieve(
 				{
 					object: importStorage.object,
-					data:
-					{
-						criteria:
-						{
-							fields: importStorage.fields,
-							filters: importStorage.filters,
-						}
-					},
+					fields: importStorage.fields,
+					filters: importStorage.filters,
 					set:
 					{
 						scope: 'util-import',
@@ -967,6 +961,108 @@ mydigitalstructure._util.factory.import = function (param)
 			{
 				app.invoke('util-import-process', param)
 			}
+		}
+	});
+
+	app.add(
+	{
+		name: 'util-import-update-storage',
+		code: function (param)
+		{	
+			var saveToCloudStorages = app.get(
+			{
+				scope: 'util-import',
+				context: 'save-to-cloud-storage'
+			});
+
+			var saveToCloudStorageIndex = app.get(
+			{
+				scope: 'util-import-update-storage',
+				context: 'saveToCloudStorageIndex',
+				valueDefault: 0
+			});
+
+			if (saveToCloudStorageIndex < saveToCloudStorages.length)
+			{
+				var saveToCloudStorage = saveToCloudStorages[saveToCloudStorageIndex];
+
+				var importObjects = app.get(
+				{
+					scope: 'util-import',
+					context: 'objects'
+				});
+
+				var importObject = importObjects[saveToCloudStorage.index];
+
+				app.show('#util-import-status', '<h3 class="my-4 text-muted">Saving to cloud... ' +
+					saveToCloudStorage.object + '... ' + (saveToCloudStorageIndex+1) + ' of ' + saveToCloudStorages.length + '</h3>');
+		
+				_.each(saveToCloudStorage.data, function (value, key)
+				{
+					if (_.isObject(value) && importObject != undefined)
+					{
+						saveToCloudStorage.data[key] = importObject[value.object][value.field]
+					}
+				});
+
+				mydigitalstructure.cloud.save(
+				{
+					object: saveToCloudStorage.object,
+					data: saveToCloudStorage.data,
+					callback: 'util-import-update-storage-next',
+					callbackParam: param
+				});
+			}
+			else
+			{
+				console.log('cloud storage updated');
+			}
+		}
+	});
+
+	app.add(
+	{
+		name: 'util-import-update-storage-next',
+		code: function (param, response)
+		{	
+			var saveToCloudStorages = app.get(
+			{
+				scope: 'util-import',
+				context: 'save-to-cloud-storage'
+			});
+
+			var saveToCloudStorageIndex = app.get(
+			{
+				scope: 'util-import-update-storage',
+				context: 'saveToCloudStorageIndex',
+				valueDefault: 0
+			});
+
+			var saveToCloudStorage = saveToCloudStorages[saveToCloudStorageIndex];
+
+			var importObjects = app.get(
+			{
+				scope: 'util-import',
+				context: 'objects'
+			});
+
+			var importObject = importObjects[saveToCloudStorage.index];
+
+			if (importObject != undefined && saveToCloudStorage.objectName != undefined)
+			{
+				var field = saveToCloudStorage.objectField;
+				if (field == undefined) {field = 'id'}
+				importObject[saveToCloudStorage.objectName][field] = response.id
+			}
+					
+			app.set(
+			{
+				scope: 'util-import-update-storage',
+				context: 'saveToCloudStorageIndex',
+				value: saveToCloudStorageIndex + 1
+			});	
+
+			app.invoke('util-import-update-storage')
 		}
 	});
 
