@@ -2504,7 +2504,7 @@ mydigitalstructure._util.whoami = function (param)
 {
 	var whoamiData =
 	{
-		functionality:
+		myFunctionality:
 		{
 			controllers: mydigitalstructure._util.controller.data.whoami,
 			count: mydigitalstructure._util.controller.data.whoami.length
@@ -2512,8 +2512,37 @@ mydigitalstructure._util.whoami = function (param)
 		buildingMe: 
 		{
 			journal: mydigitalstructure._util.controller.data.build
-		}
+		},
+		myForm: {}
 	}
+
+	var form = [];
+	var elements = $('.myds-view');
+
+	_.each(elements, function (element)
+	{
+		form.push(
+		{
+			id: $(element).attr('id'),
+			structure: $(element).html()
+		})
+	});
+
+	whoamiData.myForm.views = form;
+
+	elements = $('.myds-view-template');
+	form = [];
+
+	_.each(elements, function (element)
+	{
+		form.push(
+		{
+			id: $(element).attr('id'),
+			structure: $(element).html()
+		})
+	});
+
+	whoamiData.myForm.templates = form;
 
 	whoamiData.buildingMe.todo = {};
 
