@@ -2500,10 +2500,89 @@ mydigitalstructure._util.data.param =
 	}
 }
 
+mydigitalstructure._util.whoami = function (param)
+{
+	var whoamiData =
+	{
+		functionality:
+		{
+			controllers: mydigitalstructure._util.controller.data.whoami,
+			count: mydigitalstructure._util.controller.data.whoami.length
+		},
+		buildingMe: 
+		{
+			journal: mydigitalstructure._util.controller.data.build
+		}
+	}
+
+	whoamiData.buildingMe.todo = {};
+
+	_.each(mydigitalstructure._util.controller.data.build, function(buildData, controllerName)
+	{
+		var todos = _.filter(buildData, function (data)
+		{
+			return data.todo != undefined
+		})
+
+		if (todos.length !=0 )
+		{
+			
+			whoamiData.buildingMe.todo[controllerName] = _.map(todos, function (data) {return data.todo})
+		}
+
+	});
+
+	whoamiData.thisInstanceOfMe =
+	{
+		functionality: {},
+		storage: 
+		{
+			cloud: 
+			{
+				objects: mydigitalstructure._cloud.object,
+				objectsUsed: _.keys(mydigitalstructure._cloud.object).length,
+				journal: mydigitalstructure._cloud.log
+			}
+		}
+	}
+
+	if (app != undefined)
+	{
+		whoamiData.thisInstanceOfMe.storage.local = 
+		{
+			scopes: _.keys(app.data),
+			count: _.keys(app.data).length,
+			_storage: app.data
+		}
+	}
+
+	whoamiData.thisInstanceOfMe.functionality.heavyLifters = 
+		_.reverse(_.sortBy(_.filter(mydigitalstructure._util.controller.data.whoami, function (whoami)
+		{
+			return (whoami.invoked != 0)
+		}), function (whoamiSort)
+		{
+			return whoamiSort.invoked
+		}));
+
+	whoamiData.thisInstanceOfMe.storage.cloud.heavyLifters = 
+		_.reverse(_.sortBy(_.filter(mydigitalstructure._cloud.object, function (object)
+		{
+			return (object.count != 0)
+		}), function (objectSort)
+		{
+			return objectSort.count
+		}));
+
+	return whoamiData
+}
+
 mydigitalstructure._util.controller = 
 {
 	data:
 	{
+		whoami: [],
+		unknown: [],
 		note: {},
 		build: {},
 		last: undefined
@@ -2530,6 +2609,23 @@ mydigitalstructure._util.controller =
 
 		if (name != undefined)
 		{
+			var whoami = _.find(mydigitalstructure._util.controller.data.whoami, function (whoami) {return whoami.name == name});
+
+			if (whoami != undefined)
+			{
+				whoami['invoked'] = 
+					numeral(whoami['invoked']).value() + 1
+			}
+			else
+			{
+				mydigitalstructure._util.controller.data.unknown.push(
+				{
+					name: name,
+					param: param,
+					data: controllerData
+				});
+			}
+
 			mydigitalstructure._util.data.set(
 			{
 				controller: name,
@@ -2584,6 +2680,14 @@ mydigitalstructure._util.controller =
 			{
 				if (controller.name != undefined)
 				{
+					mydigitalstructure._util.controller.data.whoami.push( 
+					{
+						name: controller.name,
+						invoked: 0,
+						note: (controller.note==undefined?'':controller.note),
+						build: (controller.build==undefined?[]:controller.build)
+					});
+
 					if (controller.note != undefined)
 					{
 						mydigitalstructure._util.controller.data.note[controller.name] = controller.note;
@@ -2630,19 +2734,30 @@ mydigitalstructure._util.controller =
 			if (namespace == undefined) {namespace = mydigitalstructure._scope.app.options.namespace};
 			if (namespace == undefined) {namespace = window.app}
 
-			if (note != undefined)
-			{
-				mydigitalstructure._util.controller.data.note[name] = note;
-			}
-
-			if (build != undefined)
-			{
-				mydigitalstructure._util.controller.data.build[name] = build;
-			}
-
 			if (name != undefined)
 			{
-				namespace.controller[name] = code;
+				mydigitalstructure._util.controller.data.whoami.push( 
+				{
+					name: name,
+					invoked: 0,
+					note: (note==undefined?'':note),
+					build: (build==undefined?[]:build)
+				});
+
+				if (note != undefined)
+				{
+					mydigitalstructure._util.controller.data.note[name] = note;
+				}
+
+				if (build != undefined)
+				{
+					mydigitalstructure._util.controller.data.build[name] = build;
+				}
+
+				if (name != undefined)
+				{
+					namespace.controller[name] = code;
+				}
 			}
 
 			if (alias != undefined)
@@ -4307,7 +4422,15 @@ mydigitalstructure._util.factory.core = function (param)
 			{
 				mydigitalstructure._util.menu.set(param);
 			}
-		}	
+		},
+		{
+			name: 'util-whoami',
+			alias: 'whoami',
+			code: function (param)
+			{
+				return mydigitalstructure._util.whoami(param);
+			}
+		}		
 	]);
 
 	app.controller['util-view-reset'] = function (param)
