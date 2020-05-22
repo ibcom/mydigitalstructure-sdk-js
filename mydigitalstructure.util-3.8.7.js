@@ -2511,7 +2511,8 @@ mydigitalstructure._util.whoami = function (param)
 		},
 		buildingMe: 
 		{
-			journal: mydigitalstructure._util.controller.data.build
+			journal: mydigitalstructure._util.controller.data.build,
+			about: mydigitalstructure._scope.app.build
 		},
 		myForm: {}
 	}

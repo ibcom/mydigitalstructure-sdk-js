@@ -8,7 +8,7 @@
  "use strict";
 
 var mydigitalstructure =
-{_scope: {app: {options: {}}, sentToView: [], viewQueue: {content: {}, template: {}}, session: {}, data: {defaultQueue: 'base', loaded: false}}, _cloud: {log: [], object: {}}};
+{_scope: {app: {options: {}, build:{}}, sentToView: [], viewQueue: {content: {}, template: {}}, session: {}, data: {defaultQueue: 'base', loaded: false}}, _cloud: {log: [], object: {}}};
 
 mydigitalstructure.init = function (data)
 {

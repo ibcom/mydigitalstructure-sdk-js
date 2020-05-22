@@ -269,12 +269,17 @@ if (_.isObject(XLSX))
 
   			mydigitalstructure._util.import.sheet.data.context = $(e.target).attr('data-context');
 
-  			mydigitalstructure._util.import.sheet.data.format = mydigitalstructure._util.data.get(
+  			var format = mydigitalstructure._util.data.get(
   			{
   				scope: mydigitalstructure._util.import.sheet.data.scope,
   				context: mydigitalstructure._util.import.sheet.data.context,
   				name: 'import-format'
   			});
+
+  			if (format != undefined)
+  			{
+  				mydigitalstructure._util.import.sheet.data.format = format.fields
+  			}
 
   			mydigitalstructure._util.import.sheet.data.formatTemplate = mydigitalstructure._util.data.get(
   			{
