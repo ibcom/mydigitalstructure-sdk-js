@@ -354,7 +354,7 @@ if (_.isObject(XLSX))
    				{
 						_.each(formatTemplate.names, function (name)
 						{
-							mydigitalstructure._util.import.sheet.data.format.push(
+							var format = 
 							{
 								sheet: formatTemplate.sheet,
 								cell: (formatTemplate.cell!=undefined?_.replaceAll(formatTemplate.cell, '{{name}}', name):undefined),
@@ -362,8 +362,19 @@ if (_.isObject(XLSX))
 								format: formatTemplate.format,
 								caption: (formatTemplate.caption!=undefined?_.replaceAll(formatTemplate.caption, '{{name}}', name):undefined),
 								controller: formatTemplate.controller,
-								validate: formatTemplate.validate
-							});
+								validate: formatTemplate.validate,
+							}
+
+							if (formatTemplate.storage != undefined)
+							{
+								format.storage = 
+								{
+									object: formatTemplate.storage.object,
+									field: formatTemplate.storage.field + name
+								}
+							}
+
+							mydigitalstructure._util.import.sheet.data.format.push(format);
 						});
 					});
 

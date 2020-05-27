@@ -2600,7 +2600,7 @@ mydigitalstructure._util.whoami = function (param)
 		}
 	}
 
-	whoamiData.thisInstanceOfMe.functionality.heavyLifters = 
+	whoamiData.thisInstanceOfMe.functionality.mostUsed = 
 		_.reverse(_.sortBy(_.filter(mydigitalstructure._util.controller.data.whoami, function (whoami)
 		{
 			return (whoami.invoked != 0)
@@ -2609,7 +2609,7 @@ mydigitalstructure._util.whoami = function (param)
 			return whoamiSort.invoked
 		}));
 
-	whoamiData.thisInstanceOfMe.storage.cloud.heavyLifters = 
+	whoamiData.thisInstanceOfMe.storage.cloud.mostUsed = 
 		_.reverse(_.sortBy(_.filter(mydigitalstructure._cloud.object, function (object)
 		{
 			return (object.count != 0)
