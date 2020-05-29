@@ -2444,7 +2444,9 @@ mydigitalstructure._util.view._refresh = function (param)
 mydigitalstructure._util.view.datepicker = function (param)
 {
 	var selector = mydigitalstructure._util.param.get(param, 'selector').value;
-	var format = mydigitalstructure._util.param.get(param, 'format', {"default": 'D MMM YYYY'}).value;  
+	var format = mydigitalstructure._util.param.get(param, 'format', {"default": 'D MMM YYYY'}).value;
+	var pickerOptions = mydigitalstructure._util.param.get(param, 'pickerOptions', {"default": {}}).value; 
+
 	var datepicker = $(selector).data("DateTimePicker");
 
 	if (_.isObject(datepicker))
@@ -2462,16 +2464,19 @@ mydigitalstructure._util.view.datepicker = function (param)
 		down: "fa fa-arrow-down"
 	} 
 
-	if (_.has(mydigitalstructure, '_scope.app.options.styles.datePicker'))
+	if (_.has(mydigitalstructure, '_scope.app.options.styles.datePicker.icons'))
 	{
 		icons = mydigitalstructure._scope.app.options.styles.datePicker.icons
 	}
 
-	$(selector).datetimepicker(
+	var options = _.assign({format: format, icons: icons}, pickerOptions);
+
+	if (_.has(mydigitalstructure, '_scope.app.options.styles.datePicker.options'))
 	{
-		format: format,
-		icons: icons
-	});
+		options = _.assign(options, mydigitalstructure._scope.app.options.styles.datePicker.options);
+	}
+
+	$(selector).datetimepicker(options);
 }
 
 //CHECK
@@ -2977,8 +2982,8 @@ mydigitalstructure._util.healthCheck =
 		}
 
 		//ANALYSIS
-		resultNotes = [];
-		resultData = []
+		var resultNotes = [];
+		var resultData = []
 
 		_.each(['div'], function (type)
 		{
