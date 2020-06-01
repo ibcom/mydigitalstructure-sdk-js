@@ -3124,9 +3124,10 @@ mydigitalstructure._util =
 							var url = mydigitalstructure._util.param.get(param, 'url').value;
 							var filetype = mydigitalstructure._util.param.get(param, 'filetype').value;
 
-							mydigitalstructure._util.dropzone.data[name] = param;
+							mydigitalstructure._util.attachment.dropzone.data[name] = param;
+							mydigitalstructure._util.attachment.dropzone.data[name]['files'] = {added: [], uploaded: [], errors: []}
 
-							delete mydigitalstructure._util.dropzone.object[name];
+							delete mydigitalstructure._util.attachment.dropzone.object[name];
 							$(selector + ' button.dz-button').remove()
 							$(selector + ' .dz-message').remove()
 
@@ -3190,9 +3191,9 @@ mydigitalstructure._util =
 							var inputParams = mydigitalstructure._util.param.get(param, 'inputParams').value;
 							if (inputParams==undefined) {inputParams = mydigitalstructure._util.param.get(param, 'data', {default: []}).value}
 
-							mydigitalstructure._util.attachement.dropzone.object[name] = new Dropzone(selector, options);
+							mydigitalstructure._util.attachment.dropzone.object[name] = new Dropzone(selector, options);
 
-							mydigitalstructure._util.attachement.dropzone.object[name].on('sending', function(file, xhr, formData)
+							mydigitalstructure._util.attachment.dropzone.object[name].on('sending', function(file, xhr, formData)
 							{
 								formData.append('object', 40);
 								formData.append('objectcontext', objectContext);
@@ -3218,26 +3219,28 @@ mydigitalstructure._util =
 								});
 							});
 
-							mydigitalstructure._util.attachement.dropzone.object[name].on('addedfile', function(file)
+							mydigitalstructure._util.attachment.dropzone.object[name].on('addedfile', function(file)
 							{
-								console.log(file);
+								mydigitalstructure._util.attachment.dropzone.data[name]['files']['added'].push({file: file});
 
-							  file.previewElement.addEventListener('click', function()
-							  {
-									mydigitalstructure._util.attachement.dropzone.object[name].removeFile(file);
-							  });
+								file.previewElement.addEventListener('click', function()
+								{
+									mydigitalstructure._util.attachment.dropzone.object[name].removeFile(file);
+								});
 							});
 
 							if (selectors.overallProgess != undefined)
 							{
-								mydigitalstructure._util.attachement.dropzone.object[name].on('totaluploadprogress', function(progress)
+								mydigitalstructure._util.attachment.dropzone.object[name].on('totaluploadprogress', function(progress)
 								{
 									$(selectors.overallProgess + ' .progress-bar').style.width = progress + '%';
 								});
 							}
 
-							mydigitalstructure._util.attachement.dropzone.object[name].on('error', function(file, errorMessage, xhr)
+							mydigitalstructure._util.attachment.dropzone.object[name].on('error', function(file, errorMessage, xhr)
 							{
+								mydigitalstructure._util.attachment.dropzone.data[name]['files']['errors'].push({file: file, error: errorMessage, response: xhr});
+
 								mydigitalstructure._util.sendToView(
 								{
 									from: 'myds-util-attachments-upload',
@@ -3246,37 +3249,27 @@ mydigitalstructure._util =
 								});
 							});
 
-							mydigitalstructure._util.attachement.dropzone.object[name].on('success', function(file, response)
+							mydigitalstructure._util.attachment.dropzone.object[name].on('success', function(file, response)
 							{
 								console.log(file)
 								console.log(response)
 
+								mydigitalstructure._util.attachment.dropzone.data[name]['files']['uploaded'].push({file: file, response: response});
 							});
 							
-							mydigitalstructure._util.attachement.dropzone.object[name].on('queuecomplete', function(progress)
+							mydigitalstructure._util.attachment.dropzone.object[name].on('queuecomplete', function(progress)
 							{
 								if (selectors.overallProgess != undefined)
 								{
 									$(selectors.overallProgess).style.opacity = '0';
 								}
 
-								if (response.status == 'OK')
-								{
-									$.extend(param, {attachments: response.data.rows}, true);
-									mydigitalstructure._util.doCallBack(callback, param)
-								}
-								else
-								{
-									mydigitalstructure._util.sendToView(
-									{
-										from: 'myds-util-attachments-upload',
-										status: 'error',
-										message: response.error.errornotes
-									});
-								}
+								param = mydigitalstructure._util.param.set(param, 'attachments',
+									_.map(mydigitalstructure._util.attachment.dropzone.data[name]['files']['uploaded'], function (uploaded)
+												{return _.first(uploaded.response.data.rows)}))
 
-								mydigitalstructure._util.callback(param, mydigitalstructure._util.attachement.dropzone.object[name]);
-								mydigitalstructure._util.onComplete(param, mydigitalstructure._util.attachement.dropzone.object[name])
+								mydigitalstructure._util.doCallBack(param, mydigitalstructure._util.attachment.dropzone.data[name]);
+								mydigitalstructure._util.onComplete(param, mydigitalstructure._util.attachment.dropzone.data[name])
 							});
 						}
 					},
