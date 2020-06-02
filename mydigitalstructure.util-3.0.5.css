@@ -38,6 +38,11 @@
     padding: 20px 20px;
 }
 
+.dz-filename
+{
+  cursor: pointer;
+}
+
 .bootstrap-datetimepicker-widget.dropdown-menu
 {
 	width: 16rem;

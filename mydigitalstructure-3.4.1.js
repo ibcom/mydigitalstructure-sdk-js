@@ -8,7 +8,18 @@
  "use strict";
 
 var mydigitalstructure =
-{_scope: {app: {options: {}, build:{}}, sentToView: [], viewQueue: {content: {}, template: {}}, session: {}, data: {defaultQueue: 'base', loaded: false}}, _cloud: {log: [], object: {}}};
+{
+	_scope:
+	{
+		app: {options: {}, build:{}},
+		sentToView: [],
+		viewQueue: {content: {}, template: {}},
+		session: {},
+		data: {defaultQueue: 'base', loaded: false}
+	},
+	_events: {},
+	_cloud: {log: [], object: {}}
+};
 
 mydigitalstructure.init = function (data)
 {
@@ -3121,13 +3132,16 @@ mydigitalstructure._util =
 							var previewTemplate = mydigitalstructure._util.param.get(param, 'previewTemplate').value;
 							var selectors = mydigitalstructure._util.param.get(param, 'selectors', {default: {}}).value;
 							var autoQueue = mydigitalstructure._util.param.get(param, 'autoQueue').value;
-							var url = mydigitalstructure._util.param.get(param, 'url').value;
+							var url = mydigitalstructure._util.param.get(param, 'url', {default: '/rpc/attach/?method=ATTACH_FILE'}).value;
 							var filetype = mydigitalstructure._util.param.get(param, 'filetype').value;
+							var fileUploadedController = mydigitalstructure._util.param.get(param, 'fileUploadedController').value;
+							var removeFileOnUpload = mydigitalstructure._util.param.get(param, 'removeFileOnUpload').value;
+							var callback = mydigitalstructure._util.param.get(param, 'callback').value;
 
 							mydigitalstructure._util.attachment.dropzone.data[name] = param;
 							mydigitalstructure._util.attachment.dropzone.data[name]['files'] = {added: [], uploaded: [], errors: []}
 
-							delete mydigitalstructure._util.attachment.dropzone.object[name];
+							//delete mydigitalstructure._util.attachment.dropzone.object[name];
 							$(selector + ' button.dz-button').remove()
 							$(selector + ' .dz-message').remove()
 
@@ -3191,86 +3205,108 @@ mydigitalstructure._util =
 							var inputParams = mydigitalstructure._util.param.get(param, 'inputParams').value;
 							if (inputParams==undefined) {inputParams = mydigitalstructure._util.param.get(param, 'data', {default: []}).value}
 
-							mydigitalstructure._util.attachment.dropzone.object[name] = new Dropzone(selector, options);
-
-							mydigitalstructure._util.attachment.dropzone.object[name].on('sending', function(file, xhr, formData)
+							if (mydigitalstructure._util.attachment.dropzone.object[name] == undefined)
 							{
-								formData.append('object', 40);
-								formData.append('objectcontext', objectContext);
+								mydigitalstructure._util.attachment.dropzone.object[name] = new Dropzone(selector, options);
 
-								if (bucket != undefined)
+								mydigitalstructure._util.attachment.dropzone.object[name].on('sending', function(file, xhr, formData)
 								{
-									formData.append('bucket', bucket);
-								}
+									formData.append('object', object);
+									formData.append('objectcontext', objectContext);
 
-								if (attachmentType != undefined)
-								{
-									formData.append('filetype0', attachmentType);
-								}
+									if (bucket != undefined)
+									{
+										formData.append('bucket', bucket);
+									}
 
-								if (publicType != undefined)
-								{
-									formData.append('publictype0', publicType);
-								}
+									if (attachmentType != undefined)
+									{
+										formData.append('filetype0', attachmentType);
+									}
 
-								_.each(inputParams, function (inputParam)
-								{	
-									formData.append((inputParam.id!=undefined?inputParam.id:inputParam.name) + '0', inputParam.value);
+									if (publicType != undefined)
+									{
+										formData.append('publictype0', publicType);
+									}
+
+									_.each(inputParams, function (inputParam)
+									{	
+										formData.append((inputParam.id!=undefined?inputParam.id:inputParam.name) + '0', inputParam.value);
+									});
 								});
-							});
 
-							mydigitalstructure._util.attachment.dropzone.object[name].on('addedfile', function(file)
-							{
-								mydigitalstructure._util.attachment.dropzone.data[name]['files']['added'].push({file: file});
-
-								file.previewElement.addEventListener('click', function()
+								mydigitalstructure._util.attachment.dropzone.object[name].on('addedfile', function(file)
 								{
-									mydigitalstructure._util.attachment.dropzone.object[name].removeFile(file);
+									mydigitalstructure._util.attachment.dropzone.data[name]['files']['added'].push({file: file});
+
+									file.previewElement.addEventListener('click', function()
+									{
+										mydigitalstructure._util.attachment.dropzone.object[name].removeFile(file);
+									});
+
+									if (fileUploadedController != undefined)
+									{
+										mydigitalstructure._util.controller.invoke(fileUploadedController, param, file);
+									}
 								});
-							});
 
-							if (selectors.overallProgess != undefined)
-							{
-								mydigitalstructure._util.attachment.dropzone.object[name].on('totaluploadprogress', function(progress)
-								{
-									$(selectors.overallProgess + ' .progress-bar').style.width = progress + '%';
-								});
-							}
-
-							mydigitalstructure._util.attachment.dropzone.object[name].on('error', function(file, errorMessage, xhr)
-							{
-								mydigitalstructure._util.attachment.dropzone.data[name]['files']['errors'].push({file: file, error: errorMessage, response: xhr});
-
-								mydigitalstructure._util.sendToView(
-								{
-									from: 'myds-util-attachments-upload',
-									status: 'error',
-									message: response.error.errornotes
-								});
-							});
-
-							mydigitalstructure._util.attachment.dropzone.object[name].on('success', function(file, response)
-							{
-								console.log(file)
-								console.log(response)
-
-								mydigitalstructure._util.attachment.dropzone.data[name]['files']['uploaded'].push({file: file, response: response});
-							});
-							
-							mydigitalstructure._util.attachment.dropzone.object[name].on('queuecomplete', function(progress)
-							{
 								if (selectors.overallProgess != undefined)
 								{
-									$(selectors.overallProgess).style.opacity = '0';
+									mydigitalstructure._util.attachment.dropzone.object[name].on('totaluploadprogress', function(progress)
+									{
+										$(selectors.overallProgess + ' .progress-bar').style.width = progress + '%';
+									});
 								}
 
-								param = mydigitalstructure._util.param.set(param, 'attachments',
-									_.map(mydigitalstructure._util.attachment.dropzone.data[name]['files']['uploaded'], function (uploaded)
-												{return _.first(uploaded.response.data.rows)}))
+								mydigitalstructure._util.attachment.dropzone.object[name].on('error', function(file, errorMessage, xhr)
+								{
+									mydigitalstructure._util.attachment.dropzone.data[name]['files']['errors'].push({file: file, error: errorMessage, response: xhr});
 
-								mydigitalstructure._util.doCallBack(param, mydigitalstructure._util.attachment.dropzone.data[name]);
-								mydigitalstructure._util.onComplete(param, mydigitalstructure._util.attachment.dropzone.data[name])
-							});
+									mydigitalstructure._util.sendToView(
+									{
+										from: 'myds-util-attachments-upload',
+										status: 'error',
+										message: response.error.errornotes
+									});
+								});
+
+								mydigitalstructure._util.attachment.dropzone.object[name].on('success', function(file, response)
+								{
+									mydigitalstructure._util.attachment.dropzone.data[name]['files']['uploaded'].push({file: file, response: response});
+
+									if (removeFileOnUpload)
+									{
+										mydigitalstructure._util.attachment.dropzone.object[name].removeFile(file);
+									}
+
+								});
+								
+								mydigitalstructure._util.attachment.dropzone.object[name].on('queuecomplete', function(progress)
+								{
+									if (selectors.overallProgess != undefined)
+									{
+										$(selectors.overallProgess).style.opacity = '0';
+									}
+
+									param = mydigitalstructure._util.param.set(param, 'attachments',
+										_.map(mydigitalstructure._util.attachment.dropzone.data[name]['files']['uploaded'], function (uploaded)
+													{return _.first(uploaded.response.data.rows)}))
+
+									if (callback != undefined)
+									{
+										if (_.isFunction(callback))
+										{
+											callback(param, mydigitalstructure._util.attachment.dropzone.data[name]);
+										}
+										else
+										{
+											mydigitalstructure._util.controller.invoke(callback, param, mydigitalstructure._util.attachment.dropzone.data[name]);
+										}
+									}
+									
+									mydigitalstructure._util.onComplete(param, mydigitalstructure._util.attachment.dropzone.data[name])
+								});
+							}
 						}
 					},
 

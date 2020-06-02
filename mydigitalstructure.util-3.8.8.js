@@ -1298,53 +1298,75 @@ if (typeof $.fn.collapse == 'function')
 		}	
     });
 
-    $(document).off('shown.bs.collapse', '.myds-collapse')
-	.on('shown.bs.collapse', '.myds-collapse', function (event)
+    $(document).off('shown.bs.collapse', '.myds-collapse:visible')
+	.on('shown.bs.collapse', '.myds-collapse:visible', function (event)
 	{
-		var id = event.target.id;
-		//if ($(event.target).attr('data-controller') != undefined)
-		//{
-		//	id = $(event.target).attr('data-controller')
-		//}
+		var processEvent = true;
+		var eventID;
 
-		var controller = $(event.target).attr('data-controller')
-		if (controller == undefined) {controller = $(event.target).attr('data-scope')}
-		if (controller != undefined) {id = controller}
-		
-		if (id != '')
-		{	
-			var source = $('[data-target="#' + id + '"]');
-			if (source != undefined)
+		_.each(event, function (value, key)
+		{
+			if (_.includes(key, 'jQuery'))
 			{
-				if (source.html() != undefined && source.attr('data-auto') != 'false')
-				{
-					if ((source.html()).indexOf('Show') != -1)
-					{
-						source.html(source.html().replace('Show', 'Hide'));
-					}
-				}	
-			}	
-
-			if (app.controller[id] != undefined)
-			{
-				if (app.data[id] == undefined) {app.data[id] = {}};
-				app.data[id].viewStatus = 'shown';
-				app.data[id].dataContext = $(event.target).data();
-
-				if (typeof app.controller[id] == 'function')
-				{
-					app.controller[id](
-					{
-						status: 'shown',
-						dataContext: $(event.target).data()
-					});
-				}
+				eventID = _.replace(key, 'jQuery', '')
 			}
-		}	
+		});
+
+		if (eventID != undefined)
+		{
+			if (mydigitalstructure._events == undefined)
+			{
+				mydigitalstructure._events = {}
+			}
+
+			processEvent = (mydigitalstructure._events[eventID] == undefined);
+			mydigitalstructure._events[eventID] = event;
+		}
+
+		//if (processEvent)
+		if (true)
+		{
+			var id = event.target.id;
+
+			var controller = $(event.target).attr('data-controller')
+			if (controller == undefined) {controller = $(event.target).attr('data-scope')}
+			if (controller != undefined) {id = controller}
+			
+			if (id != '')
+			{	
+				var source = $('[data-target="#' + id + '"]');
+				if (source != undefined)
+				{
+					if (source.html() != undefined && source.attr('data-auto') != 'false')
+					{
+						if ((source.html()).indexOf('Show') != -1)
+						{
+							source.html(source.html().replace('Show', 'Hide'));
+						}
+					}	
+				}	
+
+				if (app.controller[id] != undefined)
+				{
+					if (app.data[id] == undefined) {app.data[id] = {}};
+					app.data[id].viewStatus = 'shown';
+					app.data[id].dataContext = $(event.target).data();
+
+					if (typeof app.controller[id] == 'function')
+					{
+						app.controller[id](
+						{
+							status: 'shown',
+							dataContext: $(event.target).data()
+						});
+					}
+				}
+			}	
+		}
     });
 	
-	$(document).off('show.bs.collapse', '.myds-collapse')
-	.on('show.bs.collapse', '.myds-collapse', function (event)
+	$(document).off('show.bs.collapse', '.myds-collapse:visible')
+	.on('show.bs.collapse', '.myds-collapse:visible', function (event)
 	{
 		var id = event.target.id;
 
@@ -4687,7 +4709,66 @@ mydigitalstructure._util.factory.core = function (param)
 			{
 				return mydigitalstructure._util.healthCheck.run(param);
 			}
-		}		
+		},
+		{
+			name: 'util-attachment-upload-initialise',
+			code: function (param)
+			{
+				mydigitalstructure._util.attachment.dropzone.init(param)
+			}
+		},
+		{
+			name: 'util-attachment-upload-process',
+			code: function (param)
+			{
+				var target = mydigitalstructure._util.param.get(param.dataContext, 'target', {default: '#util-attachment-upload-container'}).value;
+				var anywhere = mydigitalstructure._util.param.get(param.dataContext, 'anywhere', {default: false}).value;
+				if (anywhere) {target = 'document.body'}
+
+				var name = mydigitalstructure._util.param.get(param, 'name').value;
+				if (name == undefined)
+				{
+					name = _.camelCase(target)
+				}
+
+				if (_.has(mydigitalstructure, '_util.attachment.dropzone.object'))
+				{
+					if (mydigitalstructure._util.attachment.dropzone.object[name] != undefined)
+					{
+						if (_.isFunction(mydigitalstructure._util.attachment.dropzone.object[name].processQueue))
+						{
+							mydigitalstructure._util.attachment.dropzone.object[name].processQueue()
+						}
+					}
+				}
+			}
+		},
+		{
+			name: 'util-attachment-upload-clear',
+			code: function (param)
+			{
+				var target = mydigitalstructure._util.param.get(param.dataContext, 'target', {default: '#util-attachment-upload-container'}).value;
+				var anywhere = mydigitalstructure._util.param.get(param.dataContext, 'anywhere', {default: false}).value;
+				if (anywhere) {target = 'document.body'}
+
+				var name = mydigitalstructure._util.param.get(param, 'name').value;
+				if (name == undefined)
+				{
+					name = _.camelCase(target)
+				}
+
+				if (_.has(mydigitalstructure, '_util.attachment.dropzone.object'))
+				{
+					if (mydigitalstructure._util.attachment.dropzone.object[name] != undefined)
+					{
+						if (_.isFunction(mydigitalstructure._util.attachment.dropzone.object[name].removeAllFiles))
+						{
+							mydigitalstructure._util.attachment.dropzone.object[name].removeAllFiles()
+						}
+					}
+				}
+			}
+		}	
 	]);
 
 	app.controller['util-view-reset'] = function (param)
@@ -6130,5 +6211,10 @@ mydigitalstructure._util.factory.core = function (param)
 	if (_.isFunction(mydigitalstructure._util.factory.queryLanguage))
 	{
 		mydigitalstructure._util.factory.queryLanguage(param)
+	}
+
+	if (_.isFunction(mydigitalstructure._util.factory.dashboard))
+	{
+		mydigitalstructure._util.factory.dashboard(param)
 	}	
 }
