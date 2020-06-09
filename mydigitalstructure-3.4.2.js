@@ -192,6 +192,11 @@ mydigitalstructure.init = function (data)
 	data.site = data.site || window.mydigitalstructureSiteId;
 	data.options.objects = (data.options.objects!=undefined?data.options.objects:true);
 
+	if (data.options.dateFormats == undefined)
+	{
+		data.options.dateFormats = ['DD MMM YYYY', 'D MMM YYYY', 'D/MM/YYYY', 'DD/MM/YYYY', 'DD MMM YYYY HH:mm:ss']
+	}
+
 	mydigitalstructure._scope.app = data;
 
 	if (mydigitalstructure._scope.app.options.auth == undefined)
