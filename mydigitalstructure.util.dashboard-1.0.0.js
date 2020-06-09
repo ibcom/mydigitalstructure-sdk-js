@@ -116,7 +116,9 @@ mydigitalstructure._util.factory.dashboard = function (param)
 
 				if (response != undefined)
 				{
-					var data = _.first(response.data.rows)
+					var data = response.data.rows;
+
+					if (!dashboard.multiple) {data = _.first(response.data.rows)}
 
 					if (dashboard.responseController)
 					{

@@ -2062,15 +2062,29 @@ mydigitalstructure._util =
 
 								add: function (content, param)
 								{
-									if (_.isArray(content))
+									var type = mydigitalstructure._util.param.get(param, 'type', {"default": 'content'}).value;
+
+									if (type == 'content')
 									{
-										_.each(content, function (_content)
+										if (_.isArray(content))
 										{
-											mydigitalstructure._util.view.queue._add(_content, param)
-										})
+											_.each(content, function (_content)
+											{
+												mydigitalstructure._util.view.queue._add(_content, param)
+											})
+										}
+										else
+										{
+											mydigitalstructure._util.view.queue._add(content, param)
+										}
 									}
-									else
+									else //template
 									{
+										if (_.isArray(content))
+										{
+											content = _.join(content, '')
+										}
+
 										mydigitalstructure._util.view.queue._add(content, param)
 									}
 								},
