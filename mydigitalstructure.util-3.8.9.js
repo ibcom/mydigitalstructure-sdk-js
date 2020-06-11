@@ -48,32 +48,42 @@ $(document).off('click', '.myds-logoff').on('click', '.myds-logoff', function(ev
 $(document).off('click', '#myds-logon, .myds-logon')
 .on('click', '#myds-logon, .myds-logon', function(event)
 {
-	var password = $('#myds-logonpassword').val();
+	var disabled = $(this).hasClass('disabled');
 
-	if ($('#myds-logonpassword').attr('data-password') != undefined)
+	if (!disabled)
 	{
-		password = $('#myds-logonpassword').attr('data-password');
+		var password = $('#myds-logonpassword').val();
+
+		if ($('#myds-logonpassword').attr('data-password') != undefined)
+		{
+			password = $('#myds-logonpassword').attr('data-password');
+		}
+
+		mydigitalstructure.auth(
+		{
+			logon: $('#myds-logonname').val(),
+			password: password,
+			code: $('#myds-logoncode').val()
+		});
 	}
-
-	mydigitalstructure.auth(
-	{
-		logon: $('#myds-logonname').val(),
-		password: password,
-		code: $('#myds-logoncode').val()
-	});
 });
 
 $(document).off('click', '#myds-register, .myds-register')
 .on('click', '#myds-register, .myds-register', function(event)
 {
-	mydigitalstructure.register(
+	var disabled = $(this).hasClass('disabled');
+
+	if (!disabled)
 	{
-		spacename: $('#myds-spacename').val(),
-		firstname: $('#myds-firstname').val(),
-		surname: $('#myds-surname').val(),
-		email: $('#myds-email').val(),
-		notes: $('#myds-notes').val()
-	});	
+		mydigitalstructure.register(
+		{
+			spacename: $('#myds-spacename').val(),
+			firstname: $('#myds-firstname').val(),
+			surname: $('#myds-surname').val(),
+			email: $('#myds-email').val(),
+			notes: $('#myds-notes').val()
+		});	
+	}
 });
 
 $(document).off('keypress', '#myds-logonname, #myds-logonpassword, #myds-logoncode')
@@ -160,71 +170,75 @@ $(document).off('click', '.myds-navigate')
 	var scope = $(this).data('scope');
 	var target = $(this).data('target');
 	var context = $(this).attr('data-context');
+	var disabled = $(this).hasClass('disabled');
 
-	if (controller == undefined) {controller = scope}
-
-	if (controller == undefined && target != undefined)
+	if (!disabled)
 	{
-		controller = target.replace('#', '')
-	}
+		if (controller == undefined) {controller = scope}
 
-	if (controller == undefined && $(this).attr('href') != undefined)
-	{
-		controller = $(this).attr('href').replace('#', '')
-	}
-
-	if (controller != undefined)
-	{
-		var routerElement = $('.myds-router');
-
-		if (routerElement.length > 0)
+		if (controller == undefined && target != undefined)
 		{
-			var element = routerElement.children('.btn');
-			if (element.length == 0)
-			{
-				element = routerElement.children('.dropdown-toggle');
-			}
+			controller = target.replace('#', '')
+		}
 
-			if (element.length > 0)
-			{
-				var textElement = element.siblings().find('[data-context="' + controller + '"]')
+		if (controller == undefined && $(this).attr('href') != undefined)
+		{
+			controller = $(this).attr('href').replace('#', '')
+		}
 
-				if (textElement.length > 0)
+		if (controller != undefined)
+		{
+			var routerElement = $('.myds-router');
+
+			if (routerElement.length > 0)
+			{
+				var element = routerElement.children('.btn');
+				if (element.length == 0)
 				{
-					var text = textElement.html();
+					element = routerElement.children('.dropdown-toggle');
+				}
 
-					var elementText = element.find('span.dropdown-text');
+				if (element.length > 0)
+				{
+					var textElement = element.siblings().find('[data-context="' + controller + '"]')
 
-					if (elementText.length != 0)
+					if (textElement.length > 0)
 					{
-						elementText.html(text)
+						var text = textElement.html();
+
+						var elementText = element.find('span.dropdown-text');
+
+						if (elementText.length != 0)
+						{
+							elementText.html(text)
+						}
+						else
+						{
+							element.html(text + ' <span class="caret"></span>');
+						}	
 					}
-					else
-					{
-						element.html(text + ' <span class="caret"></span>');
-					}	
 				}
 			}
+
+			var param = {}
+
+			if (mydigitalstructure._scope.app.uriContext != undefined)
+			{ 
+				param.context = (mydigitalstructure._scope.app.uriContext).replace('#', '')
+			}
+
+			param.dataContext = mydigitalstructure._util.data.clean($(this).data());
+			app.data[controller] = mydigitalstructure._util.data.clean($(this).data());
+
+			var locationHash = '#' + controller;
+
+			if (context != undefined)
+			{
+				locationHash = locationHash + '/' + context
+			}
+
+			window.location.hash = locationHash;
 		}
-
-		var param = {}
-
-		if (mydigitalstructure._scope.app.uriContext != undefined)
-		{ 
-			param.context = (mydigitalstructure._scope.app.uriContext).replace('#', '')
-		}
-
-		param.dataContext = mydigitalstructure._util.data.clean($(this).data());
-		app.data[controller] = mydigitalstructure._util.data.clean($(this).data());
-
-		var locationHash = '#' + controller;
-
-		if (context != undefined)
-		{
-			locationHash = locationHash + '/' + context
-		}
-
-		window.location.hash = locationHash;
 	}
 });
 
@@ -235,10 +249,14 @@ $(document).off('click', '.myds-navigate-to')
 	if (target == undefined) {target = $(this).data('target')};
 	var type = $(this).data('type');
 	if (type == undefined) {type = 'tab'}
+	var disabled = $(this).hasClass('disabled');
 
-	if (type == 'tab')
+	if (!disabled)
 	{
-		$('[href="' + target + '"]').tab('show')
+		if (type == 'tab')
+		{
+			$('[href="' + target + '"]').tab('show')
+		}
 	}
 });
 
@@ -249,27 +267,31 @@ $(document).off('click', '.myds-show, .myds-invoke')
 	var scope = $(this).data('scope');
 	var target = $(this).data('target');
 	var targetClass = $(this).data('target-class')
+	var disabled = $(this).hasClass('disabled');
 
-	$(targetClass).addClass('hidden d-none');
-	$(target).removeClass('hidden d-none');
-
-	if (controller == undefined) {controller = scope}
-
-	if (controller == undefined && target != undefined)
+	if (!disabled)
 	{
-		controller = target.replace('#', '')
-	}
+		$(targetClass).addClass('hidden d-none');
+		$(target).removeClass('hidden d-none');
 
-	if (controller != undefined)
-	{
-		var param = {dataContext: mydigitalstructure._util.data.clean($(this).data())};
-		app.data[controller] = mydigitalstructure._util.data.clean($(this).data());
+		if (controller == undefined) {controller = scope}
 
-		mydigitalstructure._util.controller.invoke(
+		if (controller == undefined && target != undefined)
 		{
-			name: controller,
-			controllerParam: param
-		});
+			controller = target.replace('#', '')
+		}
+
+		if (controller != undefined)
+		{
+			var param = {dataContext: mydigitalstructure._util.data.clean($(this).data())};
+			app.data[controller] = mydigitalstructure._util.data.clean($(this).data());
+
+			mydigitalstructure._util.controller.invoke(
+			{
+				name: controller,
+				controllerParam: param
+			});
+		}
 	}
 });
 
@@ -277,10 +299,14 @@ $(document).off('click', '.myds-close')
 .on('click', '.myds-close', function (event)
 {
 	var context = $(this).data('context');
+	var disabled = $(this).hasClass('disabled');
 
-	if (context == 'popover' && typeof $.fn.popover == 'function')
+	if (!disabled)
 	{
-		$('.popover:visible').popover("hide");
+		if (context == 'popover' && typeof $.fn.popover == 'function')
+		{
+			$('.popover:visible').popover("hide");
+		}
 	}
 });
 
@@ -291,14 +317,18 @@ $(document).off('click', '.myds-export')
 	var container = $(this).data('container');
 	var filename = $(this).data('filename');
 	var scope = $(this).data('scope');
+	var disabled = $(this).hasClass('disabled');
 
-	app.controller['util-export-table'](
+	if (!disabled)
 	{
-		context: context,
-		filename: filename,
-		container: container,
-		scope: scope
-	})
+		app.controller['util-export-table'](
+		{
+			context: context,
+			filename: filename,
+			container: container,
+			scope: scope
+		});
+	}
 });
 
 $(document).off('click', '.myds-dropdown')
@@ -309,71 +339,75 @@ $(document).off('click', '.myds-dropdown')
 	var scope = $(this).data('scope');
 	var context = $(this).data('context');
 	var html = $(this).html();
+	var disabled = $(this).hasClass('disabled');
 
-	if (controller == undefined) {controller = scope}
-
-	if (controller == undefined)
+	if (!disabled)
 	{
-		controller = id
-	}
-
-	var button = $(this).parents(".btn-group").find('.btn');
-
-	if (button.length == 0)
-	{
-		button = $(this).parents('.dropdown').find('.dropdown-toggle');
-	}
-
-	if (button.length == 0)
-	{
-		button = $(this).parents('.dropdown-menu').siblings('.dropdown-toggle');
-	}
-
-	if (button.length != 0)
-	{
-		var buttonText = button.find('span.dropdown-text');
-
-		if (buttonText.length != 0)
-		{
-			buttonText.html(html)
-		}
-		else
-		{
-			button.html(html + ' <span class="caret"></span>');
-		}
+		if (controller == undefined) {controller = scope}
 
 		if (controller == undefined)
 		{
-			controller = $(this).closest('ul.dropdown-menu').data('controller');
+			controller = id
 		}
 
-		if (context == undefined)
+		var button = $(this).parents(".btn-group").find('.btn');
+
+		if (button.length == 0)
 		{
-			context = $(this).closest('ul.dropdown-menu').data('context');
+			button = $(this).parents('.dropdown').find('.dropdown-toggle');
 		}
 
-		var otherData;
-
-		if ($(this).closest('ul.dropdown-menu').length != 0)
+		if (button.length == 0)
 		{
-			otherData = mydigitalstructure._util.data.clean($(this).closest('ul.dropdown-menu').data())
+			button = $(this).parents('.dropdown-menu').siblings('.dropdown-toggle');
 		}
 
-		var param = {}
-		param.dataContext = _.assign(otherData, mydigitalstructure._util.data.clean($(this).data()));
-		param._dataContext = _.assign(otherData, mydigitalstructure._util.data.clean($(this).data()));
-		
-		if (app.data[controller] == undefined) {app.data[controller] = {}}
-		app.data[controller].dataContext = _.assign(otherData, mydigitalstructure._util.data.clean($(this).data()));
-
-		if (context != undefined && $(this).data('id') != undefined)
+		if (button.length != 0)
 		{
-			app.data[controller][context] = $(this).data('id');
-			app.data[controller]['_' + context] = [$(this).data('id')];
+			var buttonText = button.find('span.dropdown-text');
+
+			if (buttonText.length != 0)
+			{
+				buttonText.html(html)
+			}
+			else
+			{
+				button.html(html + ' <span class="caret"></span>');
+			}
+
+			if (controller == undefined)
+			{
+				controller = $(this).closest('ul.dropdown-menu').data('controller');
+			}
+
+			if (context == undefined)
+			{
+				context = $(this).closest('ul.dropdown-menu').data('context');
+			}
+
+			var otherData;
+
+			if ($(this).closest('ul.dropdown-menu').length != 0)
+			{
+				otherData = mydigitalstructure._util.data.clean($(this).closest('ul.dropdown-menu').data())
+			}
+
+			var param = {}
+			param.dataContext = _.assign(otherData, mydigitalstructure._util.data.clean($(this).data()));
+			param._dataContext = _.assign(otherData, mydigitalstructure._util.data.clean($(this).data()));
+			
+			if (app.data[controller] == undefined) {app.data[controller] = {}}
+			app.data[controller].dataContext = _.assign(otherData, mydigitalstructure._util.data.clean($(this).data()));
+
+			if (context != undefined && $(this).data('id') != undefined)
+			{
+				app.data[controller][context] = $(this).data('id');
+				app.data[controller]['_' + context] = [$(this).data('id')];
+			}	
+
+			mydigitalstructure._util.controller.invoke({name: controller}, param);
 		}	
-
-		mydigitalstructure._util.controller.invoke({name: controller}, param);
-	}	
+	}
 });
 
 $(document).off('click', '.myds-list')
@@ -384,41 +418,45 @@ $(document).off('click', '.myds-list')
 	var controller = element.data('controller');
 	var scope = element.data('controller');
 	var context = element.data('context');
-	
-	element.closest('li').siblings().removeClass('active');
-	element.closest('li').addClass('active');
+	var disabled = element.hasClass('disabled');
 
-	if (controller == undefined) {controller = scope}
-
-	if (controller != undefined)
-	{
-		var param = {}
-		param.dataContext = element.data();
-		
-		if (app.data[controller] == undefined) {app.data[controller] = {}}
-		app.data[controller].dataContext = element.data();
-
-		if (context != undefined)
-		{
-			app.data[controller][context] = element.data('id');
-			app.data[controller]['_' + context] = [element.data('id')];
-		}	
-
-		app.controller[controller](param);
-	}
-	else
-	{
-		if (id != '')
+	if (!disabled)
 		{	
-			if (app.controller[id] != undefined)
-			{	
-				var param = {}
-				param.dataContext = element.data();
-				if (app.data[controller] == undefined) {app.data[controller] = {}}
-				app.controller[id](param);
-			}
+		element.closest('li').siblings().removeClass('active');
+		element.closest('li').addClass('active');
+
+		if (controller == undefined) {controller = scope}
+
+		if (controller != undefined)
+		{
+			var param = {}
+			param.dataContext = element.data();
+			
+			if (app.data[controller] == undefined) {app.data[controller] = {}}
+			app.data[controller].dataContext = element.data();
+
+			if (context != undefined)
+			{
+				app.data[controller][context] = element.data('id');
+				app.data[controller]['_' + context] = [element.data('id')];
+			}	
+
+			app.controller[controller](param);
 		}
-	}	
+		else
+		{
+			if (id != '')
+			{	
+				if (app.controller[id] != undefined)
+				{	
+					var param = {}
+					param.dataContext = element.data();
+					if (app.data[controller] == undefined) {app.data[controller] = {}}
+					app.controller[id](param);
+				}
+			}
+		}	
+	}
 });
 
 $(document).off('click', '.myds-check')
@@ -428,101 +466,105 @@ $(document).off('click', '.myds-check')
 	var scope = $(this).data('scope');
 	var controllerBefore = $(this).data('controller-before');
 	var context = $(this).data('context');
+	var disabled = $(this).hasClass('disabled');
 
-	if (scope == undefined) {scope = controller}
+	if (!disabled)
+	{
+		if (scope == undefined) {scope = controller}
 
-	if ((controller != undefined || scope != undefined) && context != undefined)
-	{	
-		if (app.data[scope] == undefined) {app.data[scope] = {}}
-
-		var dataID = $(this).data('id');
-		var selected = $(this).prop('checked');
-		var dataUnselectedID = $(this).data('unselectedId');
-
-		if (dataUnselectedID == undefined)
-		{
-			dataUnselectedID = $(this).data('uncheckedId');
-		}
-		
-		if (!selected && dataUnselectedID != undefined)
-		{
-			dataID = dataUnselectedID;
-		}
-			
-		var param =
-		{
-			selected: selected,
-			dataID: dataID,
-			dataContext: $(this).data(),
-			controller: controller,
-			scope: scope
-		}
-
-		if (controllerBefore != undefined)
-		{
-			app.controller[controllerBefore](param);
-		}
-
-		var ids = [];
-		var uncheckedids = [];
-
-		if (selected)
-		{
-			ids.push(dataID)
-		}
-		else
-		{
-			uncheckedids.push(dataID)
-		}
-		
-		if (controller != undefined)
-		{
-			var inputs = $('input.myds-check[data-controller="' + controller + '"][data-context="' + context + '"]:visible');
-		
-			
-			if (inputs.length != 1)
-			{
-	 			var checked = $('input.myds-check[data-controller="' + controller + '"][data-context="' + context + '"]:checked:visible');
-	 			ids = $.map(checked, function (c)
-	 			{
-	 				return $(c).data('id')}
-	 			);
-
-	 			var unchecked = $('input.myds-check[data-controller="' + controller + '"][data-context="' + context + '"]:not(:checked):visible');
-	 			uncheckedids = $.map(unchecked, function (c)
-	 			{
-	 				return $(c).data('id')}
-	 			);
-			}
-		}
-		else
-		{
-			var inputs = $('input.myds-check[data-scope="' + scope + '"][data-context="' + context + '"]:visible');
-			
-			if (inputs.length != 1)
-			{
-	 			var checked = $('input.myds-check[data-scope="' + scope + '"][data-context="' + context + '"]:checked:visible');
-	 			ids = $.map(checked, function (c) {return $(c).data('id')});
-
-	 			var unchecked = $('input.myds-check[data-scope="' + scope + '"][data-context="' + context + '"]:not(:checked):visible');
-	 			uncheckedids = $.map(unchecked, function (c)
-	 			{
-	 				return $(c).data('id')}
-	 			);
-			}
-		}
-		
- 		app.data[scope][context] = (ids.length==0?'':ids.join(','));
- 		app.data[scope]['_' + context] = ids;
-
- 		app.data[scope][context + '-unselected'] = (uncheckedids.length==0?'':uncheckedids.join(','));
- 		app.data[scope]['_' + context + '-unselected'] = uncheckedids;
-
-		if (controller != undefined)
+		if ((controller != undefined || scope != undefined) && context != undefined)
 		{	
-			app.invoke(controller, param);
-		}
-	}		
+			if (app.data[scope] == undefined) {app.data[scope] = {}}
+
+			var dataID = $(this).data('id');
+			var selected = $(this).prop('checked');
+			var dataUnselectedID = $(this).data('unselectedId');
+
+			if (dataUnselectedID == undefined)
+			{
+				dataUnselectedID = $(this).data('uncheckedId');
+			}
+			
+			if (!selected && dataUnselectedID != undefined)
+			{
+				dataID = dataUnselectedID;
+			}
+				
+			var param =
+			{
+				selected: selected,
+				dataID: dataID,
+				dataContext: $(this).data(),
+				controller: controller,
+				scope: scope
+			}
+
+			if (controllerBefore != undefined)
+			{
+				app.controller[controllerBefore](param);
+			}
+
+			var ids = [];
+			var uncheckedids = [];
+
+			if (selected)
+			{
+				ids.push(dataID)
+			}
+			else
+			{
+				uncheckedids.push(dataID)
+			}
+			
+			if (controller != undefined)
+			{
+				var inputs = $('input.myds-check[data-controller="' + controller + '"][data-context="' + context + '"]:visible');
+			
+				
+				if (inputs.length != 1)
+				{
+		 			var checked = $('input.myds-check[data-controller="' + controller + '"][data-context="' + context + '"]:checked:visible');
+		 			ids = $.map(checked, function (c)
+		 			{
+		 				return $(c).data('id')}
+		 			);
+
+		 			var unchecked = $('input.myds-check[data-controller="' + controller + '"][data-context="' + context + '"]:not(:checked):visible');
+		 			uncheckedids = $.map(unchecked, function (c)
+		 			{
+		 				return $(c).data('id')}
+		 			);
+				}
+			}
+			else
+			{
+				var inputs = $('input.myds-check[data-scope="' + scope + '"][data-context="' + context + '"]:visible');
+				
+				if (inputs.length != 1)
+				{
+		 			var checked = $('input.myds-check[data-scope="' + scope + '"][data-context="' + context + '"]:checked:visible');
+		 			ids = $.map(checked, function (c) {return $(c).data('id')});
+
+		 			var unchecked = $('input.myds-check[data-scope="' + scope + '"][data-context="' + context + '"]:not(:checked):visible');
+		 			uncheckedids = $.map(unchecked, function (c)
+		 			{
+		 				return $(c).data('id')}
+		 			);
+				}
+			}
+			
+	 		app.data[scope][context] = (ids.length==0?'':ids.join(','));
+	 		app.data[scope]['_' + context] = ids;
+
+	 		app.data[scope][context + '-unselected'] = (uncheckedids.length==0?'':uncheckedids.join(','));
+	 		app.data[scope]['_' + context + '-unselected'] = uncheckedids;
+
+			if (controller != undefined)
+			{	
+				app.invoke(controller, param);
+			}
+		}		
+	}
 });
 
 $(document).off('keyup', '.myds-text')
@@ -533,56 +575,60 @@ $(document).off('keyup', '.myds-text')
 	var context = $(this).data('context');
 	var enter = $(this).data('enter');
 	var clean = $(this).data('clean');
+	var disabled = $(this).hasClass('disabled');
 
 	var returnValue;
 
-	if (event.which == '13' && enter == 'stop')
+	if (!disabled)
 	{
-		event.preventDefault();
-		returnValue = false;
-	}
+		if (event.which == '13' && enter == 'stop')
+		{
+			event.preventDefault();
+			returnValue = false;
+		}
 
-	var val = $(this).val();
-	var data = $(this).data();
+		var val = $(this).val();
+		var data = $(this).data();
 
-	if (clean != 'disabled')
-	{
-		val = mydigitalstructure._util.clean(val);
-		data = mydigitalstructure._util.data.clean(data);
-	}
+		if (clean != 'disabled')
+		{
+			val = mydigitalstructure._util.clean(val);
+			data = mydigitalstructure._util.data.clean(data);
+		}
 
-	if (scope != undefined && context != undefined)
-	{
-		if (app.data[scope] == undefined) {app.data[scope] = {}}
- 		app.data[scope][context] = val;
- 		app.data[scope]['_' + context] = data;
-	}
-	
-	if (controller != undefined && context != undefined)
-	{	
- 		if (app.data[controller] == undefined) {app.data[controller] = {}}
-
- 		app.data[controller][context] = val;
- 		app.data[controller]['_' + context] = data;
- 		app.data[controller]['_' + context]._type = 'keyup';
- 		app.data[controller]['_' + context]._source = event.target.id;
- 		app.data[controller]['_' + context]._value = val;
-
-		if (app.controller[controller] != undefined)
+		if (scope != undefined && context != undefined)
+		{
+			if (app.data[scope] == undefined) {app.data[scope] = {}}
+	 		app.data[scope][context] = val;
+	 		app.data[scope]['_' + context] = data;
+		}
+		
+		if (controller != undefined && context != undefined)
 		{	
-			if (app.data[controller].timerText != 0) {clearTimeout(app.data[controller].timerText)};
-			
-			var param = JSON.stringify(
-			{
-				dataContext: app.data[controller][context],
-				_type: 'keyup',
-				_dataContext: app.data[controller]['_' + context],
-			});
+	 		if (app.data[controller] == undefined) {app.data[controller] = {}}
 
-			app.data[controller].timerText = setTimeout('app.controller["' + controller + '"](' + param + ')', 500);
+	 		app.data[controller][context] = val;
+	 		app.data[controller]['_' + context] = data;
+	 		app.data[controller]['_' + context]._type = 'keyup';
+	 		app.data[controller]['_' + context]._source = event.target.id;
+	 		app.data[controller]['_' + context]._value = val;
+
+			if (app.controller[controller] != undefined)
+			{	
+				if (app.data[controller].timerText != 0) {clearTimeout(app.data[controller].timerText)};
+				
+				var param = JSON.stringify(
+				{
+					dataContext: app.data[controller][context],
+					_type: 'keyup',
+					_dataContext: app.data[controller]['_' + context],
+				});
+
+				app.data[controller].timerText = setTimeout('app.controller["' + controller + '"](' + param + ')', 500);
+			}
 		}
 	}
-	
+
 	return returnValue
 });
 
@@ -644,12 +690,16 @@ $(document).off('keypress', '.myds-text')
 .on('keypress', '.myds-text', function (event)
 {
 	var enter = $(this).data('enter');
+	var disabled = $(this).hasClass('disabled');
 
-	if (event.which == '13' && enter == 'stop')
+	if (!disabled)
 	{
-		event.preventDefault();
-		return false
-    }
+		if (event.which == '13' && enter == 'stop')
+		{
+			event.preventDefault();
+			return false
+		}
+	}
 });
 
 
@@ -870,29 +920,33 @@ $(document).off('change', '.myds-change')
 	var controller = $(this).data('controller');
 	var context = $(this).data('context');
 	var clean = $(this).data('clean');
+	var disabled = $(this).hasClass('disabled');
 
 	var val = $(this).val();
 	var data = $(this).data();
 
-	if (clean != 'disabled')
+	if (!disabled)
 	{
-		val = mydigitalstructure._util.clean(val);
-		data = mydigitalstructure._util.data.clean(data);
-	}
-
-	if (controller != undefined && context != undefined)
-	{	
- 		if (app.data[controller] == undefined) {app.data[controller] = {}}
-
- 		app.data[controller][context] = val;
- 		app.data[controller]['_' + context] = data;
-
-		if (app.controller[controller] != undefined)
-		{	
-			var param = {dataContext: app.data[controller][context]}
-			app.controller[controller](param);
+		if (clean != 'disabled')
+		{
+			val = mydigitalstructure._util.clean(val);
+			data = mydigitalstructure._util.data.clean(data);
 		}
-	}		
+
+		if (controller != undefined && context != undefined)
+		{	
+	 		if (app.data[controller] == undefined) {app.data[controller] = {}}
+
+	 		app.data[controller][context] = val;
+	 		app.data[controller]['_' + context] = data;
+
+			if (app.controller[controller] != undefined)
+			{	
+				var param = {dataContext: app.data[controller][context]}
+				app.controller[controller](param);
+			}
+		}
+	}
 });
 
 $(document).off('click', '.myds-sort')
