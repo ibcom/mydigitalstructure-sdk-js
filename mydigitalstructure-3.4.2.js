@@ -1653,7 +1653,11 @@ mydigitalstructure._util =
 												});
 											}
 
-											response.data.rows = mydigitalstructure._scope.data._send.data[response.moreid];
+											if (all && _.has(response, 'data.rows'))
+											{
+												response.data.rows = mydigitalstructure._scope.data._send.data[response.moreid];
+											}
+
 											mydigitalstructure._util.doCallBack(param, response);
 											delete mydigitalstructure._scope.data._send.data[response.moreid];
 										}

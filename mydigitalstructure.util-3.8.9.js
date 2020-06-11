@@ -103,6 +103,7 @@ $(document).off('click', '.myds-click, .myds')
 	var element = $(this);
 	var id = element.attr('id');
 	var controller = element.data('controller');
+	var disabled = element.hasClass('disabled');
 
 	if (element.hasClass('list-group-item'))
 	{
@@ -110,43 +111,46 @@ $(document).off('click', '.myds-click, .myds')
 		element.closest('li').addClass('active');
 	}
 
-	if (controller != undefined)
+	if (!disabled)
 	{
-		var param = {}
+		if (controller != undefined)
+		{
+			var param = {}
 
-		if (mydigitalstructure._scope.app.uriContext != undefined)
-		{ 
-			param.context = (mydigitalstructure._scope.app.uriContext).replace('#', '')
-		}
-
-		var data = mydigitalstructure._util.data.clean(element.data());
-		param.dataContext = data;
-		app.data[controller] = data;
-		if (app.data[controller] == undefined) {app.data[controller] = {}}
-		mydigitalstructure._util.controller.invoke({name: controller}, param)
-	}
-	else
-	{
-		if (id != '')
-		{	
-			if (app.controller[id] != undefined)
-			{	
-				var param = {}
-
-				if (mydigitalstructure._scope.app.uriContext != undefined)
-				{ 
-					param.context = (mydigitalstructure._scope.app.uriContext).replace('#', '')
-				}
-
-				var data = mydigitalstructure._util.data.clean(element.data());
-				param.dataContext = data;
-				app.data[controller] = data;
-
-				if (app.data[controller] == undefined) {app.data[controller] = {}}
-				app.controller[id](param);
+			if (mydigitalstructure._scope.app.uriContext != undefined)
+			{ 
+				param.context = (mydigitalstructure._scope.app.uriContext).replace('#', '')
 			}
+
+			var data = mydigitalstructure._util.data.clean(element.data());
+			param.dataContext = data;
+			app.data[controller] = data;
+			if (app.data[controller] == undefined) {app.data[controller] = {}}
+			mydigitalstructure._util.controller.invoke({name: controller}, param)
 		}
-	}	
+		else
+		{
+			if (id != '')
+			{	
+				if (app.controller[id] != undefined)
+				{	
+					var param = {}
+
+					if (mydigitalstructure._scope.app.uriContext != undefined)
+					{ 
+						param.context = (mydigitalstructure._scope.app.uriContext).replace('#', '')
+					}
+
+					var data = mydigitalstructure._util.data.clean(element.data());
+					param.dataContext = data;
+					app.data[controller] = data;
+
+					if (app.data[controller] == undefined) {app.data[controller] = {}}
+					app.controller[id](param);
+				}
+			}
+		}	
+	}
 });
 
 $(document).off('click', '.myds-navigate')
@@ -2323,6 +2327,8 @@ mydigitalstructure._util.view._refresh = function (param)
 	var resetScopeNew = mydigitalstructure._util.param.get(param, 'resetScopeNew', {default: true}).value;
 	var validate = mydigitalstructure._util.param.get(param, 'validate', {default: true}).value;
 	var hidePopover = mydigitalstructure._util.param.get(param, 'hidePopover', {default: true}).value;
+	var disable = mydigitalstructure._util.param.get(param, 'disable').value;
+	var enable = mydigitalstructure._util.param.get(param, 'enable').value;
 
 	var includeDates = mydigitalstructure._util.param.get(param, 'includeDates', {default: true}).value;
 
@@ -2439,6 +2445,16 @@ mydigitalstructure._util.view._refresh = function (param)
 	if (!_.isUndefined(hide))
 	{
 		$(hide).addClass('hidden d-none');
+	}
+
+	if (!_.isUndefined(disable))
+	{
+		$(disable).addClass('disabled');
+	}
+	
+	if (!_.isUndefined(enable))
+	{
+		$(enable).removeClass('disabled');
 	}
 
 	if (includeDates)
