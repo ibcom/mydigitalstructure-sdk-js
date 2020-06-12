@@ -312,7 +312,7 @@ mydigitalstructure._util.view.handlers['myds-invoke'] = function (event)
 $(document).off('click', '.myds-show, .myds-invoke')
 .on('click', '.myds-show, .myds-invoke', mydigitalstructure._util.view.handlers['myds-invoke']);
 
-mydigitalstructure._util.view.handlers['myds-close'] function (event)
+mydigitalstructure._util.view.handlers['myds-close'] = function (event)
 {
 	var context = $(this).data('context');
 	var disabled = $(this).hasClass('disabled');
@@ -350,7 +350,7 @@ mydigitalstructure._util.view.handlers['myds-export-table'] = function(event)
 }
 
 $(document).off('click', '.myds-export, .myds-export-table')
-.on('click', '.myds-export', mydigitalstructure._util.view.handlers['myds-export-table']);
+.on('click', '.myds-export, .myds-export-table', mydigitalstructure._util.view.handlers['myds-export-table']);
 
 mydigitalstructure._util.view.handlers['myds-dropdown'] = function (event)
 {
@@ -661,6 +661,24 @@ mydigitalstructure._util.view.handlers['myds-text'] = function (event)
 $(document).off('keyup', '.myds-text')
 .on('keyup', '.myds-text', mydigitalstructure._util.view.handlers['myds-text']);
 
+mydigitalstructure._util.view.handlers['myds-text-enter'] = function (event)
+{
+	var enter = $(this).data('enter');
+	var disabled = $(this).hasClass('disabled');
+
+	if (!disabled)
+	{
+		if (event.which == '13' && enter == 'stop')
+		{
+			event.preventDefault();
+			return false
+		}
+	}
+}
+
+$(document).off('keypress', '.myds-text')
+.on('keypress', '.myds-text', mydigitalstructure._util.view.handlers['myds-text-enter']);
+
 mydigitalstructure._util.view.handlers['myds-date-time'] = function (event)
 {
 	var controller = $(this).data('controller');
@@ -716,24 +734,6 @@ mydigitalstructure._util.view.handlers['myds-date-time'] = function (event)
 
 $(document).off('changeDate clearDate', '.myds-date, .myds-date-time')
 .on('changeDate clearDate', '.myds-date, .myds-date-time', mydigitalstructure._util.view.handlers['myds-date-time']);
-
-mydigitalstructure._util.view.handlers['myds-text'] = function (event)
-{
-	var enter = $(this).data('enter');
-	var disabled = $(this).hasClass('disabled');
-
-	if (!disabled)
-	{
-		if (event.which == '13' && enter == 'stop')
-		{
-			event.preventDefault();
-			return false
-		}
-	}
-}
-
-$(document).off('keypress', '.myds-text')
-.on('keypress', '.myds-text', mydigitalstructure._util.view.handlers['myds-text']);
 
 mydigitalstructure._util.view.handlers['myds-focus'] = function (event)
 {
