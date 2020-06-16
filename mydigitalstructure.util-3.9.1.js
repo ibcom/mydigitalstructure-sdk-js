@@ -31,6 +31,8 @@ _.replaceAll = function (str, from, to) {
   return str.replace(new RegExp(from, 'g'), to);
 }
 
+_.templateSettings.interpolate = /{{([\s\S]+?)}}/g;
+
 try
 {
 	mydigitalstructure.saveAs = !!new Blob;
@@ -351,6 +353,46 @@ mydigitalstructure._util.view.handlers['myds-export-table'] = function(event)
 
 $(document).off('click', '.myds-export, .myds-export-table')
 .on('click', '.myds-export, .myds-export-table', mydigitalstructure._util.view.handlers['myds-export-table']);
+
+mydigitalstructure._util.view.handlers['myds-notify'] = function(event)
+{
+	var message = $(this).data('message');
+	var type = $(this).data('type');
+	var disabled = $(this).hasClass('disabled');
+
+	if (!disabled)
+	{
+		mydigitalstructure._util.controller('app-notify',
+		{
+			message: message,
+			type: type
+		});
+	}
+}
+
+$(document).off('click', '.myds-notify')
+.on('click', '.myds-notify', mydigitalstructure._util.view.handlers['myds-notify']);
+
+mydigitalstructure._util.view.handlers['myds-pdf'] = function(event)
+{
+	var scope = $(this).data('scope');
+	var selector = $(this).data('selector');
+	var disabled = $(this).hasClass('disabled');
+
+	if (!disabled)
+	{
+		if (selector == undefined) {selector = '#' + scope}
+		mydigitalstructure._util.controller.invoke('util-pdf-create',
+		{
+			selector: selector,
+			saveLocal: true,
+			options: {margin: [7,7], image: {type: 'jpeg', quality: 0.98}, jsPDF: {unit: 'mm', format: 'a4', orientation: 'p'}}
+		});
+	}
+}
+
+$(document).off('click', '.myds-pdf')
+.on('click', '.myds-pdf', mydigitalstructure._util.view.handlers['myds-pdf']);
 
 mydigitalstructure._util.view.handlers['myds-dropdown'] = function (event)
 {
@@ -1065,39 +1107,61 @@ $(document).off('focusout keyup change.select2 select2:clear', '.myds-validate')
 
 mydigitalstructure._util.view.handlers['myds-date-time-picker'] = function(event)
 {
-	var element = $(event.target).children('input');
+	var element;
 
-	var controller = element.data('controller');
-	var scope = element.data('scope');
-	if (controller == undefined) {controller = scope}
-
-	var context = element.data('context');
-
-	var val = mydigitalstructure._util.clean(element.val());
-	var data = mydigitalstructure._util.data.clean(element.data());
-
-	if (controller != undefined && context != undefined)
-	{	
- 		if (app.data[controller] == undefined) {app.data[controller] = {}}
-
- 		app.data[controller][context] = val;
- 		app.data[controller]['_' + context] = data;
-
-		if (app.controller[controller] != undefined)
-		{	
-			var param = {dataContext: app.data[controller][context]}
-			app.controller[controller](param);
-		}
+	if ($(event.target).prop("tagName") == 'INPUT')
+	{
+		element = $(event.target);
+	}
+	else
+	{
+		element = $(event.target).children('input');
 	}
 
-	if ($(element).hasClass('myds-validate'))
+	var processEvent = true;
+
+	if (event.type == 'change' && element.attr('data-onchange') != 'true')
 	{
-		mydigitalstructure._util.validate.check(element);
+		processEvent = false;
+	}
+
+	if (processEvent)
+	{
+		var controller = element.data('controller');
+		var scope = element.data('scope');
+		if (controller == undefined) {controller = scope}
+
+		var context = element.data('context');
+
+		var val = mydigitalstructure._util.clean(element.val());
+		var data = mydigitalstructure._util.data.clean(element.data());
+
+		if (controller != undefined && context != undefined)
+		{	
+	 		if (app.data[controller] == undefined) {app.data[controller] = {}}
+
+	 		app.data[controller][context] = val;
+	 		app.data[controller]['_' + context] = data;
+
+			if (app.controller[controller] != undefined)
+			{	
+				var param = {dataContext: app.data[controller][context]}
+				app.controller[controller](param);
+			}
+		}
+
+		if ($(element).hasClass('myds-validate'))
+		{
+			mydigitalstructure._util.validate.check(element);
+		}
 	}
 }
 
-$(document).off('dp.change change.datetimepicker', '.myds, .myds-date, .myds-date-time')
-.on('dp.change  change.datetimepicker', '.myds, .myds-date, .myds-date-time', mydigitalstructure._util.view.handlers['myds-date-time-picker']);
+$(document).off('dp.change change.datetimepicker error.datetimepicker', '.myds, .myds-date, .myds-date-time')
+.on('dp.change  change.datetimepicker error.datetimepicker', '.myds, .myds-date, .myds-date-time', mydigitalstructure._util.view.handlers['myds-date-time-picker']);
+
+$(document).off('focusout', '.myds-date input, .myds-date-time input')
+.on('focusout', '.myds-date input, .myds-date-time input', mydigitalstructure._util.view.handlers['myds-date-time-picker']);
 
 mydigitalstructure._util.view.handlers['myds-file-input'] = function(event)
 {
@@ -2928,6 +2992,7 @@ mydigitalstructure._util.controller =
 
 					if (controller.build != undefined)
 					{
+						if (!_.isArray(controller.build)) {controller.build = [controller.build]}
 						mydigitalstructure._util.controller.data.build[controller.name] = controller.build;
 					}
 
