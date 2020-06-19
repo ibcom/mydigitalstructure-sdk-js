@@ -740,3 +740,41 @@ mydigitalstructure._util.security =
 }
 
 mydigitalstructure.security = {share: mydigitalstructure._util.security.share.link}
+
+mydigitalstructure._util.factory.security = function (param)
+{
+	mydigitalstructure._util.controller.add(
+	[
+		{
+			name: 'util-security-share-link-add',
+			code: function (param)
+			{
+				mydigitalstructure.cloud.security.share.link.add(param);
+			}
+		},
+		{
+			name: 'util-security-share-link-find',
+			code: function (param)
+			{
+				mydigitalstructure.cloud.security.share.link.find(param);
+			}
+		},
+		{
+			name: 'util-security-share-link-remove',
+			code: function (param)
+			{
+				mydigitalstructure.cloud.security.share.link.remove(param);
+			}
+		},
+		{
+			name: 'util-security-share-setup',
+			code: function (param)
+			{
+				mydigitalstructure.cloud.security.share.setup.init(param);
+			}
+		}
+	]
+}
+
+
+

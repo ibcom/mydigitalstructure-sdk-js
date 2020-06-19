@@ -1160,10 +1160,11 @@ mydigitalstructure._util.view.handlers['myds-date-time-picker'] = function(event
 	 		app.data[controller][context] = val;
 	 		app.data[controller]['_' + context] = data;
 
-			if (app.controller[controller] != undefined)
+			if (mydigitalstructure._util.controller.code[controller] != undefined)
 			{	
 				var param = {dataContext: app.data[controller][context]}
-				app.controller[controller](param);
+				mydigitalstructure._util.controller.invoke(controller, param);
+				//19J:app.controller[controller](param);
 			}
 		}
 
@@ -1202,10 +1203,11 @@ mydigitalstructure._util.view.handlers['myds-file-input'] = function(event)
 				app.data[controller]['_' + context] = elementInput;
 			}
 
-			if (app.controller[controller] != undefined)
+			if (mydigitalstructure._util.controller.code[controller] != undefined)
 			{	
 				var param = {dataContext: app.data[controller][context]}
-				app.controller[controller](param);
+				mydigitalstructure._util.controller.invoke(controller, param);
+				//19J:app.controller[controller](param);
 			}
 		}
 	}
@@ -1304,35 +1306,25 @@ if (typeof $.fn.tab == 'function')
 
 				app.data[controller] = param;
 
-				if (app.controller[controller] != undefined)
-				{
-					app.controller[controller](param);
-				}
-				else
-				{
-					mydigitalstructure._util.log.add(
-					{
-						message: 'Controller not defined',
-						controller: controller,
-						param: param
-					});
-				}
+				mydigitalstructure._util.controller.invoke(controller, param);
+				//19J:app.controller[controller](param);
 			}
 			else
 			{
-				if (app.controller[uriContext] != undefined)
+				if (mydigitalstructure._util.controller.code[uriContext] != undefined)
 				{
 					if (app.data[uriContext] == undefined) {app.data[uriContext] = {}};
-					app.controller[uriContext]();
+
+					mydigitalstructure._util.controller.invoke(uriContext, param);
 				}
 				else
 				{
 					var uriContext = uriContext.split('_');
 
-					if (app.controller[uriContext[0]] != undefined)
+					if (mydigitalstructure._util.controller.code[uriContext[0]] != undefined)
 					{
 						if (app.data[uriContext[0]] == undefined) {app.data[uriContext[0]] = {}};
-						app.controller[uriContext[0]]({context: uriContext[1]})
+						mydigitalstructure._util.controller.invoke(uriContext[0], {context: uriContext[1]});
 					}
 				}
 			}
@@ -1389,9 +1381,9 @@ if (typeof $.fn.modal == 'function')
 				});
 			}
 
-			if (app.controller[controller] != undefined)
+			if (controller != undefined)
 			{	
-				app.controller[controller](param);
+				mydigitalstructure._util.controller.invoke(controller, param);
 			}
 		}	
     }
@@ -1440,12 +1432,12 @@ if (typeof $.fn.modal == 'function')
 			app.data[id] = _.extend(app.data[id], param);
 		}	
 
-		if (app.controller[controller] != undefined)
+		if (controller != undefined)
 		{	
 			if (app.data[controller] == undefined) {app.data[controller] = {}};
 			app.data[controller] = _.extend(app.data[controller], param);
 
-			app.controller[controller](param);
+			mydigitalstructure._util.controller.invoke(controller, param);
 		}
 
 		if (typeof $.fn.popover == 'function')
@@ -1482,15 +1474,12 @@ if (typeof $.fn.collapse == 'function')
 				}	
 			}	
 
-			if (app.controller[controller] != undefined)
+			if (controller != undefined)
 			{
 				if (app.data[controller] == undefined) {app.data[controller] = {}};
 				app.data[controller] = _.extend(app.data[controller], {status: 'hidden'});
 
-				if (typeof app.controller[controller] == 'function')
-				{
-					app.controller[controller]({status: 'hidden'});
-				}
+				mydigitalstructure._util.controller.invoke(controller, {status: 'hidden'});
 			}
 		}	
     }
@@ -1525,8 +1514,11 @@ if (typeof $.fn.collapse == 'function')
 		var id = event.target.id;
 
 		var controller = $(event.target).attr('data-controller')
-		if (controller == undefined) {controller = $(event.target).attr('data-scope')}
-		if (controller != undefined) {id = controller}
+		//if (controller == undefined) {controller = $(event.target).attr('data-scope')}
+		var scope = $(event.target).attr('data-scope');
+		if (scope == undefined) {scope = controller}
+
+		if (controller != undefined && id == undefined) {id = controller}
 		
 		if (id != '')
 		{	
@@ -1540,23 +1532,25 @@ if (typeof $.fn.collapse == 'function')
 						source.html(source.html().replace('Show', 'Hide'));
 					}
 				}	
-			}	
-
-			if (app.controller[id] != undefined)
-			{
-				if (app.data[id] == undefined) {app.data[id] = {}};
-				app.data[id].viewStatus = 'shown';
-				app.data[id].dataContext = $(event.target).data();
-
-				if (typeof app.controller[id] == 'function')
-				{
-					app.controller[id](
-					{
-						status: 'shown',
-						dataContext: $(event.target).data()
-					});
-				}
 			}
+		}
+
+		if (scope != undefined)
+		{
+			if (app.data[scope] == undefined) {app.data[scope] = {}};
+			app.data[scope].viewStatus = 'shown';
+			app.data[scope].dataContext = $(event.target).data();
+		}
+
+		if (controller == undefined) {controller = id};
+
+		if (controller != undefined)
+		{				
+			mydigitalstructure._util.controller.invoke(controller,
+			{
+				status: 'shown',
+				dataContext: $(event.target).data()
+			});
 		}
     }
 
@@ -1578,12 +1572,15 @@ if (typeof $.fn.collapse == 'function')
 			
 			if (id != '')
 			{	
-				if (app.controller[id] != undefined)
+				var controller = id;
+
+				if (controller != undefined)
 				{
-					if (app.data[id] == undefined) {app.data[id] = {}};
-					app.data[id].viewStatus = 'show';
-					app.data[id].dataContext = $(event.target).data();
-					app.controller[id](
+					if (app.data[controller] == undefined) {app.data[controller] = {}};
+					app.data[controller].viewStatus = 'show';
+					app.data[controller].dataContext = $(event.target).data();
+
+					mydigitalstructure._util.controller.invoke(controller,
 					{
 						status: 'show',
 						dataContext: $(event.target).data()
@@ -1622,10 +1619,17 @@ if (typeof $.fn.popover == 'function')
 				}
 			}	
 
-			if (app.controller[id] != undefined)
+			var controller = id;
+
+			if (controller != undefined)
 			{
-				if (app.data[id] == undefined) {app.data[id] = {}};
-				app.controller[id](param);
+				if (app.data[controller] == undefined) {app.data[controller] = {}};
+
+				mydigitalstructure._util.controller.invoke(controller,
+				{
+					status: 'show',
+					dataContext: $(event.target).data()
+				});
 			}
 		}	
 	}
@@ -1885,6 +1889,215 @@ String.prototype.formatXHTML = function(bDirection)
 	
 	return sValue;
 };
+
+mydigitalstructure._util.controller = 
+{
+	data:
+	{
+		whoami: [],
+		unknown: [],
+		note: {},
+		build: {},
+		last: undefined
+	},
+
+	code: {},
+
+	invoke: function (param, controllerParam, controllerData)
+	{
+		var namespace;
+		var name;
+		var returnData;
+
+		if (_.isObject(param))
+		{
+			name = mydigitalstructure._util.param.get(param, 'name').value;
+			namespace = mydigitalstructure._util.param.get(param, 'namespace').value;
+		}
+		else
+		{
+			name = param;
+		}
+		
+		if (namespace == undefined) {namespace = window[mydigitalstructure._scope.app.options.namespace]};
+		if (namespace == undefined) {namespace = window.app}
+
+		if (name != undefined)
+		{
+			var whoami = _.find(mydigitalstructure._util.controller.data.whoami, function (whoami) {return whoami.name == name});
+
+			if (whoami != undefined)
+			{
+				whoami['invoked'] = 
+					numeral(whoami['invoked']).value() + 1
+			}
+			else
+			{
+				mydigitalstructure._util.controller.data.unknown.push(
+				{
+					name: name,
+					param: param,
+					data: controllerData
+				});
+			}
+
+			mydigitalstructure._util.data.set(
+			{
+				controller: name,
+				context: '_param',
+				value: controllerParam
+			});
+
+			if (_.isFunction(mydigitalstructure._util.controller.code[name]))
+			{
+				mydigitalstructure._util.controller.data.last = name;
+				returnData = mydigitalstructure._util.controller.code[name](controllerParam, controllerData);
+			}
+			else if (_.isFunction(namespace.controller[name]))
+			{
+				mydigitalstructure._util.controller.data.last = name;
+				returnData = namespace.controller[name](controllerParam, controllerData);
+			}
+			else
+			{
+				returnData = 'No controller named ' + name;
+
+				mydigitalstructure._util.log.add(
+				{
+					message: 'There is no controller named: ' + name
+				})
+				
+				if (!_.isUndefined(controllerParam))
+				{
+					mydigitalstructure._util.log.add(
+					{
+						message: controllerParam
+					});
+				}
+
+				if (!_.isUndefined(controllerData))
+				{
+					mydigitalstructure._util.log.add(
+					{
+						message: controllerData
+					});
+				}
+			}
+		}
+
+		return returnData
+	},
+
+	add: function(param)
+	{
+		if (_.isArray(param))
+		{
+			var namespace;
+
+			_.each(param, function(controller)
+			{
+				if (controller.name != undefined)
+				{
+					mydigitalstructure._util.controller.data.whoami.push( 
+					{
+						name: controller.name,
+						invoked: 0,
+						note: (controller.note==undefined?'':controller.note),
+						build: (controller.build==undefined?[]:controller.build)
+					});
+
+					if (controller.note != undefined)
+					{
+						mydigitalstructure._util.controller.data.note[controller.name] = controller.note;
+					}
+
+					if (controller.build != undefined)
+					{
+						if (!_.isArray(controller.build)) {controller.build = [controller.build]}
+						mydigitalstructure._util.controller.data.build[controller.name] = controller.build;
+					}
+	
+					namespace = controller.namespace;
+					if (namespace == undefined) {namespace = mydigitalstructure._scope.app.options.namespace};
+					if (namespace == undefined) {namespace = window.app}
+					
+					//if (namespace.controller == undefined) {namespace.controller = {}}
+						
+					if (mydigitalstructure._util.controller.code[controller.name] != undefined)
+					{
+						mydigitalstructure._util.log.add({message: 'Existing controller [' + controller.name + '] was just replaced.'})
+					}
+
+					mydigitalstructure._util.controller.code[controller.name] = controller.code;
+
+					if (controller.alias != undefined && namespace != undefined)
+					{
+						if (namespace[controller.alias] == undefined)
+						{
+							namespace[controller.alias] = function(controllerParam, controllerData)
+							{
+								mydigitalstructure._util.controller.invoke(controller.name, controllerParam, controllerData)
+							}
+						}
+					}
+				}
+			});
+		}
+		else
+		{
+			var name = mydigitalstructure._util.param.get(param, 'name').value;
+			var code = mydigitalstructure._util.param.get(param, 'code').value;
+			var note = mydigitalstructure._util.param.get(param, 'note').value;
+			var alias = mydigitalstructure._util.param.get(param, 'alias').value;
+			var build = mydigitalstructure._util.param.get(param, 'build').value;
+
+			var namespace = mydigitalstructure._util.param.get(param, 'namespace').value;
+			if (namespace == undefined) {namespace = mydigitalstructure._scope.app.options.namespace};
+			if (namespace == undefined) {namespace = window.app}
+
+			//if (namespace.controller == undefined) {namespace.controller = {}}
+
+			if (name != undefined)
+			{
+				mydigitalstructure._util.controller.data.whoami.push( 
+				{
+					name: name,
+					invoked: 0,
+					note: (note==undefined?'':note),
+					build: (build==undefined?[]:build)
+				});
+
+				if (note != undefined)
+				{
+					mydigitalstructure._util.controller.data.note[name] = note;
+				}
+
+				if (build != undefined)
+				{
+					mydigitalstructure._util.controller.data.build[name] = build;
+				}
+
+				if (mydigitalstructure._util.controller.code[name] != undefined)
+				{
+					mydigitalstructure._util.log.add({message: 'Existing controller [' + name + '] was just replaced.'})
+				}
+
+				mydigitalstructure._util.controller.code[name] = code;
+			}
+
+			if (alias != undefined && namespace != undefined)
+			{
+				if (namespace[alias] == undefined)
+				{
+					namespace[alias] = function(param, controllerParam, controllerData)
+					{
+						mydigitalstructure._util.controller.invoke(param, controllerParam, controllerData)
+					}
+				}
+			}
+		}
+	}
+}
 
 mydigitalstructure._util.view.more = function (response, param)
 {
@@ -2909,203 +3122,7 @@ mydigitalstructure._util.whoami = function (param)
 	return whoamiData
 }
 
-mydigitalstructure._util.controller = 
-{
-	data:
-	{
-		whoami: [],
-		unknown: [],
-		note: {},
-		build: {},
-		last: undefined
-	},
 
-	invoke: function (param, controllerParam, controllerData)
-	{
-		var namespace;
-		var name;
-		var returnData;
-
-		if (_.isObject(param))
-		{
-			name = mydigitalstructure._util.param.get(param, 'name').value;
-			namespace = mydigitalstructure._util.param.get(param, 'namespace').value;
-		}
-		else
-		{
-			name = param;
-		}
-		
-		if (namespace == undefined) {namespace = window[mydigitalstructure._scope.app.options.namespace]};
-		if (namespace == undefined) {namespace = window.app}
-
-		if (name != undefined)
-		{
-			var whoami = _.find(mydigitalstructure._util.controller.data.whoami, function (whoami) {return whoami.name == name});
-
-			if (whoami != undefined)
-			{
-				whoami['invoked'] = 
-					numeral(whoami['invoked']).value() + 1
-			}
-			else
-			{
-				mydigitalstructure._util.controller.data.unknown.push(
-				{
-					name: name,
-					param: param,
-					data: controllerData
-				});
-			}
-
-			mydigitalstructure._util.data.set(
-			{
-				controller: name,
-				context: '_param',
-				value: controllerParam
-			});
-
-			if (_.isFunction(namespace.controller[name]))
-			{
-				mydigitalstructure._util.controller.data.last = name;
-				returnData = namespace.controller[name](controllerParam, controllerData);
-			}
-			else
-			{
-				returnData = 'No controller named ' + name;
-
-				mydigitalstructure._util.log.add(
-				{
-					message: 'There is no controller named: ' + name
-				})
-				
-				if (!_.isUndefined(controllerParam))
-				{
-					mydigitalstructure._util.log.add(
-					{
-						message: controllerParam
-					});
-				}
-
-				if (!_.isUndefined(controllerData))
-				{
-					mydigitalstructure._util.log.add(
-					{
-						message: controllerData
-					});
-				}
-			}
-		}
-
-		return returnData
-	},
-
-	add: function(param)
-	{
-		if (app.controller == undefined) {app.controller = {}}
-
-		if (_.isArray(param))
-		{
-			var namespace;
-
-			_.each(param, function(controller)
-			{
-				if (controller.name != undefined)
-				{
-					mydigitalstructure._util.controller.data.whoami.push( 
-					{
-						name: controller.name,
-						invoked: 0,
-						note: (controller.note==undefined?'':controller.note),
-						build: (controller.build==undefined?[]:controller.build)
-					});
-
-					if (controller.note != undefined)
-					{
-						mydigitalstructure._util.controller.data.note[controller.name] = controller.note;
-					}
-
-					if (controller.build != undefined)
-					{
-						if (!_.isArray(controller.build)) {controller.build = [controller.build]}
-						mydigitalstructure._util.controller.data.build[controller.name] = controller.build;
-					}
-
-					namespace = controller.namespace;
-					if (namespace == undefined) {namespace = mydigitalstructure._scope.app.options.namespace};
-					if (namespace == undefined) {namespace = window.app}
-
-					if (namespace.controller[controller.name] != undefined)
-					{
-						mydigitalstructure._util.log.add({message: 'Existing controller [' + controller.name + '] was just replaced.'})
-					}
-
-					namespace.controller[controller.name] = controller.code;
-
-					if (controller.alias != undefined)
-					{
-						if (namespace[controller.alias] == undefined)
-						{
-							namespace[controller.alias] = function(controllerParam, controllerData)
-							{
-								mydigitalstructure._util.controller.invoke(controller.name, controllerParam, controllerData)
-							}
-						}
-					}
-				}
-			});
-		}
-		else
-		{
-			var name = mydigitalstructure._util.param.get(param, 'name').value;
-			var code = mydigitalstructure._util.param.get(param, 'code').value;
-			var note = mydigitalstructure._util.param.get(param, 'note').value;
-			var alias = mydigitalstructure._util.param.get(param, 'alias').value;
-			var build = mydigitalstructure._util.param.get(param, 'build').value;
-
-			var namespace = mydigitalstructure._util.param.get(param, 'namespace').value;
-			if (namespace == undefined) {namespace = mydigitalstructure._scope.app.options.namespace};
-			if (namespace == undefined) {namespace = window.app}
-
-			if (name != undefined)
-			{
-				mydigitalstructure._util.controller.data.whoami.push( 
-				{
-					name: name,
-					invoked: 0,
-					note: (note==undefined?'':note),
-					build: (build==undefined?[]:build)
-				});
-
-				if (note != undefined)
-				{
-					mydigitalstructure._util.controller.data.note[name] = note;
-				}
-
-				if (build != undefined)
-				{
-					mydigitalstructure._util.controller.data.build[name] = build;
-				}
-
-				if (name != undefined)
-				{
-					namespace.controller[name] = code;
-				}
-			}
-
-			if (alias != undefined)
-			{
-				if (namespace[alias] == undefined)
-				{
-					namespace[alias] = function(param, controllerParam, controllerData)
-					{
-						mydigitalstructure._util.controller.invoke(param, controllerParam, controllerData)
-					}
-				}
-			}
-		}
-	}
-}
 
 mydigitalstructure._util.controller.add(
 [
