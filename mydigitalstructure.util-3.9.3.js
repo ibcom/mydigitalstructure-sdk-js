@@ -5903,724 +5903,763 @@ mydigitalstructure._util.factory.core = function (param)
 			var goToPageNumber = mydigitalstructure._util.param.get(param, 'goToPageNumber').value;
 			var container = mydigitalstructure._util.param.get(param, 'container').value;
 			var keepHidden = mydigitalstructure._util.param.get(param, 'keepHidden', {default: false}).value;
-
-			var dataCache = app._util.data.get(
+			var userRoles = mydigitalstructure._util.param.get(param, 'roles', {default: []}).value;
+			var userHasAccess = (userRoles.length == 0);
+										
+			if (!userHasAccess)
 			{
-				scope: 'util-view-table-cache',
-				context: context
-			});
-
-			if (useCache && !_.isUndefined(dataCache))
-			{
-				$('#' + container).html(dataCache);
-				if (!keepHidden)
+				_.each(userRoles, function (role)
 				{
-					$('#' + container).removeClass('hidden d-none');
-				}
+					if (!userHasAccess)
+					{	
+						userHasAccess = mydigitalstructure._util.user.roles.has({role: role, exact: false})
+					}	
+				});
 			}
-			else
-			{
-				$('#' + container).addClass('hidden d-none');
 
-				if (response != undefined || param.sort != undefined)
+			if (userHasAccess)
+			{
+				var dataCache = app._util.data.get(
 				{
-					if (response != undefined)
+					scope: 'util-view-table-cache',
+					context: context
+				});
+
+				if (useCache && !_.isUndefined(dataCache))
+				{
+					$('#' + container).html(dataCache);
+					if (!keepHidden)
 					{
-						if (response.error != undefined)
+						$('#' + container).removeClass('hidden d-none');
+					}
+				}
+				else
+				{
+					$('#' + container).addClass('hidden d-none');
+
+					if (response != undefined || param.sort != undefined)
+					{
+						if (response != undefined)
 						{
-							if (response.error.errorcode == 3)
+							if (response.error != undefined)
 							{
-								response.data = {rows: []}
+								if (response.error.errorcode == 3)
+								{
+									response.data = {rows: []}
+								}
+							}
+
+							if (context == undefined)
+							{
+								context = mydigitalstructure._util.param.get(param.data, 'context').value;
 							}
 						}
 
-						if (context == undefined)
-						{
-							context = mydigitalstructure._util.param.get(param.data, 'context').value;
-						}
-					}
+						var sort = param.sort;
 
-					var sort = param.sort;
-
-					param = app._util.data.get(
-					{
-						scope: context,
-						context: '_param'
-					});
-
-					if (sort != undefined)
-					{
-						param.sort = sort;
-					}
-				}
-
-				var callback = mydigitalstructure._util.param.get(param, 'callback', {default: 'util-view-table'}).value;
-				var format = mydigitalstructure._util.param.get(param, 'format').value;
-				var filters = mydigitalstructure._util.param.get(param, 'filters').value;
-				var customOptions = mydigitalstructure._util.param.get(param, 'customOptions').value;
-				if (customOptions == undefined)
-				{
-					customOptions = mydigitalstructure._util.param.get(param, 'customoptions').value;
-				}
-				var sorts = mydigitalstructure._util.param.get(param, 'sorts').value;
-				var options = mydigitalstructure._util.param.get(param, 'options').value;
-				var object = mydigitalstructure._util.param.get(param, 'object').value;
-				var controller = mydigitalstructure._util.param.get(param, 'controller').value;
-				var scope = mydigitalstructure._util.param.get(param, 'scope').value;
-				var container = mydigitalstructure._util.param.get(param, 'container').value;
-				var deleteConfirm = mydigitalstructure._util.param.get(param, 'deleteConfirm').value;
-
-				if (controller == undefined) {controller = container}
-
-				if (container == undefined)
-				{
-					container = controller + '-view'
-				}
-
-				if (context == undefined && controller != undefined)
-				{
-					context = '_table-' +  controller;
-					param = mydigitalstructure._util.param.set(param, 'context', context)
-				}
-
-				if (context == undefined && controller == undefined && scope != undefined)
-				{
-					context = scope;
-					param = mydigitalstructure._util.param.set(param, 'context', context)
-				}
-
-				if (param != undefined)
-				{
-					$.each(format.columns, function (c, column)
-					{
-						if (column.param == undefined) {column.param = column.property}
-						if (column.param == undefined) {column.param = column.field}
-						if (column.paramList == undefined) {column.paramList = column.properties}
-						if (column.paramList == undefined) {column.paramList = column.fieldList}
-						if (column.paramList == undefined) {column.paramList = column.fields}
-					})
-					
-					var dataSort = app._util.data.get(
-					{
-						controller: 'util-view-table',
-						context: context,
-						valueDefault: {}
-					});
-
-					if (dataSort.direction != undefined)
-					{
-						var columnSort = $.grep(format.columns, function (column) {return column.param == dataSort.name})[0];
-
-						if (columnSort != undefined)
-						{
-							columnSort.sortDirection = dataSort.direction;
-							sorts = [dataSort]
-						}
-					}
-
-					if (response == undefined)
-					{
-						app._util.data.set(
+						param = app._util.data.get(
 						{
 							scope: context,
-							context: '_param',
-							value: param
+							context: '_param'
 						});
 
-						if (fields == undefined)
+						if (sort != undefined)
 						{
-							var fields = $.map(format.columns, function (column)
-							{
-								return (column.param!=undefined?{name: column.param}:undefined)
-							});
-
-							_.each(format.columns, function (column)
-							{
-								if (_.isArray(column.paramList))
-								{
-									_.each(column.paramList, function (param)
-									{
-										fields.push({name: param})
-									});
-								}
-							});
-						}	
-
-						if (sorts == undefined)
-						{
-							sorts = $.grep(format.columns, function (column)
-							{
-								return (column.defaultSort)
-							});
-
-							sorts = $.map(sorts, function (column)
-							{
-								var direction = 'asc';
-								if (column.defaultSortDirection != undefined)
-								{
-									direction = column.defaultSortDirection;
-								}
-
-								return (column.param!=undefined?{name: column.param, direction: direction}:undefined)
-							});
+							param.sort = sort;
 						}
-
-						var rows = (options.rows!=undefined ? options.rows : app.options.rows);
-
-						var search = 
-						{
-							criteria:
-							{
-								fields: fields,
-								filters: filters,
-								customoptions: customOptions,
-								options:
-								{
-									rows: options.rows
-								},
-								sorts: sorts
-							}
-						}
-
-						var startRow = mydigitalstructure._util.param.get(param, 'startRow').value;
-
-						if (startRow != undefined)
-						{
-							search.criteria.options.startrow = startRow;
-						}
-
-						if (options.count == undefined)
-						{
-							search.criteria.summaryFields =
-							[
-								{
-									name: 'count(id) count'
-								}
-							]
-						}		
-
-						mydigitalstructure.retrieve(
-						{
-							object: object,
-							data: search,
-							callback: callback,
-							callbackParam: param
-						});
 					}
-					else // render
-					{
-						if (response.status == 'ER' && _.isFunction(options.onError))
-						{
-							options.onError(response.error)
-						}
-						else
-						{
-							var data = app._util.data.get(
-							{
-								scope: context,
-								valueDefault: {}
-							});
 
-							if (options.count != undefined)
+					var callback = mydigitalstructure._util.param.get(param, 'callback', {default: 'util-view-table'}).value;
+					var format = mydigitalstructure._util.param.get(param, 'format').value;
+					var filters = mydigitalstructure._util.param.get(param, 'filters').value;
+					var customOptions = mydigitalstructure._util.param.get(param, 'customOptions').value;
+					if (customOptions == undefined)
+					{
+						customOptions = mydigitalstructure._util.param.get(param, 'customoptions').value;
+					}
+					var sorts = mydigitalstructure._util.param.get(param, 'sorts').value;
+					var options = mydigitalstructure._util.param.get(param, 'options').value;
+					var object = mydigitalstructure._util.param.get(param, 'object').value;
+					var controller = mydigitalstructure._util.param.get(param, 'controller').value;
+					var scope = mydigitalstructure._util.param.get(param, 'scope').value;
+					var container = mydigitalstructure._util.param.get(param, 'container').value;
+					var deleteConfirm = mydigitalstructure._util.param.get(param, 'deleteConfirm').value;
+
+					if (controller == undefined) {controller = container}
+
+					if (container == undefined)
+					{
+						container = controller + '-view'
+					}
+
+					if (context == undefined && controller != undefined)
+					{
+						context = '_table-' +  controller;
+						param = mydigitalstructure._util.param.set(param, 'context', context)
+					}
+
+					if (context == undefined && controller == undefined && scope != undefined)
+					{
+						context = scope;
+						param = mydigitalstructure._util.param.set(param, 'context', context)
+					}
+
+					if (param != undefined)
+					{
+						format.columns = _.filter(format.columns, function (column)
+						{
+							var includeColumn = true;
+
+							if (column.roles != undefined)
 							{
-								response.summary = {count: options.count}
+								includeColumn = (column.roles.length == 0);
 							}
 
-							var init = (_.eq(response.startrow, '0'));
-
-							if (init)
+							if (includeColumn)
 							{
-								if (format.row != undefined)
+								_.each(column.roles, function (role)
 								{
-									$.each(format.columns, function (c, column)
-									{
-										if (column.class == undefined) {column.class = format.row.class}
-										if (column.data == undefined) {column.data = format.row.data}
-									});
-								}
-
-								app._util.data.set(
-								{
-									scope: context,
-									context: 'count',
-									value: _.toNumber(response.summary.count)
+									if (includeColumn)
+									{	
+										includeColumn = mydigitalstructure._util.user.roles.has({role: role, exact: true})
+									}	
 								});
 							}
-							
-							if (_.eq(app.data[context].count, 0)) //nothing to show
+
+							return includeColumn
+						});
+
+						_.each(format.columns, function (column)
+						{
+							if (column.param == undefined) {column.param = column.property}
+							if (column.param == undefined) {column.param = column.field}
+							if (column.paramList == undefined) {column.paramList = column.properties}
+							if (column.paramList == undefined) {column.paramList = column.fieldList}
+							if (column.paramList == undefined) {column.paramList = column.fields}
+						})
+						
+						var dataSort = app._util.data.get(
+						{
+							controller: 'util-view-table',
+							context: context,
+							valueDefault: {}
+						});
+
+						if (dataSort.direction != undefined)
+						{
+							var columnSort = $.grep(format.columns, function (column) {return column.param == dataSort.name})[0];
+
+							if (columnSort != undefined)
 							{
-								var noDataText = options.noDataText;
-								if (noDataText == undefined) {noDataText = 'No data'}
-								app.vq.show('#' + container, '<div class="text-muted mx-auto text-center">' + noDataText + '</div>', {queue: context});
-							} 
-							else
-							{	
-								if (format.row != undefined)
+								columnSort.sortDirection = dataSort.direction;
+								sorts = [dataSort]
+							}
+						}
+
+						if (response == undefined)
+						{
+							app._util.data.set(
+							{
+								scope: context,
+								context: '_param',
+								value: param
+							});
+
+							if (fields == undefined)
+							{
+								var fields = $.map(format.columns, function (column)
 								{
-									if (_.isFunction(format.row.method))
-									{             
-										_.each(response.data.rows, function (row, r)
+									return (column.param!=undefined?{name: column.param}:undefined)
+								});
+
+								_.each(format.columns, function (column)
+								{
+									if (_.isArray(column.paramList))
+									{
+										_.each(column.paramList, function (param)
 										{
-											row._index = r;
-
-											row._previous = app._util.data.get(
-											{
-												controller: context,
-												context: 'lastProcessedRow',
-												clone: false
-											});
-
-											format.row.method(row);
-
-											app._util.data.set(
-											{
-												scope: context,
-												context: 'lastProcessedRow',
-												value: row
-											});
+											fields.push({name: param})
 										});
 									}
+								});
+							}	
 
-									if (!_.isUndefined(format.row.controller))
-									{             
-										_.each(response.data.rows, function (row, r)
-										{
-											row._index = r;
+							if (sorts == undefined)
+							{
+								sorts = $.grep(format.columns, function (column)
+								{
+									return (column.defaultSort)
+								});
 
-											row._previous = app._util.data.get(
-											{
-												scope: context,
-												context: 'lastProcessedRow',
-												clone: false
-											});
-
-											mydigitalstructure._util.controller.invoke(format.row.controller, row)
-
-											app._util.data.set(
-											{
-												scope: context,
-												context: 'lastProcessedRow',
-												value: row
-											});
-										});
+								sorts = $.map(sorts, function (column)
+								{
+									var direction = 'asc';
+									if (column.defaultSortDirection != undefined)
+									{
+										direction = column.defaultSortDirection;
 									}
-								}    
+
+									return (column.param!=undefined?{name: column.param, direction: direction}:undefined)
+								});
+							}
+
+							var rows = (options.rows!=undefined ? options.rows : app.options.rows);
+
+							var search = 
+							{
+								criteria:
+								{
+									fields: fields,
+									filters: filters,
+									customoptions: customOptions,
+									options:
+									{
+										rows: options.rows
+									},
+									sorts: sorts
+								}
+							}
+
+							var startRow = mydigitalstructure._util.param.get(param, 'startRow').value;
+
+							if (startRow != undefined)
+							{
+								search.criteria.options.startrow = startRow;
+							}
+
+							if (options.count == undefined)
+							{
+								search.criteria.summaryFields =
+								[
+									{
+										name: 'count(id) count'
+									}
+								]
+							}		
+
+							mydigitalstructure.retrieve(
+							{
+								object: object,
+								data: search,
+								callback: callback,
+								callbackParam: param
+							});
+						}
+						else // render
+						{
+							if (response.status == 'ER' && _.isFunction(options.onError))
+							{
+								options.onError(response.error)
+							}
+							else
+							{
+								var data = app._util.data.get(
+								{
+									scope: context,
+									valueDefault: {}
+								});
+
+								if (options.count != undefined)
+								{
+									response.summary = {count: options.count}
+								}
+
+								var init = (_.eq(response.startrow, '0'));
 
 								if (init)
 								{
+									if (format.row != undefined)
+									{
+										$.each(format.columns, function (c, column)
+										{
+											if (column.class == undefined) {column.class = format.row.class}
+											if (column.data == undefined) {column.data = format.row.data}
+										});
+									}
+
 									app._util.data.set(
 									{
 										scope: context,
-										context: 'all',
-										value: response.data.rows
+										context: 'count',
+										value: _.toNumber(response.summary.count)
 									});
 								}
+								
+								if (_.eq(app.data[context].count, 0)) //nothing to show
+								{
+									var noDataText = options.noDataText;
+									if (noDataText == undefined) {noDataText = 'No data'}
+									app.vq.show('#' + container, '<div class="text-muted mx-auto text-center">' + noDataText + '</div>', {queue: context});
+								} 
 								else
-								{
-									app.data[context].all = _.concat(app.data[context].all, response.data.rows);
-								}
-
-								var captions = $.map(format.columns, function (column)
-								{
-									return (column.caption != undefined ? {name: column.caption, class: column.class, sortBy: column.sortBy, param: column.param, sortDirection: column.sortDirection} : undefined)
-								});
-
-								if (init || options.orientation == 'horizontal')
-								{
-									app.vq.clear({queue: context});
-								}
-
-								if (init)
 								{	
-									//Row template construction
-									
-									if (options.noHeader)
+									if (format.row != undefined)
 									{
-										var columns = $.grep(format.columns, function (column)
+										if (_.isFunction(format.row.method))
+										{             
+											_.each(response.data.rows, function (row, r)
+											{
+												row._index = r;
+
+												row._previous = app._util.data.get(
+												{
+													controller: context,
+													context: 'lastProcessedRow',
+													clone: false
+												});
+
+												format.row.method(row);
+
+												app._util.data.set(
+												{
+													scope: context,
+													context: 'lastProcessedRow',
+													value: row
+												});
+											});
+										}
+
+										if (!_.isUndefined(format.row.controller))
+										{             
+											_.each(response.data.rows, function (row, r)
+											{
+												row._index = r;
+
+												row._previous = app._util.data.get(
+												{
+													scope: context,
+													context: 'lastProcessedRow',
+													clone: false
+												});
+
+												mydigitalstructure._util.controller.invoke(format.row.controller, row)
+
+												app._util.data.set(
+												{
+													scope: context,
+													context: 'lastProcessedRow',
+													value: row
+												});
+											});
+										}
+									}    
+
+									if (init)
+									{
+										app._util.data.set(
 										{
-											return (column.hidden != true)
+											scope: context,
+											context: 'all',
+											value: response.data.rows
 										});
 									}
 									else
 									{
-										var columns = $.grep(format.columns, function (column)
-										{
-											return (column.caption != undefined)
-										});
+										app.data[context].all = _.concat(app.data[context].all, response.data.rows);
 									}
 
-									var html = [];
-
-									html.push('<tr' + (format.row.class==undefined?'':' class="' + format.row.class + '"') + 
-											(format.row.data==undefined?'':' ' + format.row.data) + '>');
-
-									$.each(columns, function (c, column)
+									var captions = $.map(format.columns, function (column)
 									{
-										if (column.html != undefined)
+										return (column.caption != undefined ? {name: column.caption, class: column.class, sortBy: column.sortBy, param: column.param, sortDirection: column.sortDirection} : undefined)
+									});
+
+									if (init || options.orientation == 'horizontal')
+									{
+										app.vq.clear({queue: context});
+									}
+
+									if (init)
+									{	
+										//Row template construction
+										
+										if (options.noHeader)
 										{
-											if (column.html.indexOf('<td') == -1)
+											var columns = $.grep(format.columns, function (column)
 											{
-												html.push('<td class="' + column.class + '">' + column.html + '</td>');
+												return (column.hidden != true)
+											});
+										}
+										else
+										{
+											var columns = $.grep(format.columns, function (column)
+											{
+												return (column.caption != undefined)
+											});
+										}
+
+										var html = [];
+
+										html.push('<tr' + (format.row.class==undefined?'':' class="' + format.row.class + '"') + 
+												(format.row.data==undefined?'':' ' + format.row.data) + '>');
+
+										$.each(columns, function (c, column)
+										{
+											if (column.html != undefined)
+											{
+												if (column.html.indexOf('<td') == -1)
+												{
+													html.push('<td class="' + column.class + '">' + column.html + '</td>');
+												}
+												else
+												{
+													html.push(column.html);
+												}
 											}
-											else
+											else if (column.name != undefined || column.param != undefined)
 											{
-												html.push(column.html);
+												var name = (column.name != undefined ? column.name : column.param);
+												html.push('<td class="' + column.class + '"')
+
+												if (column.data != undefined)
+												{
+													html.push(' ' + column.data);
+												}
+
+												html.push('>{{' + name + '}}</td>');
+											}	
+										});
+
+										html.push('</tr>');
+
+										if (options.containerController != undefined && options.containerController != '')
+										{
+											html.push('<tr id="' + options.containerController + '-{{id}}-container" class="collapse myds-collapse" data-id="{{id}}"' +
+											' data-controller="' + options.containerController + '">' +
+											'<td colspan="' + captions.length + '" id="' + options.containerController + '-{{id}}-container-view"></td></tr>')
+										}
+
+										app.vq.add(html.join(''), {type: 'template', queue: context});
+									}
+
+									if (init || options.orientation == 'horizontal')
+									{
+										//Header construction
+
+										var rowsTotal = data.count;
+										var rowsCurrent = data.all.length;
+										var pageRows = options.rows;
+										var pagesTotal = parseInt(_.toNumber(rowsCurrent) / _.toNumber(pageRows));
+										var startRow = response.startrow;
+										var currentPage = parseInt((_.toNumber(startRow) + _.toNumber(pageRows)) / _.toNumber(pageRows));
+										var tableClass = (options.class!=undefined?options.class:'table-hover');
+
+										app._util.data.set(
+										{
+											controller: context,
+											context: 'pages',
+											name: currentPage,
+											value: {rows: response.data.rows.length}
+										});
+
+										if (response.error != undefined)
+										{
+											if (response.error.errorcode == 3)
+											{
+												if (app.data['util-view-table'] != undefined)
+												{
+													var dataContext = app.data['util-view-table'].dataContext;
+													startRow = dataContext.start;
+													pageRows = dataContext.rows;
+													rowsCurrent = parseInt(_.toNumber(startRow) + _.toNumber(pageRows));
+													rowsTotal = rowsCurrent;
+													currentPage = parseInt(dataContext.page);
+													pagesTotal = currentPage;
+
+													var data = mydigitalstructure._util.data.set(
+													{
+														controller: context,
+														context: 'count',
+														value: rowsTotal
+													});
+
+													response.startrow = startRow;
+													response.moreid = dataContext.id;
+													response.morerows = 'false';
+													response.rows = pageRows;
+												}
 											}
 										}
-										else if (column.name != undefined || column.param != undefined)
+										
+										app.vq.add('<div class="myds-page-view" data-page="' + currentPage + '"', {queue: context});
+										
+										if (context != undefined)
 										{
-											var name = (column.name != undefined ? column.name : column.param);
-											html.push('<td class="' + column.class + '"')
+											app.vq.add(' data-context="' + context + '"', {queue: context})
+										}
 
-											if (column.data != undefined)
-											{
-												html.push(' ' + column.data);
-											}
+										app.vq.add('>', {queue: context});
 
-											html.push('>{{' + name + '}}</td>');
-										}	
-									});
+										app.vq.add('<table class="table ' + tableClass + ' m-b-0">', {queue: context});
 
-									html.push('</tr>');
-
-									if (options.containerController != undefined && options.containerController != '')
-									{
-										html.push('<tr id="' + options.containerController + '-{{id}}-container" class="collapse myds-collapse" data-id="{{id}}"' +
-										' data-controller="' + options.containerController + '">' +
-										'<td colspan="' + captions.length + '" id="' + options.containerController + '-{{id}}-container-view"></td></tr>')
-									}
-
-									app.vq.add(html.join(''), {type: 'template', queue: context});
-								}
-
-								if (init || options.orientation == 'horizontal')
-								{
-									//Header construction
-
-									var rowsTotal = data.count;
-									var rowsCurrent = data.all.length;
-									var pageRows = options.rows;
-									var pagesTotal = parseInt(_.toNumber(rowsCurrent) / _.toNumber(pageRows));
-									var startRow = response.startrow;
-									var currentPage = parseInt((_.toNumber(startRow) + _.toNumber(pageRows)) / _.toNumber(pageRows));
-									var tableClass = (options.class!=undefined?options.class:'table-hover');
-
-									app._util.data.set(
-									{
-										controller: context,
-										context: 'pages',
-										name: currentPage,
-										value: {rows: response.data.rows.length}
-									});
-
-									if (response.error != undefined)
-									{
-										if (response.error.errorcode == 3)
+										if (response.data.rows.length != 0)
 										{
-											if (app.data['util-view-table'] != undefined)
+											if (_.size(captions) != 0)
 											{
-												var dataContext = app.data['util-view-table'].dataContext;
-												startRow = dataContext.start;
-												pageRows = dataContext.rows;
-												rowsCurrent = parseInt(_.toNumber(startRow) + _.toNumber(pageRows));
-												rowsTotal = rowsCurrent;
-												currentPage = parseInt(dataContext.page);
-												pagesTotal = currentPage;
+												app.vq.add('<thead>', {queue: context});
+												app.vq.add('<tr', {queue: context})
 
-												var data = mydigitalstructure._util.data.set(
+												if (controller != undefined)
 												{
-													controller: context,
-													context: 'count',
-													value: rowsTotal
+													app.vq.add(' data-controller="util-view-table"', {queue: context})
+												}
+
+												if (context != undefined)
+												{
+													app.vq.add(' data-context="' + context + '"', {queue: context})
+												}
+
+												if (format.header != undefined)
+												{
+													if (format.header.class != undefined)
+													{
+														app.vq.add(' class="' + format.header.class + '"', {queue: context})
+													}
+												}
+
+												app.vq.add('>', {queue: context});
+
+												var captionClass;
+												var captionData;
+
+												$.each(captions, function (c, caption)
+												{
+													captionClass = '';
+													captionData = ''
+
+													if (caption.class != undefined)
+													{
+														captionClass = caption.class
+													}
+
+													if (caption.sortBy)
+													{
+														captionClass = captionClass + ' myds-sort';
+														captionData = 'data-sort-direction="' +
+																			(caption.sortDirection!=undefined?caption.sortDirection:'asc') + '" data-sort="' + caption.param + '"';
+													}
+
+													if (captionClass != '')
+													{
+														captionClass = 'class="' + captionClass + '"';
+													}
+
+													app.vq.add('<th ' + captionClass + ' ' + captionData + '>' + caption.name + '</th>', {queue: context});
 												});
 
-												response.startrow = startRow;
-												response.moreid = dataContext.id;
-												response.morerows = 'false';
-												response.rows = pageRows;
-											}
+												app.vq.add('</tr></thead>', {queue: context});	
+											}	
 										}
 									}
-									
-									app.vq.add('<div class="myds-page-view" data-page="' + currentPage + '"', {queue: context});
-									
-									if (context != undefined)
+
+									var methodColumns = $.grep(format.columns, function (column)
 									{
-										app.vq.add(' data-context="' + context + '"', {queue: context})
-									}
+										return (column.method != undefined || column.controller != undefined)
+									});
 
-									app.vq.add('>', {queue: context});
+									var columnData;
 
-									app.vq.add('<table class="table ' + tableClass + ' m-b-0">', {queue: context});
-
-									if (response.data.rows.length != 0)
+									if (methodColumns.length != 0)
 									{
-										if (_.size(captions) != 0)
+										_.each(response.data.rows, function (row)
 										{
-											app.vq.add('<thead>', {queue: context});
-											app.vq.add('<tr', {queue: context})
-
-											if (controller != undefined)
+											_.each(methodColumns, function (column)
 											{
-												app.vq.add(' data-controller="util-view-table"', {queue: context})
-											}
+												if (column.name == undefined) {column.name = column.param}
 
-											if (context != undefined)
-											{
-												app.vq.add(' data-context="' + context + '"', {queue: context})
-											}
-
-											if (format.header != undefined)
-											{
-												if (format.header.class != undefined)
+												if (column.name != undefined)
 												{
-													app.vq.add(' class="' + format.header.class + '"', {queue: context})
+													if (typeof(column.method) == 'function')
+													{
+														row[column.name] = column.method(row)
+													}
+
+													if (typeof app.controller[column.controller] == 'function')
+													{
+
+														columnData = mydigitalstructure._util.controller.invoke({name: column.controller}, column, row);
+														if (columnData != undefined) {row[column.name] = columnData}
+													}
 												}
-											}
-
-											app.vq.add('>', {queue: context});
-
-											var captionClass;
-											var captionData;
-
-											$.each(captions, function (c, caption)
-											{
-												captionClass = '';
-												captionData = ''
-
-												if (caption.class != undefined)
-												{
-													captionClass = caption.class
-												}
-
-												if (caption.sortBy)
-												{
-													captionClass = captionClass + ' myds-sort';
-													captionData = 'data-sort-direction="' +
-																		(caption.sortDirection!=undefined?caption.sortDirection:'asc') + '" data-sort="' + caption.param + '"';
-												}
-
-												if (captionClass != '')
-												{
-													captionClass = 'class="' + captionClass + '"';
-												}
-
-												app.vq.add('<th ' + captionClass + ' ' + captionData + '>' + caption.name + '</th>', {queue: context});
 											});
-
-											app.vq.add('</tr></thead>', {queue: context});	
-										}	
-									}
-								}
-
-								var methodColumns = $.grep(format.columns, function (column)
-								{
-									return (column.method != undefined || column.controller != undefined)
-								});
-
-								var columnData;
-
-								if (methodColumns.length != 0)
-								{
-									_.each(response.data.rows, function (row)
-									{
-										_.each(methodColumns, function (column)
-										{
-											if (column.name == undefined) {column.name = column.param}
-
-											if (column.name != undefined)
-											{
-												if (typeof(column.method) == 'function')
-												{
-													row[column.name] = column.method(row)
-												}
-
-												if (typeof app.controller[column.controller] == 'function')
-												{
-
-													columnData = mydigitalstructure._util.controller.invoke({name: column.controller}, column, row);
-													if (columnData != undefined) {row[column.name] = columnData}
-												}
-											}
 										});
+									}
+
+									if (response.data.rows.length == 0)
+									{
+										app.vq.add('<tr><td class="text-center text-muted p-t-md p-b-md" colspan="' + captions.length + '">No more data</td></tr>', {queue: context});
+									}
+									else
+									{
+										_.each(response.data.rows, function (row)
+										{
+											app.vq.add({useTemplate: true, queue: context}, row);
+										});
+									}
+									
+									if (init || options.orientation == 'horizontal')
+									{
+										app.vq.add('</table></div>', {queue: context})
+									}
+
+									if (init)
+									{
+										app.vq.add('<div id="' + controller + '-navigation" class="mx-auto w-50"></div>', {queue: context})
+									}
+
+									if (options.orientation == 'horizontal')
+									{
+										$('#' + container + ' div.myds-page-view').hide()
+									}
+
+									var append = !init;
+									var appendSelector = (options.orientation=='horizontal'?'div.myds-page-view:last':'table tr:last');
+
+									app.vq.render('#' + container, {append: append, queue: context, appendSelector: appendSelector}, data);
+
+									mydigitalstructure._util.view.more(_.omit(response, 'data'),
+									{
+										queue: context,
+										controller: 'util-view-table',
+										context: context,
+										orientation: options.orientation,
+										rows: options.rows,
+										progressive: options.progressive,
+										containerID: controller + '-navigation',
+										showAlways: options.showAlways,
+										showFooter: options.showFooter
 									});
 								}
 
-								if (response.data.rows.length == 0)
+								if (_.has(options, 'deleteConfirm') && context != undefined)
 								{
-									app.vq.add('<tr><td class="text-center text-muted p-t-md p-b-md" colspan="' + captions.length + '">No more data</td></tr>', {queue: context});
+									if (typeof $.fn.popover == 'function')
+									{
+										$('#' + container + ' .myds-delete').each(function (b, button)
+										{
+											var content = '<div class="text-center">' + options.deleteConfirm.text + '</div>' +
+												  	'<div class="text-center mt-3 mb-2 m-t m-b">' +
+												  	'<button type="button" class="btn btn-link text-muted myds-close" data-context="popover">Cancel</button>' +
+												  	'<button type="button" class="btn btn-danger btn-outline myds-click myds-close"' +
+												  		' data-context="popover"' +
+												  		' data-controller="' + (_.isUndefined(options.deleteConfirm.controller)?context + '-delete-ok':options.deleteConfirm.controller) + '"' +
+												  		' data-id="' + $(button).attr('data-id') + '"' +
+												  	'>' + (_.isUndefined(options.deleteConfirm.buttonText)?'Delete':options.deleteConfirm.buttonText) + '</button>' +
+												  	'</div>';
+
+											$(button).popover(
+											{
+												title: (_.isUndefined(options.deleteConfirm.headerText)?'Delete':options.deleteConfirm.headerText),
+												content: content,
+												html: true,
+												placement: (_.isUndefined(options.deleteConfirm.position)?'left':options.deleteConfirm.position),
+												sanitize: false
+											});
+										});
+									}
+									else if (typeof $.fn.popConfirm == 'function')
+									{
+										$('#' + container + ' .myds-delete').popConfirm(
+										{
+											title: (_.isUndefined(options.deleteConfirm.headerText)?'Delete':options.deleteConfirm.headerText),
+											content: options.deleteConfirm.text,
+											placement: (_.isUndefined(options.deleteConfirm.position)?'left':options.deleteConfirm.position),
+											controller: (_.isUndefined(options.deleteConfirm.controller)?context + '-delete-ok':options.deleteConfirm.controller),
+											id: -1,
+											sanitize: false
+										});
+									}
+								}
+
+								app._util.data.set(
+								{
+									scope: 'util-view-table-cache',
+									context: context,
+									value: $('#' + container).html()
+								});
+
+								app._util.data.set(
+								{
+									scope: 'util-view-table',
+									context: context,
+									name: 'paging',
+									value:
+									{
+										pagesTotal: pagesTotal,
+										pageRows: pageRows,
+										rowsTotal: rowsTotal,
+										rowsCurrent: rowsCurrent,
+										startRow: startRow,
+										id: response.moreid
+									}
+								});
+
+								if (options.orientation == 'horizontal' && !options.progressive && goToPageWhenCan && goToPageNumber == undefined)
+								{
+									var dataStatus = app._util.data.get(
+									{
+										scope: 'util-view-table',
+										context: context
+									});
+
+									if (_.has(dataStatus, 'currentPage'))
+									{
+										if (currentPage != dataStatus.currentPage)
+										{
+											goToPageNumber = dataStatus.currentPage
+										}
+									}
+								}
+
+								if (goToPageNumber != undefined && goToPageNumber != 1)
+								{
+									mydigitalstructure._util.view.showPage(
+									{
+										id: response.moreid,
+										context: context,
+										controller: "util-view-table",
+										number: goToPageNumber,
+										pages: pagesTotal,
+										rows: pageRows,
+										showPages: pagesTotal,
+										showPagesMaximum: pagesTotal,
+										startrow: (numeral(goToPageNumber).value() - 1) * numeral(pageRows).value()
+									})
 								}
 								else
 								{
-									_.each(response.data.rows, function (row)
+									if (!keepHidden)
 									{
-										app.vq.add({useTemplate: true, queue: context}, row);
-									});
-								}
-								
-								if (init || options.orientation == 'horizontal')
-								{
-									app.vq.add('</table></div>', {queue: context})
-								}
-
-								if (init)
-								{
-									app.vq.add('<div id="' + controller + '-navigation" class="mx-auto w-50"></div>', {queue: context})
-								}
-
-								if (options.orientation == 'horizontal')
-								{
-									$('#' + container + ' div.myds-page-view').hide()
-								}
-
-								var append = !init;
-								var appendSelector = (options.orientation=='horizontal'?'div.myds-page-view:last':'table tr:last');
-
-								app.vq.render('#' + container, {append: append, queue: context, appendSelector: appendSelector}, data);
-
-								mydigitalstructure._util.view.more(_.omit(response, 'data'),
-								{
-									queue: context,
-									controller: 'util-view-table',
-									context: context,
-									orientation: options.orientation,
-									rows: options.rows,
-									progressive: options.progressive,
-									containerID: controller + '-navigation',
-									showAlways: options.showAlways,
-									showFooter: options.showFooter
-								});
-							}
-
-							if (_.has(options, 'deleteConfirm') && context != undefined)
-							{
-								if (typeof $.fn.popover == 'function')
-								{
-									$('#' + container + ' .myds-delete').each(function (b, button)
-									{
-										var content = '<div class="text-center">' + options.deleteConfirm.text + '</div>' +
-											  	'<div class="text-center mt-3 mb-2 m-t m-b">' +
-											  	'<button type="button" class="btn btn-link text-muted myds-close" data-context="popover">Cancel</button>' +
-											  	'<button type="button" class="btn btn-danger btn-outline myds-click myds-close"' +
-											  		' data-context="popover"' +
-											  		' data-controller="' + (_.isUndefined(options.deleteConfirm.controller)?context + '-delete-ok':options.deleteConfirm.controller) + '"' +
-											  		' data-id="' + $(button).attr('data-id') + '"' +
-											  	'>' + (_.isUndefined(options.deleteConfirm.buttonText)?'Delete':options.deleteConfirm.buttonText) + '</button>' +
-											  	'</div>';
-
-										$(button).popover(
-										{
-											title: (_.isUndefined(options.deleteConfirm.headerText)?'Delete':options.deleteConfirm.headerText),
-											content: content,
-											html: true,
-											placement: (_.isUndefined(options.deleteConfirm.position)?'left':options.deleteConfirm.position),
-											sanitize: false
-										});
-									});
-								}
-								else if (typeof $.fn.popConfirm == 'function')
-								{
-									$('#' + container + ' .myds-delete').popConfirm(
-									{
-										title: (_.isUndefined(options.deleteConfirm.headerText)?'Delete':options.deleteConfirm.headerText),
-										content: options.deleteConfirm.text,
-										placement: (_.isUndefined(options.deleteConfirm.position)?'left':options.deleteConfirm.position),
-										controller: (_.isUndefined(options.deleteConfirm.controller)?context + '-delete-ok':options.deleteConfirm.controller),
-										id: -1,
-										sanitize: false
-									});
-								}
-							}
-
-							app._util.data.set(
-							{
-								scope: 'util-view-table-cache',
-								context: context,
-								value: $('#' + container).html()
-							});
-
-							app._util.data.set(
-							{
-								scope: 'util-view-table',
-								context: context,
-								name: 'paging',
-								value:
-								{
-									pagesTotal: pagesTotal,
-									pageRows: pageRows,
-									rowsTotal: rowsTotal,
-									rowsCurrent: rowsCurrent,
-									startRow: startRow,
-									id: response.moreid
-								}
-							});
-
-							if (options.orientation == 'horizontal' && !options.progressive && goToPageWhenCan && goToPageNumber == undefined)
-							{
-								var dataStatus = app._util.data.get(
-								{
-									scope: 'util-view-table',
-									context: context
-								});
-
-								if (_.has(dataStatus, 'currentPage'))
-								{
-									if (currentPage != dataStatus.currentPage)
-									{
-										goToPageNumber = dataStatus.currentPage
+										$('#' + container).removeClass('hidden d-none');
 									}
+
+									app._util.data.set(
+									{
+										scope: 'util-view-table',
+										context: context,
+										name: 'currentPage',
+										value: currentPage
+									});
+
+									app._util.data.set(
+									{
+										scope: 'util-view-table',
+										context: context,
+										name: 'currentPage',
+										value: currentPage
+									});
+
+									if (param.onComplete == undefined)
+									{
+										param.onComplete = data._param.onComplete
+									}
+
+									mydigitalstructure._util.onComplete({onComplete: param.onComplete});
 								}
-							}
-
-							if (goToPageNumber != undefined && goToPageNumber != 1)
-							{
-								mydigitalstructure._util.view.showPage(
-								{
-									id: response.moreid,
-									context: context,
-									controller: "util-view-table",
-									number: goToPageNumber,
-									pages: pagesTotal,
-									rows: pageRows,
-									showPages: pagesTotal,
-									showPagesMaximum: pagesTotal,
-									startrow: (numeral(goToPageNumber).value() - 1) * numeral(pageRows).value()
-								})
-							}
-							else
-							{
-								if (!keepHidden)
-								{
-									$('#' + container).removeClass('hidden d-none');
-								}
-
-								app._util.data.set(
-								{
-									scope: 'util-view-table',
-									context: context,
-									name: 'currentPage',
-									value: currentPage
-								});
-
-								app._util.data.set(
-								{
-									scope: 'util-view-table',
-									context: context,
-									name: 'currentPage',
-									value: currentPage
-								});
-
-								if (param.onComplete == undefined)
-								{
-									param.onComplete = data._param.onComplete
-								}
-
-								mydigitalstructure._util.onComplete({onComplete: param.onComplete});
 							}
 						}
 					}
-				}
-			}	
+				}	
+			}
 		}
 	});
 

@@ -1841,7 +1841,7 @@ mydigitalstructure._util =
 											{
 												if (!access)
 												{	
-													access = mydigitalstructure._util.user.roles.has({role: role, exact: false})
+													access = mydigitalstructure._util.user.roles.has({role: role, exact: true});
 												}	
 											});
 										}
@@ -1958,7 +1958,7 @@ mydigitalstructure._util =
 											{
 												if (!access)
 												{	
-													access = mydigitalstructure._util.user.roles.has({role: role, exact: false})
+													access = mydigitalstructure._util.user.roles.has({role: role, exact: true})
 												}	
 											});
 
@@ -2063,7 +2063,7 @@ mydigitalstructure._util =
 											{
 												if (!userHasAccess)
 												{	
-													userHasAccess = mydigitalstructure._util.user.roles.has({role: role, exact: false})
+													userHasAccess = mydigitalstructure._util.user.roles.has({role: role, exact: true})
 												}	
 											});
 										}
