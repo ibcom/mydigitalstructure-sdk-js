@@ -746,34 +746,34 @@ mydigitalstructure._util.factory.security = function (param)
 	mydigitalstructure._util.controller.add(
 	[
 		{
-			name: 'util-security-share-link-add',
+			name: 'util-security-share-add',
 			code: function (param)
 			{
-				mydigitalstructure.cloud.security.share.link.add(param);
+				mydigitalstructure.security.share.add(param);
 			}
 		},
 		{
-			name: 'util-security-share-link-find',
+			name: 'util-security-share-find',
 			code: function (param)
 			{
-				mydigitalstructure.cloud.security.share.link.find(param);
+				mydigitalstructure.security.share.find(param);
 			}
 		},
 		{
-			name: 'util-security-share-link-remove',
+			name: 'util-security-share-remove',
 			code: function (param)
 			{
-				mydigitalstructure.cloud.security.share.link.remove(param);
+				mydigitalstructure.security.share.remove(param);
 			}
 		},
 		{
 			name: 'util-security-share-setup',
 			code: function (param)
 			{
-				mydigitalstructure.cloud.security.share.setup.init(param);
+				mydigitalstructure._util.security.share.setup.init(param);
 			}
 		}
-	]
+	]);
 }
 
 

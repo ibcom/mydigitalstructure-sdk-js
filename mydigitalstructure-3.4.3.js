@@ -13,7 +13,7 @@ var mydigitalstructure =
 	{
 		app: {options: {}, build:{}},
 		sentToView: [],
-		viewQueue: {content: {}, template: {}},
+		viewQueue: {content: {}, template: {}, roles: {}},
 		session: {},
 		data: {defaultQueue: 'base', loaded: false}
 	},
@@ -1792,6 +1792,10 @@ mydigitalstructure._util =
 								if (uri != undefined) {mydigitalstructure._scope.app.view.uri = uri}
 								if (uriContext != undefined) {mydigitalstructure._scope.app.view.uriContext = uriContext}
 
+								var view = mydigitalstructure._util.view.get(uri);
+
+								//MB??? If no view found?
+
 								if (uriContext != undefined)
 								{
 									if ($(uriContext).length != 0)
@@ -1810,8 +1814,6 @@ mydigitalstructure._util =
 										}	
 									}
 								}
-
-								var view = mydigitalstructure._util.view.get(uri);
 
 								if (uriContext != mydigitalstructure._scope.app.options.authURIContext
 										&& mydigitalstructure._scope.user == undefined)
@@ -1839,7 +1841,7 @@ mydigitalstructure._util =
 											{
 												if (!access)
 												{	
-													access = mydigitalstructure._util.user.roles.has({role: role.id, exact: false})
+													access = mydigitalstructure._util.user.roles.has({role: role, exact: false})
 												}	
 											});
 										}
@@ -1850,7 +1852,40 @@ mydigitalstructure._util =
 
 										if (!access)
 										{
-											mydigitalstructure.deauth();
+											var deAuth = false;
+
+											if (_.has(mydigitalstructure, '_scope.app.options.routing.noAccess.deAuth'))
+											{
+												deAuth = mydigitalstructure._scope.app.options.routing.noAccess.deAuth;
+											}
+
+											if (deAuth)
+											{
+												mydigitalstructure.deauth();
+											}
+											else
+											{
+												if (_.has(mydigitalstructure, '_scope.app.options.routing.noAccess.uri')
+														|| _.has(mydigitalstructure, '_scope.app.options.routing.noAccess.uriContext'))
+												{
+													mydigitalstructure._util.sendToView(
+													{
+														from: 'myds-auth',
+														status: 'error',
+														message: 'no-access',
+														data: mydigitalstructure._scope.app.routing.noAccess
+													});
+												}
+												else
+												{
+													mydigitalstructure._util.sendToView(
+													{
+														from: 'myds-auth',
+														status: 'error',
+														message: 'no-access'
+													});
+												}
+											}
 										}
 										else
 										{	
@@ -1860,16 +1895,13 @@ mydigitalstructure._util =
 											}
 											else if (view.selector != undefined)
 											{
-												$('div.view').hide();
-												$(view.selector).show();
+												$('div.myds-view').addClass('hidden d-none');
+												$(view.selector).removeClass('hidden d-none');
 											}
 
 											if (view.controller != undefined)
 											{
-												if (!_.isUndefined(app.controller[view.controller]))
-												{
-													app.controller[view.controller]();
-												}
+												mydigitalstructure._util.controller.invoke(view.controller);
 											}
 										}	
 									}
@@ -1879,9 +1911,9 @@ mydigitalstructure._util =
 										{	
 											var uriController = uri.replace('/', '');
 											
-											if (app.controller[uriController] != undefined)
+											if (mydigitalstructure._util.controller.exists(uriController))
 											{
-												app.controller[uriController]()
+												mydigitalstructure._util.controller.invoke(uriController);
 											}
 										}	
 									}
@@ -1926,7 +1958,7 @@ mydigitalstructure._util =
 											{
 												if (!access)
 												{	
-													access = mydigitalstructure._util.user.roles.has({role: role.id, exact: false})
+													access = mydigitalstructure._util.user.roles.has({role: role, exact: false})
 												}	
 											});
 
@@ -1997,7 +2029,47 @@ mydigitalstructure._util =
 									enable: function (selector, param)
 									{
 										$(selector).removeClass('disabled');
-									} 
+									},
+
+									userHasAccess: function (param)
+									{
+										var queue = mydigitalstructure._util.param.get(param, 'queue').value;
+
+										if (queue == undefined)
+										{
+											if (mydigitalstructure._util.controller.data.last == undefined)
+											{
+												queue = mydigitalstructure._scope.data.defaultQueue
+											}
+											else
+											{
+												queue = mydigitalstructure._util.controller.data.last
+											}
+										}
+
+										var userRoles = mydigitalstructure._util.param.get(param, 'roles').value;
+										if (userRoles == undefined)
+										{
+											userRoles = mydigitalstructure._scope.viewQueue['roles'][queue]
+										}
+
+										if (userRoles == undefined) {userRoles = []}
+
+										var userHasAccess = (userRoles.length == 0);
+										
+										if (!userHasAccess)
+										{
+											_.each(mydigitalstructure._scope.viewQueue['roles'][queue], function (role)
+											{
+												if (!userHasAccess)
+												{	
+													userHasAccess = mydigitalstructure._util.user.roles.has({role: role, exact: false})
+												}	
+											});
+										}
+
+										return userHasAccess;
+									}
 								},
 
 								init: function (selector, param)
@@ -2017,6 +2089,8 @@ mydigitalstructure._util =
 									var setDefault = mydigitalstructure._util.param.get(param, 'setDefault', {"default": false}).value;
 									setDefault = mydigitalstructure._util.param.get(param, 'setDefault', {"default": false}).value;
 
+									var userRoles = mydigitalstructure._util.param.get(param, 'roles', {default: []}).value;
+
 									if (queue == undefined)
 									{
 										if (mydigitalstructure._util.controller.data.last == undefined)
@@ -2033,6 +2107,8 @@ mydigitalstructure._util =
 									{
 										mydigitalstructure._scope.data.defaultQueue = queue;
 									}
+
+									mydigitalstructure._scope.viewQueue['roles'][queue] = userRoles;
 
 									var html = '';
 									
@@ -2132,86 +2208,89 @@ mydigitalstructure._util =
 
 									param = mydigitalstructure._util.param.set(param, 'queue', queue);
 
-									if (content == undefined && ifNoneContent != undefined)
+									if (mydigitalstructure._util.view.queue._util.userHasAccess(param))
 									{
-										content = ifNoneContent;
-									}
-
-									if (content == undefined && type == 'template' && selector != undefined)
-									{
-										if ($(selector).length != 0)
+										if (content == undefined && ifNoneContent != undefined)
 										{
-											content = $(selector).clone()
+											content = ifNoneContent;
 										}
-									}
 
-									if (content == undefined && type == 'template' && queue != undefined)
-									{
-										if ($('#_' + queue).length != 0)
+										if (content == undefined && type == 'template' && selector != undefined)
 										{
-											content = $('#_' + queue).clone().html()
+											if ($(selector).length != 0)
+											{
+												content = $(selector).clone()
+											}
 										}
-									}	
-									
-									if (clear || type == 'template')
-									{
-										mydigitalstructure._util.view.queue.clear(param)
-									}
 
-									if (mydigitalstructure._scope.viewQueue[type][queue] == undefined) {mydigitalstructure._scope.viewQueue[type][queue] = []}
-
-									if (useTemplate && type == 'content')
-									{
-										var data = $.extend(true, {}, content);
-										content = mydigitalstructure._util.view.queue.get({type: 'template', queue: param.queue});
-										var keyData;
-
-										for (var key in data)
-								  		{
-								     		if (data.hasOwnProperty(key))
-								     		{
-								     			if (data[key] == undefined)
-								     			{
-								     				data[key] = ''
-								     			}
-
-								     			keyData = String(data[key]);
-
-								     			content = s.replaceAll(content, '{{' + key.toLowerCase() + '}}', keyData);
-								     			content = s.replaceAll(content, '{{' + key + '}}', keyData);
-
-								     			if (s != undefined)
-								     			{
-								     				content = s.unescapeHTML(content)
-								     			}
-
-								     			content = s.replaceAll(content, '{{~' + key.toLowerCase() + '}}', encodeURIComponent(keyData));
-								     			content = s.replaceAll(content, '{{~' + key + '}}', encodeURIComponent(keyData));
-
-								     			content = s.replaceAll(content, '{{#' + key.toLowerCase() + '}}', _.escape(keyData));
-								     			content = s.replaceAll(content, '{{#' + key + '}}', _.escape(keyData));
-
-												keyData = String(keyData).replace(/[\u00A0-\u2666]/g, function(c)
-								     			{
-													return '&#' + c.charCodeAt(0) + ';';
-												});
-
-								     			content = s.replaceAll(content, '{{!' + key.toLowerCase() + '}}', 'base64:' + btoa(keyData));
-								     			content = s.replaceAll(content, '{{!' + key + '}}',  'base64:' + btoa(keyData));
-								     		}
-								     	}
-
-								     	mydigitalstructure._scope.viewQueue[type][queue].push(content);
-									}	
-									else
-									{
-										if (_.isArray(content))
+										if (content == undefined && type == 'template' && queue != undefined)
 										{
-											content = _.join(content, '');
+											if ($('#_' + queue).length != 0)
+											{
+												content = $('#_' + queue).clone().html()
+											}
 										}	
+										
+										if (clear || type == 'template')
+										{
+											mydigitalstructure._util.view.queue.clear(param)
+										}
 
-										mydigitalstructure._scope.viewQueue[type][queue].push(content);
-									}	
+										if (mydigitalstructure._scope.viewQueue[type][queue] == undefined) {mydigitalstructure._scope.viewQueue[type][queue] = []}
+
+										if (useTemplate && type == 'content')
+										{
+											var data = $.extend(true, {}, content);
+											content = mydigitalstructure._util.view.queue.get({type: 'template', queue: param.queue});
+											var keyData;
+
+											for (var key in data)
+									  		{
+									     		if (data.hasOwnProperty(key))
+									     		{
+									     			if (data[key] == undefined)
+									     			{
+									     				data[key] = ''
+									     			}
+
+									     			keyData = String(data[key]);
+
+									     			content = s.replaceAll(content, '{{' + key.toLowerCase() + '}}', keyData);
+									     			content = s.replaceAll(content, '{{' + key + '}}', keyData);
+
+									     			if (s != undefined)
+									     			{
+									     				content = s.unescapeHTML(content)
+									     			}
+
+									     			content = s.replaceAll(content, '{{~' + key.toLowerCase() + '}}', encodeURIComponent(keyData));
+									     			content = s.replaceAll(content, '{{~' + key + '}}', encodeURIComponent(keyData));
+
+									     			content = s.replaceAll(content, '{{#' + key.toLowerCase() + '}}', _.escape(keyData));
+									     			content = s.replaceAll(content, '{{#' + key + '}}', _.escape(keyData));
+
+													keyData = String(keyData).replace(/[\u00A0-\u2666]/g, function(c)
+									     			{
+														return '&#' + c.charCodeAt(0) + ';';
+													});
+
+									     			content = s.replaceAll(content, '{{!' + key.toLowerCase() + '}}', 'base64:' + btoa(keyData));
+									     			content = s.replaceAll(content, '{{!' + key + '}}',  'base64:' + btoa(keyData));
+									     		}
+									     	}
+
+									     	mydigitalstructure._scope.viewQueue[type][queue].push(content);
+										}	
+										else
+										{
+											if (_.isArray(content))
+											{
+												content = _.join(content, '');
+											}	
+
+											mydigitalstructure._scope.viewQueue[type][queue].push(content);
+										}
+									}
 								},
 
 								templateRender: function (selector, param, data, template)
@@ -2229,31 +2308,34 @@ mydigitalstructure._util =
 										param.queue = param.controller;
 									}
 
-									if (selector == undefined && data != undefined)
+									if (mydigitalstructure._util.view.queue._util.userHasAccess(param))
 									{
-										if (data.id != undefined && param.queue != undefined)
+										if (selector == undefined && data != undefined)
 										{
-											selector = '#' + param.queue + '-' + data.id
+											if (data.id != undefined && param.queue != undefined)
+											{
+												selector = '#' + param.queue + '-' + data.id
+											}
 										}
-									}
 
-									if (data != undefined)
-									{
-										for (var key in data)
-								  		{
-								     		if (data.hasOwnProperty(key))
-								     		{
-								     			selector = s.replaceAll(selector, '{{' + key.toLowerCase() + '}}', data[key]);
-								     			selector = s.replaceAll(selector, '{{~' + key.toLowerCase() + '}}', _.escape(data[key]));
-								     		}
-								     	}
-									}
+										if (data != undefined)
+										{
+											for (var key in data)
+									  		{
+									     		if (data.hasOwnProperty(key))
+									     		{
+									     			selector = s.replaceAll(selector, '{{' + key.toLowerCase() + '}}', data[key]);
+									     			selector = s.replaceAll(selector, '{{~' + key.toLowerCase() + '}}', _.escape(data[key]));
+									     		}
+									     	}
+										}
 
-									mydigitalstructure._util.view.queue.reset(param)
-									app.vq.add(template, {queue: param.queue, type: 'template'});
-									app.vq.add({queue: param.queue, useTemplate: true}, data);
-									app.vq.render(selector, {queue: param.queue});
-									app.vq.focus(selector, {queue: param.queue});
+										mydigitalstructure._util.view.queue.reset(param)
+										mydigitalstructure._util.view.queue.add(template, {queue: param.queue, type: 'template'});
+										mydigitalstructure._util.view.queue.add({queue: param.queue, useTemplate: true}, data);
+										mydigitalstructure._util.view.queue.render(selector, {queue: param.queue});
+										mydigitalstructure._util.view.queue.focus(selector, {queue: param.queue});
+									}
 								},
 
 								apply: function (param)
@@ -2318,51 +2400,54 @@ mydigitalstructure._util =
 											queue = mydigitalstructure._util.param.get(param, 'controller', {"default": mydigitalstructure._scope.data.defaultQueue}).value;
 										}
 											
-										if (selector == undefined)
+										if (mydigitalstructure._util.view.queue._util.userHasAccess(param))
 										{
-											console.log(mydigitalstructure._scope.viewQueue[type][queue].join(''));
-										}
-										else
-										{
-											if (mydigitalstructure._scope.viewQueue[type][queue] != undefined)
-											{	
-												var html = mydigitalstructure._scope.viewQueue[type][queue].join('');
+											if (selector == undefined)
+											{
+												console.log(mydigitalstructure._scope.viewQueue[type][queue].join(''));
+											}
+											else
+											{
+												if (mydigitalstructure._scope.viewQueue[type][queue] != undefined)
+												{	
+													var html = mydigitalstructure._scope.viewQueue[type][queue].join('');
 
-												if (append)
-												{
-													if (_.eq($(selector + ' table').length, 0))
+													if (append)
 													{
-														$(selector).after(html);
-													}
-													else if ($(selector + ' ' + appendSelector).length != 0 )
-													{
-														$(selector + ' ' + appendSelector).after(html);
-													}
-												}
-												else
-												{
-													$(selector).html(html);
-
-													if (_.isObject(data))
-													{
-														if (_.isObject(data.sort))
+														if (_.eq($(selector + ' table').length, 0))
 														{
-															$(selector).find('th[data-sort="' + data.sort.name + '"]').attr('data-sort-direction', data.sort.direction)
+															$(selector).after(html);
+														}
+														else if ($(selector + ' ' + appendSelector).length != 0 )
+														{
+															$(selector + ' ' + appendSelector).after(html);
 														}
 													}
-												}	
-											}
+													else
+													{
+														$(selector).html(html);
 
-											if (disableSelector) {mydigitalstructure._util.view.queue._util.disable(disableSelector, param)};
-											if (enableSelector) {mydigitalstructure._util.view.queue._util.enable(enableSelector, param)};
-		
-											if (includeDates)
-											{
-												mydigitalstructure._util.view.datepicker({selector: '.myds-date', format: 'D MMM YYYY'})
-												mydigitalstructure._util.view.datepicker({selector: '.myds-date-time', format: 'D MMM YYYY LT'})
-											}
+														if (_.isObject(data))
+														{
+															if (_.isObject(data.sort))
+															{
+																$(selector).find('th[data-sort="' + data.sort.name + '"]').attr('data-sort-direction', data.sort.direction)
+															}
+														}
+													}	
+												}
 
-											mydigitalstructure._util.view.queue.reset(param);
+												if (disableSelector) {mydigitalstructure._util.view.queue._util.disable(disableSelector, param)};
+												if (enableSelector) {mydigitalstructure._util.view.queue._util.enable(enableSelector, param)};
+			
+												if (includeDates)
+												{
+													mydigitalstructure._util.view.datepicker({selector: '.myds-date', format: 'D MMM YYYY'})
+													mydigitalstructure._util.view.datepicker({selector: '.myds-date-time', format: 'D MMM YYYY LT'})
+												}
+
+												mydigitalstructure._util.view.queue.reset(param);
+											}
 										}
 									}	
 								},
@@ -2389,36 +2474,39 @@ mydigitalstructure._util =
 										param.queue = mydigitalstructure._util.param.get(param, 'controller', {"default": mydigitalstructure._scope.data.defaultQueue}).value;
 									}
 
-									if (useTemplate)
+									if (mydigitalstructure._util.view.queue._util.userHasAccess(param))
 									{
-										var data = $.extend(true, {}, content);
-										content = mydigitalstructure._util.view.queue.get({type: 'template', queue: param.queue});
-										if (_.isUndefined(id)) {id = data.id}
+										if (useTemplate)
+										{
+											var data = $.extend(true, {}, content);
+											content = mydigitalstructure._util.view.queue.get({type: 'template', queue: param.queue});
+											if (_.isUndefined(id)) {id = data.id}
 
-										for (var key in data)
-								  		{
-								     		if (data.hasOwnProperty(key))
-								     		{
-								     			content = s.replaceAll(content, '{{' + key.toLowerCase() + '}}', data[key]);
-								     			content = s.replaceAll(content, '{{' + key + '}}', data[key]);
+											for (var key in data)
+									  		{
+									     		if (data.hasOwnProperty(key))
+									     		{
+									     			content = s.replaceAll(content, '{{' + key.toLowerCase() + '}}', data[key]);
+									     			content = s.replaceAll(content, '{{' + key + '}}', data[key]);
 
-								     			if (s != undefined)
-								     			{
-								     				content = s.unescapeHTML(content)
-								     			}
+									     			if (s != undefined)
+									     			{
+									     				content = s.unescapeHTML(content)
+									     			}
 
-								     			content = s.replaceAll(content, '{{~' + key.toLowerCase() + '}}', _.escape(data[key]));
-								     			content = s.replaceAll(content, '{{~' + key + '}}', _.escape(data[key]));
-								     		}
-								     	}
-								     	
-								     	element.html(content)
-									}	
-									else
-									{
-										element = $(selector + ' tr[data-id="' + id + '"]');
-										element.html(content)
-									}	
+									     			content = s.replaceAll(content, '{{~' + key.toLowerCase() + '}}', _.escape(data[key]));
+									     			content = s.replaceAll(content, '{{~' + key + '}}', _.escape(data[key]));
+									     		}
+									     	}
+									     	
+									     	element.html(content)
+										}	
+										else
+										{
+											element = $(selector + ' tr[data-id="' + id + '"]');
+											element.html(content)
+										}	
+									}
 								},
 
 								get: function (param)
@@ -2432,16 +2520,19 @@ mydigitalstructure._util =
 										param = mydigitalstructure._util.param.set(param, 'queue', queue);
 									}
 
-									var content = mydigitalstructure._scope.viewQueue[type][queue];
-
-									if (!_.isUndefined(content))
+									if (mydigitalstructure._util.view.queue._util.userHasAccess(param))
 									{
-										content = content.join('');
+										var content = mydigitalstructure._scope.viewQueue[type][queue];
+
+										if (!_.isUndefined(content))
+										{
+											content = content.join('');
+										}
+
+										if (type == 'content') {mydigitalstructure._util.view.queue.clear(param)};
+
+										return content	
 									}
-
-									if (type == 'content') {mydigitalstructure._util.view.queue.clear(param)};
-
-									return content	
 								},
 
 								show: function (selector, content, param)
@@ -2737,24 +2828,43 @@ mydigitalstructure._util =
 										var role = mydigitalstructure._util.param.get(param, 'role').value;
 										var exact = mydigitalstructure._util.param.get(param, 'exact', {"default": true}).value;
 
-										var bHas = false;
+										var _role = {};
 
-										if (mydigitalstructure._scope.user != undefined)
-										{	
-											if (roleTitle != unondefined)
-											{
-												bHas = ($.grep(mydigitalstructure._scope.user.roles.rows, function (row)
-														{return (exact?row.title==roleTitle:row.title.indexOf(roleTitle)!=-1)}).length > 0);
-											}
-
+										if (_.isObject(role))
+										{
+											_role = role
+										}
+										else
+										{
 											if (role != undefined)
 											{
-												bHas = ($.grep(mydigitalstructure._scope.user.roles.rows, function (row)
-														{return row.id == role}).length > 0);
+												_role = _.assign(_role, {id: role});
+											}
+
+											if (roleTitle != undefined)
+											{
+												_role = _.assign(_role, {title: roleTitle});
 											}
 										}
 
-										return bHas;
+										var hasRole = false;
+
+										if (mydigitalstructure._scope.user != undefined)
+										{	
+											if (role != undefined)
+											{
+												hasRole = ($.grep(mydigitalstructure._scope.user.roles.rows, function (row)
+														{return (exact?row.title==_role.title:row.title.indexOf(_role.title)!=-1)}).length > 0);
+											
+												if (!hasRole)
+												{
+													hasRole = ($.grep(mydigitalstructure._scope.user.roles.rows, function (row)
+															{return row.id == _role.id}).length > 0);
+												}
+											}
+										}
+
+										return hasRole;
 									}	
 							}		
 				},

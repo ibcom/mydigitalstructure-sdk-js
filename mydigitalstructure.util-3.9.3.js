@@ -1676,10 +1676,12 @@ if (typeof $.fn.carousel == 'function')
 					}
 				}	
 
-				if (app.controller[id] != undefined)
+				var controller = id;
+
+				if (controller != undefined)
 				{
-					if (app.data[id] == undefined) {app.data[id] = {}};
-					app.controller[id](param);
+					if (app.data[controller] == undefined) {app.data[controller] = {}};
+					mydigitalstructure._util.controller.invoke(controller, param);
 				}
 			}
 		}
@@ -1714,10 +1716,12 @@ if (typeof $.fn.carousel == 'function')
 				}
 			}	
 
-			if (app.controller[id] != undefined)
+			var controller = id;
+
+			if (controller != undefined)
 			{
-				if (app.data[id] == undefined) {app.data[id] = {}};
-				app.controller[id](param);
+				if (app.data[controller] == undefined) {app.data[controller] = {}};
+				mydigitalstructure._util.controller.invoke(controller, param);
 			}
 		}	
 	}
@@ -1746,7 +1750,7 @@ if (typeof $.fn.dropdown == 'function')
 			if (app.data[controller] == undefined) {app.data[controller] = {}}
 			app.data[controller].dataContext = param.dataContext;
 
-			mydigitalstructure._util.controller.invoke({name: controller}, param)
+			mydigitalstructure._util.controller.invoke(controller, param)
 		}	
 	}
 
@@ -1902,6 +1906,23 @@ mydigitalstructure._util.controller =
 	},
 
 	code: {},
+
+	exists: function (param)
+	{
+		var name;
+		var returnData;
+
+		if (_.isObject(param))
+		{
+			name = mydigitalstructure._util.param.get(param, 'name').value;
+		}
+		else
+		{
+			name = param;
+		}
+
+		return (mydigitalstructure._util.controller.code[name] != undefined)
+	},
 
 	invoke: function (param, controllerParam, controllerData)
 	{
@@ -3010,7 +3031,7 @@ mydigitalstructure._util.whoami = function (param)
 	{
 		myFunctionality:
 		{
-			controllers: mydigitalstructure._util.controller.data.whoami,
+			controllers: _.sortBy(mydigitalstructure._util.controller.data.whoami, function (whoami) {return whoami.name}),
 			count: mydigitalstructure._util.controller.data.whoami.length,
 			util: mydigitalstructure._util,
 			viewHanders: mydigitalstructure._util.view.handlers
@@ -3438,21 +3459,21 @@ mydigitalstructure._util.access =
 mydigitalstructure._util.controller.add(
 [
 	{
-		name: 'util-access-check',
+		name: 'util-security-access-check',
 		code: function (param)
 		{
 			mydigitalstructure._util.access.has(param);
 		}
 	},
 	{
-		name: 'util-access-view-show',
+		name: 'util-security-access-view-show',
 		code: function (param)
 		{
 			mydigitalstructure._util.access.show(param);
 		}
 	},
 	{
-		name: 'util-access-view-hide',
+		name: 'util-security-access-view-hide',
 		code: function (param)
 		{
 			mydigitalstructure._util.access.hide(param);
@@ -3802,13 +3823,6 @@ mydigitalstructure._util.data =
 
 mydigitalstructure._util.controller.add(
 [
-	{
-		name: 'util-data-clean',
-		code: function (param)
-		{
-			mydigitalstructure._util.data.clean(param);
-		}
-	},
 	{
 		name: 'util-data-clear',
 		code: function (param)
@@ -4565,7 +4579,7 @@ mydigitalstructure._util.factory.core = function (param)
 										uri: uri,
 										uriContext: uriContext,
 										reload: true
-									})
+									});
 								}
 							}	
 						}	
@@ -5229,15 +5243,6 @@ mydigitalstructure._util.factory.core = function (param)
 			}
 		}
 	]);
-
-	mydigitalstructure._util.controller.add(
-	{
-		name: 'util-cloud-storage-upload',
-		code: function (param)
-		{
-			return mydigitalstructure.cloud.upload(param)
-		}
-	});
 
 	mydigitalstructure._util.controller.add(
 	{
