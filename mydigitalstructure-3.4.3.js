@@ -1796,7 +1796,7 @@ mydigitalstructure._util =
 
 								//MB??? If no view found?
 
-								if (uriContext != undefined)
+								if (uriContext != undefined && uriContext != '#')
 								{
 									if ($(uriContext).length != 0)
 									{

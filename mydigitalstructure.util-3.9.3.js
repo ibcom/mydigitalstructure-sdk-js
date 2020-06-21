@@ -3731,7 +3731,7 @@ mydigitalstructure._util.data =
 				var context = mydigitalstructure._util.param.get(param, 'context', {'default': 'id'}).value;
 				var setContext = mydigitalstructure._util.param.get(param, 'setContext', {'default': 'dataContext'}).value;  
 				
-				var dataController = mydigitalstructure._util.param.get(param, 'dataController', {'default': 'setup'}).value;
+				var dataController = mydigitalstructure._util.param.get(param, 'dataController').value;
 				var dataScope = mydigitalstructure._util.param.get(param, 'dataScope', {'default': 'setup'}).value;
 				var dataContext = mydigitalstructure._util.param.get(param, 'dataContext', {'default': 'all'}).value;
 
@@ -4032,11 +4032,17 @@ mydigitalstructure._util.menu =
 		var selector = mydigitalstructure._util.param.get(param, 'selector').value;
 		var href = mydigitalstructure._util.param.get(param, 'href').value;
 		var scope = mydigitalstructure._util.param.get(param, 'scope').value;
+		var uri = mydigitalstructure._util.param.get(param, 'uri').value;
 		var uriContext = mydigitalstructure._util.param.get(param, 'uriContext').value;
 		var active = mydigitalstructure._util.param.get(param, 'active', {default: true}).value;
 
 		if (element == undefined)
 		{
+			if (uri == undefined)
+			{
+				uri = mydigitalstructure._scope.app.options.startURI
+			}
+
 			if (selector == undefined)
 			{
 				if (href != undefined)
@@ -4045,13 +4051,18 @@ mydigitalstructure._util.menu =
 				}
 				else if (scope != undefined)
 				{
-					selector = '.myds-menu [href="' + mydigitalstructure._scope.app.options.startURI + 
-													'/#' + scope + '"]' 
+					selector = '.myds-menu [href="' + uri + '/#' + scope + '"]' 
 				}
 				else if (uriContext != undefined)
 				{
-					selector = '.myds-menu [href="' + mydigitalstructure._scope.app.options.startURI + 
-													'/' + uriContext + '"]' 
+					selector = '.myds-menu [href="' + uri + '/' + uriContext + '"]' 
+
+					var _uriContext = _.split(uriContext, '-');
+
+					if (_uriContext.length > 2)
+					{
+						selector = selector + ', .myds-menu [href="' + uri + '/' + _uriContext[0] + '-' + _uriContext[1] + 's"]'
+					}
 				}
 			}
 
