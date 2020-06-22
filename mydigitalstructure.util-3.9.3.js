@@ -4881,7 +4881,7 @@ mydigitalstructure._util.factory.core = function (param)
 					type = 'danger'
 				}
 
-				if (type == 'error') {type = 'danager'}
+				if (type == 'error') {type = 'danger'}
 
 				if (type == undefined && mydigitalstructure._scope.app.options.styles != undefined)
 				{

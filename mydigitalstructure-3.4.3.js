@@ -13,7 +13,7 @@ var mydigitalstructure =
 	{
 		app: {options: {}, build:{}},
 		sentToView: [],
-		viewQueue: {content: {}, template: {}, roles: {}},
+		viewQueue: {content: {}, template: {}, roles: {}, data: {}},
 		session: {},
 		data: {defaultQueue: 'base', loaded: false}
 	},
@@ -2241,6 +2241,10 @@ mydigitalstructure._util =
 										if (useTemplate && type == 'content')
 										{
 											var data = $.extend(true, {}, content);
+
+											if (mydigitalstructure._scope.viewQueue['data'] == undefined) {mydigitalstructure._scope.viewQueue['data'] = {}}
+											mydigitalstructure._scope.viewQueue['data'][queue] = data;
+
 											content = mydigitalstructure._util.view.queue.get({type: 'template', queue: param.queue});
 											var keyData;
 
@@ -2333,7 +2337,7 @@ mydigitalstructure._util =
 										mydigitalstructure._util.view.queue.reset(param)
 										mydigitalstructure._util.view.queue.add(template, {queue: param.queue, type: 'template'});
 										mydigitalstructure._util.view.queue.add({queue: param.queue, useTemplate: true}, data);
-										mydigitalstructure._util.view.queue.render(selector, {queue: param.queue});
+										mydigitalstructure._util.view.queue.render(selector, {queue: param.queue}, data);
 										mydigitalstructure._util.view.queue.focus(selector, {queue: param.queue});
 									}
 								},
@@ -2379,6 +2383,8 @@ mydigitalstructure._util =
 									{
 										param = arguments[0];
 										selector = (arguments.length>1?arguments[1]:param.selector);
+										data = (arguments.length>2?arguments[2]:param.data);
+										template = (arguments.length>3?arguments[3]:param.template);
 									}
 
 									if (!_.isUndefined(template))
@@ -2394,10 +2400,16 @@ mydigitalstructure._util =
 										var disableSelector = mydigitalstructure._util.param.get(param, 'disable').value;
 										var enableSelector = mydigitalstructure._util.param.get(param, 'enabler').value;
 										var includeDates = mydigitalstructure._util.param.get(param, 'includeDates', {"default": true}).value;
+										var setInputs = mydigitalstructure._util.param.get(param, 'setInputs', {"default": true}).value;
 
 										if (queue == undefined)
 										{
 											queue = mydigitalstructure._util.param.get(param, 'controller', {"default": mydigitalstructure._scope.data.defaultQueue}).value;
+										}
+
+										if (data == undefined)
+										{
+											data = mydigitalstructure._scope.viewQueue['data'][queue];
 										}
 											
 										if (mydigitalstructure._util.view.queue._util.userHasAccess(param))
@@ -2444,6 +2456,20 @@ mydigitalstructure._util =
 												{
 													mydigitalstructure._util.view.datepicker({selector: '.myds-date', format: 'D MMM YYYY'})
 													mydigitalstructure._util.view.datepicker({selector: '.myds-date-time', format: 'D MMM YYYY LT'})
+												}
+
+												if (setInputs && _.isObject(data))
+												{
+													_.each($(selector + ' input.myds-check[data-context][data-id]'), function (element)
+													{
+														var context = $(element).data('context');
+														var value = data[context];
+
+														if (value != undefined)
+														{
+															$(selector + ' input.myds-check[data-context="' + context + '"][data-id="' + value + '"]').attr('checked', 'checked')
+														}
+													});
 												}
 
 												mydigitalstructure._util.view.queue.reset(param);

@@ -675,14 +675,19 @@ if (_.isObject(XLSX))
 						mydigitalstructure._util.export.sheet.data.base64 = XLSX.write(workbook, {type: 'base64', cellStyles: true, bookImages: true});
 						mydigitalstructure._util.export.sheet.store.save(param, mydigitalstructure._util.export.sheet.data.base64)
 					}
+					else
+					{
+						param = mydigitalstructure._util.param.set(param, 'data', mydigitalstructure._util.export.sheet.data)
+						mydigitalstructure._util.onComplete(param);
+					}
 					
 					if (download)
 					{
 						XLSX.writeFile(workbook, filename, {cellStyles: true, bookImages: true}
 					);}
 					
-					param = mydigitalstructure._util.param.set(param, 'data', mydigitalstructure._util.export.sheet.data)
-					mydigitalstructure._util.onComplete(param);
+					//If email: true then process the automation task by name - once moved to myds util
+					
 				}
 
 				req.send();
