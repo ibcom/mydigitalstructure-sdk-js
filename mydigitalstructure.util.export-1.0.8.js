@@ -546,6 +546,8 @@ if (_.isObject(XLSX))
 			var download = mydigitalstructure._util.param.get(param, 'download', {default: false}).value;
 			var store = mydigitalstructure._util.param.get(param, 'store', {default: false}).value;
 
+			mydigitalstructure._util.param.set(param, 'exportData', exportData);
+
 			var url = mydigitalstructure._util.param.get(param, 'url').value; 
 			if (url == undefined)
 			{

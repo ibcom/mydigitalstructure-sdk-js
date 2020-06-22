@@ -327,7 +327,8 @@ mydigitalstructure.create = function (param)
 		type: 'POST',
 		url: '/rpc/' + endpoint + '/?method=' + (param.object).toUpperCase() + '_MANAGE',
 		manageErrors: param.manageErrors,
-		managed: param.managed
+		managed: param.managed,
+		notify: param.notify
 	});
 }
 
@@ -369,7 +370,8 @@ mydigitalstructure.invoke = function (param)
 			type: 'POST',
 			url: '/rpc/' + endpoint + '/?method=' + (param.method).toUpperCase(),
 			manageErrors: param.manageErrors,
-			managed: param.managed
+			managed: param.managed,
+			notify: param.notify
 		});
 	}
 }
@@ -538,6 +540,7 @@ mydigitalstructure.retrieve = function (param)
 
 		param.type = 'POST';
 		param.url = '/rpc/' + param.endpoint + '/?method=' + (param.object).toUpperCase() + '_SEARCH';
+		param.notify = param.notify;
 
 		if (_.has(param.data, '_controller'))
 		{
@@ -578,7 +581,8 @@ mydigitalstructure.delete = function (param)
 		type: 'POST',
 		url: '/rpc/' + param.endpoint + '/?method=' + (param.object).toUpperCase() + '_MANAGE',
 		manageErrors: param.manageErrors,
-		managed: param.managed
+		managed: param.managed,
+		notify: param.notify
 	});
 }
 
