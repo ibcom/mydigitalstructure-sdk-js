@@ -1758,6 +1758,25 @@ if (typeof $.fn.dropdown == 'function')
 	.on('show.bs.dropdown', '.myds-dropdown', mydigitalstructure._util.view.handlers['myds-dropdown']);
 }
 
+if (typeof $.fn.toast == 'function')
+{
+	mydigitalstructure._util.view.handlers['myds-toast-show'] = function (event)
+	{
+		$('#myds-toast').css('z-index', '1030')
+	}
+
+	$(document).off('show.bs.toast', '#myds-toast')
+	.on('show.bs.toast', '#myds-toast', mydigitalstructure._util.view.handlers['myds-toast-show']);
+
+	mydigitalstructure._util.view.handlers['myds-toast-hidden'] = function (event)
+	{
+		$('#myds-toast').css('z-index', '0')
+	}
+
+	$(document).off('hidden.bs.toast', '#myds-toast')
+	.on('hidden.bs.toast', '#myds-toast', mydigitalstructure._util.view.handlers['myds-toast-hidden']);
+}
+
 mydigitalstructure._util.view.handlers['myds-more'] = function (event)
 {
 	$(this).addClass('disabled');
