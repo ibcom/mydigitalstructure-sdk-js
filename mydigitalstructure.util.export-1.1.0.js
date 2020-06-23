@@ -769,16 +769,27 @@ if (_.isObject(XLSX))
 
 				if (response.status == 'OK')
 				{
+					var attachment;
+
+					if (_.has(response, 'data.rows'))
+					{
+						attachment = _.first(response.data.rows);
+					}
+					else
+					{
+						attachment = response;
+					}
+
 					mydigitalstructure._util.export.sheet.data.attachment =
 					{
-						id: response.attachment,
-						link: response.attachmentlink,
-						href: '/download/' + response.attachmentlink
+						id: attachment.attachment,
+						link: attachment.attachmentlink,
+						href: '/download/' + attachment.attachmentlink
 					}
 				}
 
 				app.invoke('util-view-spinner-remove', {controller: 'util-export-create-sheet'});
-				
+
 				param = mydigitalstructure._util.param.set(param, 'data', mydigitalstructure._util.export.sheet.data)
 				mydigitalstructure._util.onComplete(param);
 			}
