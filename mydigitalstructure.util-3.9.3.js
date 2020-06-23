@@ -133,6 +133,14 @@ mydigitalstructure._util.view.handlers['myds-click'] = function (event)
 
 	if (!disabled)
 	{
+		var spinner = element.attr('data-spinner');
+
+		if (spinner != undefined)
+		{
+			if (spinner == '') {spinner = 'html'}
+			mydigitalstructure._util.view.spinner.add({element: element, mode: spinner, controller: controller});
+		}
+
 		if (controller != undefined)
 		{
 			var param = {}
@@ -3162,8 +3170,6 @@ mydigitalstructure._util.whoami = function (param)
 	return whoamiData
 }
 
-
-
 mydigitalstructure._util.controller.add(
 [
 	{
@@ -4145,6 +4151,164 @@ mydigitalstructure._util.controller.add(
 		return mydigitalstructure._util.uuid(param);
 	}
 });
+
+mydigitalstructure._util.view.spinner = 
+{
+	data: {html: {}, selector: {}, element: {}},
+
+	add: function (param)
+	{
+		var element = mydigitalstructure._util.param.get(param, 'element').value;
+		var selector = mydigitalstructure._util.param.get(param, 'selector').value;
+		var controller = mydigitalstructure._util.param.get(param, 'controller').value;
+		var uuid = mydigitalstructure._util.uuid();
+		var mode = mydigitalstructure._util.param.get(param, 'mode', {default: 'html'}).value;
+		var disable = mydigitalstructure._util.param.get(param, 'disable', {default: true}).value;
+		var text = mydigitalstructure._util.param.get(param, 'text').value;
+
+		if (element == undefined)
+		{
+			if (selector == undefined && controller != undefined)
+			{
+				element = $('[data-controller="' + controller + '"]')
+			}
+			else
+			{
+				element = $(selector)
+			}
+		}
+
+		if (element != undefined)
+		{
+			var html = '<span class="spinner-border spinner-border-sm myds-spinner" role="status" aria-hidden="true"></span>';
+
+			if (text == undefined)
+			{
+				html = html + '<span class="sr-only">Loading...</span>'
+			}
+			else
+			{
+				html = html + '<span class="myds-spinner">' + text + '</span>'
+			}
+
+			if (controller != undefined) {uuid = controller}
+
+			if (mode == 'html')
+			{
+				mydigitalstructure._util.view.spinner.data.html[uuid] = $(element).html();
+			}
+
+			mydigitalstructure._util.view.spinner.data.selector[uuid] = selector;
+			mydigitalstructure._util.view.spinner.data.element[uuid] = element;
+
+			$(element)[mode](html)
+
+			if (disable)
+			{
+				$(element).addClass('disabled');
+			}
+
+			$(element).data('myds-spinner-uuid', uuid)
+		}
+	},
+
+	removeAll: function (param)
+	{
+		var elements = $('.myds-spinner');
+
+		_.each(elements, function (element)
+		{
+			mydigitalstructure._util.view.spinner({element: element});
+		});
+	},
+
+	remove: function (param)
+	{
+		var element = mydigitalstructure._util.param.get(param, 'element').value;
+		var selector = mydigitalstructure._util.param.get(param, 'selector').value;
+		var controller = mydigitalstructure._util.param.get(param, 'controller').value;
+		var enable = mydigitalstructure._util.param.get(param, 'enable', {default: true}).value;
+		
+		if (element == undefined)
+		{
+			if (controller != undefined)
+			{
+				element = mydigitalstructure._util.view.spinner.data.element[controller];
+			}
+
+			if (element == undefined)
+			{
+				if (selector == undefined && controller != undefined)
+				{
+					selector = mydigitalstructure._util.view.spinner.data.selector[controller];
+
+					if (selector != undefined)
+					{
+						element = $(selector);
+					}
+					else
+					{
+						element = $('[data-controller="' + controller + '"]');
+					}
+				}
+				else if (selector != undefined)
+				{
+					element = $(selector)
+				}
+			}
+		}
+
+		if (element != undefined)
+		{
+			var uuid = $(element).data('myds-spinner-uuid');
+
+			if (uuid != undefined)
+			{
+				if (controller != undefined) {uuid = controller}
+				var html = mydigitalstructure._util.view.spinner.data.html[uuid];
+
+				if (html != undefined)
+				{
+					$(element)['html'](html);
+				}
+				else
+				{
+					$(element).children('.myds-spinner').remove();
+				}
+
+				if (enable)
+				{
+					$(element).removeClass('disabled');
+				}
+			}
+		}
+	}
+}
+
+mydigitalstructure._util.controller.add(
+[
+	{
+		name: 'util-view-spinner-add',
+		code: function (param)
+		{
+			mydigitalstructure._util.view.spinner.add(param);
+		}
+	},
+	{
+		name: 'util-view-spinner-remove',
+		code: function (param)
+		{
+			mydigitalstructure._util.view.spinner.remove(param);
+		}
+	},
+	{
+		name: 'util-view-spinner-remove-all',
+		code: function (param)
+		{
+			mydigitalstructure._util.view.spinner.removeAll(param);
+		}
+	}
+]);
 
 mydigitalstructure._util.validate =
 {
