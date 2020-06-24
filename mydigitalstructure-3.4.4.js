@@ -523,7 +523,7 @@ mydigitalstructure.retrieve = function (param)
 			{
 				_.each(param.data.criteria.filters, function (filter)
 				{
-					if (filter.value1 == undefined && filter.value != undefined)
+					if (filter.value != undefined)
 					{
 						filter.value1 = filter.value;
 						delete filter.value;
