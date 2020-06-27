@@ -726,6 +726,8 @@ mydigitalstructure._util.factory.import = function (param)
 						template: 'No file to upload!'
 					}
 				);
+
+				app.invoke('util-view-spinner-remove', {controller: 'util-import-upload-attach'});
 			
 				mydigitalstructure._util.sendToView(
 				{
@@ -1072,7 +1074,11 @@ mydigitalstructure._util.factory.import = function (param)
 			{
 				var field = saveToCloudStorage.objectField;
 				if (field == undefined) {field = 'id'}
-				importObject[saveToCloudStorage.objectName][field] = response.id
+
+				if (_.isObject(importObject[saveToCloudStorage.objectName]))
+				{
+					importObject[saveToCloudStorage.objectName][field] = response.id
+				}
 			}
 					
 			app.set(

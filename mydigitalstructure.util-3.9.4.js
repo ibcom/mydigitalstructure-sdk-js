@@ -1487,7 +1487,10 @@ if (typeof $.fn.collapse == 'function')
 				if (app.data[controller] == undefined) {app.data[controller] = {}};
 				app.data[controller] = _.extend(app.data[controller], {status: 'hidden'});
 
-				mydigitalstructure._util.controller.invoke(controller, {status: 'hidden'});
+				if (mydigitalstructure._util.controller.exists(controller))
+				{
+					mydigitalstructure._util.controller.invoke(controller, {status: 'hidden'});
+				}
 			}
 		}	
     }
@@ -1554,11 +1557,14 @@ if (typeof $.fn.collapse == 'function')
 
 		if (controller != undefined)
 		{				
-			mydigitalstructure._util.controller.invoke(controller,
+			if (mydigitalstructure._util.controller.exists(controller))
 			{
-				status: 'shown',
-				dataContext: $(event.target).data()
-			});
+				mydigitalstructure._util.controller.invoke(controller,
+				{
+					status: 'shown',
+					dataContext: $(event.target).data()
+				});
+			}
 		}
     }
 
@@ -1588,11 +1594,14 @@ if (typeof $.fn.collapse == 'function')
 					app.data[controller].viewStatus = 'show';
 					app.data[controller].dataContext = $(event.target).data();
 
-					mydigitalstructure._util.controller.invoke(controller,
+					if (mydigitalstructure._util.controller.exists(controller))
 					{
-						status: 'show',
-						dataContext: $(event.target).data()
-					});
+						mydigitalstructure._util.controller.invoke(controller,
+						{
+							status: 'show',
+							dataContext: $(event.target).data()
+						});
+					}
 				}
 			}	
 		}
@@ -1633,11 +1642,14 @@ if (typeof $.fn.popover == 'function')
 			{
 				if (app.data[controller] == undefined) {app.data[controller] = {}};
 
-				mydigitalstructure._util.controller.invoke(controller,
+				if (mydigitalstructure._util.controller.exists(controller))
 				{
-					status: 'show',
-					dataContext: $(event.target).data()
-				});
+					mydigitalstructure._util.controller.invoke(controller,
+					{
+						status: 'show',
+						dataContext: $(event.target).data()
+					});
+				}
 			}
 		}	
 	}
@@ -2084,7 +2096,7 @@ mydigitalstructure._util.controller =
 						{
 							namespace[controller.alias] = function(controllerParam, controllerData)
 							{
-								mydigitalstructure._util.controller.invoke(controller.name, controllerParam, controllerData)
+								return mydigitalstructure._util.controller.invoke(controller.name, controllerParam, controllerData)
 							}
 						}
 					}
@@ -3066,7 +3078,8 @@ mydigitalstructure._util.whoami = function (param)
 		buildingMe: 
 		{
 			journal: mydigitalstructure._util.controller.data.build,
-			about: mydigitalstructure._scope.app.build
+			about: mydigitalstructure._scope.app.build,
+			options: mydigitalstructure._scope.app.options
 		},
 		myForm: {}
 	}
@@ -5737,7 +5750,10 @@ mydigitalstructure._util.factory.core = function (param)
 					}
 				}
 
-				_.each(filters, function (filter) {filter.value1 = filter.value})
+				_.each(filters, function (filter)
+				{
+					if (filter.value1 == undefined) {filter.value1 = filter.value}
+				});
 			}
 
 			var element;
