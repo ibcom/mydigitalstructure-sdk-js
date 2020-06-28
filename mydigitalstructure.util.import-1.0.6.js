@@ -1023,6 +1023,11 @@ mydigitalstructure._util.factory.import = function (param)
 				{
 					if (_.isObject(value) && importObject != undefined)
 					{
+						if (importObject[value.object] == undefined)
+						{
+							importObject[value.object] = {}
+						}
+
 						saveToCloudStorage.data[key] = importObject[value.object][value.field]
 					}
 				});
@@ -1074,6 +1079,11 @@ mydigitalstructure._util.factory.import = function (param)
 			{
 				var field = saveToCloudStorage.objectField;
 				if (field == undefined) {field = 'id'}
+
+				if (importObject[saveToCloudStorage.objectName] == undefined)
+				{
+					importObject[saveToCloudStorage.objectName] = {}
+				}
 
 				if (_.isObject(importObject[saveToCloudStorage.objectName]))
 				{
