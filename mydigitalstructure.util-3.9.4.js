@@ -1391,12 +1391,15 @@ if (typeof $.fn.modal == 'function')
 
 			if (controller != undefined)
 			{	
-				mydigitalstructure._util.controller.invoke(controller, param);
+				if (mydigitalstructure._util.controller.exists(controller))
+				{
+					mydigitalstructure._util.controller.invoke(controller, param);
+				}
 			}
 		}	
     }
 
-    $(document).off('shown.bs.modal')
+    $(document).off('shown.bs.modal', '.myds-modal')
 	.on('shown.bs.modal', mydigitalstructure._util.view.handlers['myds-modal-shown']);
 
 	mydigitalstructure._util.view.handlers['myds-modal-show'] = function (event)
@@ -1445,7 +1448,10 @@ if (typeof $.fn.modal == 'function')
 			if (app.data[controller] == undefined) {app.data[controller] = {}};
 			app.data[controller] = _.extend(app.data[controller], param);
 
-			mydigitalstructure._util.controller.invoke(controller, param);
+			if (mydigitalstructure._util.controller.exists(controller))
+			{
+				mydigitalstructure._util.controller.invoke(controller, param);
+			}
 		}
 
 		if (typeof $.fn.popover == 'function')
@@ -1454,7 +1460,7 @@ if (typeof $.fn.modal == 'function')
 		}	
 	}
 
-	$(document).off('show.bs.modal')
+	$(document).off('show.bs.modal', '.myds-modal')
     .on('show.bs.modal', mydigitalstructure._util.view.handlers['myds-modal-show']);
 }
 
@@ -6870,6 +6876,28 @@ mydigitalstructure._util.factory.core = function (param)
 					}
 				}	
 			}
+		}
+	});
+
+	mydigitalstructure._util.controller.add(
+	{
+		name: 'util-view-modal',
+		code: function (param)
+		{
+			var html = mydigitalstructure._util.param.get(param, 'html').value;
+
+			if ($('#myds-modal').length == 0)
+			{
+				$('#wrapper').append('<div id="myds-modal"></div>');
+			}
+
+			var htmlModal = '<div class="modal" id="util-view-modal-view">' +
+							  	html +
+							   '</div>' +
+							'</div>';
+
+			$('#myds-modal').html(htmlModal)
+			$('#util-view-modal-view').modal()
 		}
 	});
 
