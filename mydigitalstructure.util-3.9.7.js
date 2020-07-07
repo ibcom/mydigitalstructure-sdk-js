@@ -4229,7 +4229,7 @@ mydigitalstructure._util.view.spinner =
 			if (mode == 'prepend') {margin = 'mr-1'}
 			if (mode == 'append') {margin = 'ml-1'}
 
-			var html = '<span class="spinner-border spinner-border-sm myds-spinner" role="status" aria-hidden="true"></span>';
+			var html = '<span class="spinner-border spinner-border-sm myds-spinner ' + margin + '" role="status" aria-hidden="true"></span>';
 
 			if (text == undefined)
 			{
