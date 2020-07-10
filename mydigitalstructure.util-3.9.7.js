@@ -5083,6 +5083,7 @@ mydigitalstructure._util.factory.core = function (param)
 				var animation;
 				var dismiss;
 				var small;
+				var animationClass;
 
 				if (typeof param == 'object')
 				{
@@ -5095,6 +5096,7 @@ mydigitalstructure._util.factory.core = function (param)
 					small = mydigitalstructure._util.param.get(param, 'small').value;
 					dismiss = mydigitalstructure._util.param.get(param, 'dismiss').value;
 					type = mydigitalstructure._util.param.get(param, 'class').value;
+					animationClass = mydigitalstructure._util.param.get(param, 'animationClass', {default: 'animated slideInDown'}).value;
 
 					if (type == undefined)
 					{
@@ -5248,7 +5250,7 @@ mydigitalstructure._util.factory.core = function (param)
 					}
 
 					var html	= 
-						'<div class="toast ml-auto" role="alert" style="min-width:260px;">';
+						'<div class="toast ml-auto ' + animationClass + '" role="alert" style="min-width:260px;">';
 
 					if (header != undefined || showDismiss == true)
 					{
