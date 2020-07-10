@@ -5096,7 +5096,7 @@ mydigitalstructure._util.factory.core = function (param)
 					small = mydigitalstructure._util.param.get(param, 'small').value;
 					dismiss = mydigitalstructure._util.param.get(param, 'dismiss').value;
 					type = mydigitalstructure._util.param.get(param, 'class').value;
-					animationClass = mydigitalstructure._util.param.get(param, 'animationClass', {default: 'animated slideInDown'}).value;
+					animationClass = mydigitalstructure._util.param.get(param, 'animationClass').value;
 
 					if (type == undefined)
 					{
@@ -5108,6 +5108,11 @@ mydigitalstructure._util.factory.core = function (param)
 				else
 				{
 					message = param;
+				}
+
+				if (animationClass == undefined)
+				{
+					animationClass = 'animated slideInDown'
 				}
 
 				if (type == undefined && _.includes(_.toLower(message), 'delete'))
