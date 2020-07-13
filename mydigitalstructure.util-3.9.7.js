@@ -5030,7 +5030,7 @@ mydigitalstructure._util.factory.core = function (param)
 				{
 					if (mydigitalstructure._scope.app.viewNavigation != undefined)
 					{
-						mydigitalstructure._util.controller.invoke('app-navigation', param);
+						mydigitalstructure._util.controller.invoke(mydigitalstructure._scope.app.viewNavigation, param);
 					}
 				}
 
@@ -6965,35 +6965,22 @@ mydigitalstructure._util.factory.core = function (param)
 		}
 	}
 
-	if (_.isFunction(mydigitalstructure._util.factory.export))
+	_.each(
+	[
+		'export',
+		'import',
+		'local',
+		'queryLanguage',
+		'dashboard',
+		'security',
+		'search'
+	], function (namespace)
 	{
-		mydigitalstructure._util.factory.export(param)
-	}
-
-	if (_.isFunction(mydigitalstructure._util.factory.import))
-	{
-		mydigitalstructure._util.factory.import(param)
-	}	
-
-	if (_.isFunction(mydigitalstructure._util.factory.local))
-	{
-		mydigitalstructure._util.factory.local(param)
-	}
-
-	if (_.isFunction(mydigitalstructure._util.factory.queryLanguage))
-	{
-		mydigitalstructure._util.factory.queryLanguage(param)
-	}
-
-	if (_.isFunction(mydigitalstructure._util.factory.dashboard))
-	{
-		mydigitalstructure._util.factory.dashboard(param)
-	}
-
-	if (_.isFunction(mydigitalstructure._util.factory.security))
-	{
-		mydigitalstructure._util.factory.security(param)
-	}	
+		if (_.isFunction(mydigitalstructure._util.factory[namespace]))
+		{
+			mydigitalstructure._util.factory[namespace](param)
+		}
+	});
 }
 
 

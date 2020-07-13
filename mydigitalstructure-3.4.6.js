@@ -739,9 +739,9 @@ mydigitalstructure._util =
 						{
 							mydigitalstructure._scope.app.viewUpdate(param)
 						}
-						else if (_.isFunction(app.controller[mydigitalstructure._scope.app.viewUpdate]))
+						else if (mydigitalstructure._scope.app.viewUpdate != undefined)
 						{
-							app.controller[mydigitalstructure._scope.app.viewUpdate](param);
+							mydigitalstructure._util.controller.invoke(mydigitalstructure._scope.app.viewUpdate, param);
 						}
 					};
 				},
