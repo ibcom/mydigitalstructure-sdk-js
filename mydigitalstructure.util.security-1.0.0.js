@@ -165,22 +165,31 @@ mydigitalstructure._util.security =
 
 					process: function (param, response)
 					{
+						//sharedBy = {contactbusiness:, contactperson:}
+
 						var shareWithUser = mydigitalstructure._util.param.get(param, 'shareWithUser').value;
+						var sharedBy = mydigitalstructure._util.param.get(param, 'sharedBy').value;
+
 						var sharedByContact = mydigitalstructure._util.param.get(param, 'sharedByContact').value;
 						var sharedByType = mydigitalstructure._util.param.get(param, 'sharedByType', {default: 'contact_person'}).value;
 
 						if (shareWithUser != undefined && mydigitalstructure._scope.user != undefined)
 						{
+							if (sharedByContact == undefined)
+							{
+								sharedByContact = {contactbusiness: mydigitalstructure._scope.user.contactbusiness}
+								if (sharedByType == 'contact_person')
+								{
+									sharedByContact.contactperson = mydigitalstructure._scope.user.contactperson
+								} 
+							}
+
 							var data = 
 							{
 								relationshipmanager: shareWithUser['user.contactperson.id'],
-								contactbusiness: mydigitalstructure._scope.user.contactbusiness,
+								contactbusiness: sharedByContact.contactbusiness,
+								contactperson: sharedByContact.contactperson,
 								notes: 'Shared with ' + shareWithUser['username'] + ' by ' + mydigitalstructure._scope.user.userlogonname
-							}
-
-							if (sharedByType == 'contact_person')
-							{
-								data.contactperson = mydigitalstructure._scope.user.contactperson
 							}
 
 							mydigitalstructure.save(
