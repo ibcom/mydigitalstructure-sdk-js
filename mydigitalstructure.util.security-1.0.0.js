@@ -72,34 +72,42 @@ mydigitalstructure._util.security =
 						});
 					}
 
-					mydigitalstructure.retrieve(
+					if (container)
 					{
-						object: 'contact_secondary_relationship',
-						data:
+						//table
+					}
+					else
+					{
+						mydigitalstructure.retrieve(
 						{
-							criteria:
+							object: 'contact_secondary_relationship',
+							data:
 							{
-								fields:
-								[
-									{name: 'contactbusiness'},
-									{name: 'contactbusinesstext'},
-									{name: 'contactperson'},
-									{name: 'contactpersontext'},
-									{name: 'notes'},
-									{name: 'relationshipmanager'},
-									{name: 'relationshipmanagertext'},
-									{name: 'guid'}
-								],
-								filters: filters,
-								options: {rows: 1000}
-							}
-						},
-						callback: mydigitalstructure._util.security.share.link.find
-					});
+								criteria:
+								{
+									fields:
+									[
+										{name: 'contactbusiness'},
+										{name: 'contactbusinesstext'},
+										{name: 'contactperson'},
+										{name: 'contactpersontext'},
+										{name: 'notes'},
+										{name: 'relationshipmanager'},
+										{name: 'relationshipmanagertext'},
+										{name: 'guid'}
+									],
+									filters: filters,
+									options: {rows: 1000}
+								}
+							},
+							callback: mydigitalstructure._util.security.share.link.find
+						});
+					}
 				}
 				else
 				{
-					console.log(response.data.rows)
+					param = mydigitalstructure._util.param.set(param, 'data', response.data.rows);
+					mydigitalstructure._util.onComplete(param);
 				}
 			},
 
