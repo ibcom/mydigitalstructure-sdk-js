@@ -658,6 +658,8 @@ mydigitalstructure._util.view.handlers['myds-text'] = function (event)
 	var clean = $(this).data('clean');
 	var disabled = $(this).hasClass('disabled');
 
+	if (enter == undefined) { enter = 'stop' }
+
 	var returnValue;
 
 	if (!disabled)
@@ -722,7 +724,7 @@ mydigitalstructure._util.view.handlers['myds-text-enter'] = function (event)
 	var disabled = $(this).hasClass('disabled');
 
 	if (enter == undefined) { enter = 'stop' }
-
+		
 	if (!disabled)
 	{
 		if (event.which == '13' && enter == 'stop')
