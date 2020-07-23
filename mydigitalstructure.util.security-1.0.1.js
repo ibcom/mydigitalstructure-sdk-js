@@ -40,38 +40,28 @@ mydigitalstructure._util.security =
 				var container = mydigitalstructure._util.param.get(param, 'container').value;
 				var onComplete = mydigitalstructure._util.param.get(param, 'onComplete').value;
 
-				var sharedByContact = mydigitalstructure._util.param.get(param, 'sharedByContact').value;
+				var sharedByContact = mydigitalstructure._util.param.get(param, 'sharedByContact', {default: {}}).value;
 				var sharedWithContact = mydigitalstructure._util.param.get(param, 'sharedWithContact', {default: {}}).value;
-
-				if (sharedWithContact.contactbusiness == undefined)
-				{
-					sharedWithContact.contactbusiness = mydigitalstructure._scope.user.contactbusiness
-				}
-
-				if (sharedWithContact.contactperson == undefined)
-				{
-					sharedWithContact.contactperson = mydigitalstructure._scope.user.contactperson
-				}
-
+				
 				var filters = [];
 				
-				if (shareType == 'shared_by_me')
+				if (shareType == 'shared_by_me' && sharedByContact.contactperson != undefined)
 				{
 					filters.push(
 					{
-						name: 'contactperson',
+						field: 'contactperson',
 						comparison: 'EQUAL_TO',
-						value1: mydigitalstructure._scope.user.contactperson
+						value: sharedByContact.contactperson
 					});
 				}
 
-				if (shareType == 'shared_by_my_business')
+				if (shareType == 'shared_by_my_business' && sharedByContact.contactbusiness != undefined)
 				{
 					filters.push(
 					{
-						name: 'contactbusiness',
+						field: 'contactbusiness',
 						comparison: 'EQUAL_TO',
-						value1: mydigitalstructure._scope.user.contactbusiness
+						value: sharedByContact.contactbusiness
 					});
 				}
 
@@ -79,36 +69,77 @@ mydigitalstructure._util.security =
 				{
 					filters.push(
 					{
-						name: 'relationshipmanager',
+						field: 'relationshipmanager',
 						comparison: 'EQUAL_TO',
-						value1: sharedWithContact.contactperson
+						value: sharedWithContact.contactperson
 					});
 				}
 
 				if (container != undefined)
 				{
-					var noDataText = 'This user has no shares assigned to them.';
+					var columns = [];
+
+					if (shareType == 'shared_by_my_business' || shareType == 'shared_by_me')
+					{
+						columns = _.concat(columns,
+						[
+							{
+								caption: 'Data shared with',
+								name: 'sharedwithtext',
+								sortBy: true,
+								defaultSort: true,
+								class: 'col-sm-12 text-left',
+								data: 'id="util-security-sharing-{{id}}"'
+							}
+						]);
+					}
+					else
+					{
+						columns = _.concat(columns,
+						[
+							{
+								caption: 'Shared by',
+								field: 'contactbusinesstext',
+								sortBy: true,
+								defaultSort: true,
+								class: 'col-sm-12 text-left',
+								data: 'id="util-security-sharing-{{id}}"'
+							}
+						]);
+					}
+
+					columns = _.concat(columns,
+					[
+						{
+							fields:
+							[
+								'guid', 'notes', 'relationshipmanagertext'
+							]
+						}
+					]);
+
+					var noDataText = 'Not shared.';
 
 					mydigitalstructure._util.controller.invoke('util-view-table',
 					{
 						object: 'contact_secondary_relationship',
 						container: container,
-						context: 'util-setup-user-summary-shares',
+						context: 'util-security-sharing',
 						filters: filters,
 						onComplete: onComplete,
 						options:
 						{
 							noDataText: noDataText,
-							_containerController: 'user-edit-shares-edit',
 							rows: 20,
 							orientation: 'vertical',
 							progressive: true,
 							class: 'table-condensed',
 							deleteConfirm:
 							{
-								text: 'Are you sure you want to remove this share from this user?',
+								text: 'Are you sure you want to remove this share?',
 								position: 'left'
-							}
+							},
+							header: false
 						},
 						format:
 						{
@@ -120,37 +151,31 @@ mydigitalstructure._util.security =
 							row:
 							{
 								class: 'd-flex',
-								data: 'data-id="{{id}}"'
-							},
-							columns:
-							[
+								data: 'data-id="{{id}}"',
+								method: function (row)
 								{
-									caption: 'Name',
-									param: 'contactpersontext',
-									sortBy: true,
-									defaultSort: true,
-									class: 'col-sm-5 text-left',
-									data: 'id="util-setup-user-summary-role-edit-{{id}}"'
-								},
-								{
-									caption: 'Business',
-									param: 'contactbusinesstext',
-									sortBy: true,
-									class: 'col-sm-5 text-center text-muted'
-								},
-								{
-									html: '<button class="btn btn-danger btn-outline btn-sm myds-delete"' +
-				               			' id="util-setup-user-summary-share-delete-{{id}}" data-id="{{id}}"><i class="fa fa-times"></i></button>',
-									caption: '&nbsp;',
-									class: 'col-sm-2 text-right'
-								},
-								{
-									paramList:
-									[
-										'guid', 'notes'
-									]
+									row.sharedbytext = '';
+									
+									if (row.contactbusinesstext != '' && row.contactbusinesstext != undefined)
+									{
+										row.sharedbytext = '<div>' + row.contactbusinesstext + '</div>';
+										if (row.contactpersontext != '' && row.contactpersontext != undefined)
+										{
+											row.sharedbytext = row.sharedbytext + 
+												'<div class="text-muted">' + row.contactpersontext + '</div>';
+										}
+									}
+									else if (row.contactpersontext != '' && row.contactpersontext != undefined)
+									{
+										row.sharedbytext = '<div>' + row.contactpersontext + '</div>';
+									}
+
+									row.sharedwithtext = _.last(_.split(row['relationshipmanagertext'], ', ')) +
+															' ' + _.first(_.split(row['relationshipmanagertext'], ', '))
 								}
-							]
+							},
+
+							columns: columns
 						}
 					});
 				}
@@ -292,8 +317,6 @@ mydigitalstructure._util.security =
 
 					finalise: function (param, response)
 					{
-						//Complete request if all OK.
-						//do onComplete\
 						mydigitalstructure._util.onComplete(param);
 					}
 				},
@@ -322,15 +345,15 @@ mydigitalstructure._util.security =
 							{
 								object: 'contact_secondary_relationship',
 								data: data,
-								callback: mydigitalstructure._util.security.share.link._util.remove.finalise
+								callback: mydigitalstructure._util.security.share.link._util.remove.finalise,
+								callbackParam: param
 							});
 						}
 					},
 
 					finalise: function (param, response)
 					{
-						//do onComplete
-						//Add action if actiontype passed
+						mydigitalstructure._util.onComplete(param);
 					}
 				},
 
@@ -871,6 +894,44 @@ mydigitalstructure._util.factory.security = function (param)
 			}
 		}
 	]);
+
+	mydigitalstructure._util.controller.add(
+	{
+		name:	'util-security-sharing-show',
+		code: function (param)
+		{
+			if (param.status == 'shown')
+			{
+				var data = app._util.data.get(
+				{
+					controller: 'util-security-sharing-show',
+					context: 'dataContext',
+					valueDefault: {}
+				});
+
+				var sharedByContact = {}
+				var shareType = 'shared_by_my_business';
+
+				if (data.object == 12)
+				{
+					sharedByContact.contactbusiness = data.objectcontext
+				}
+
+				if (data.object == 32)
+				{
+					sharedByContact.contactperson = data.objectcontext;
+					shareType = 'shared_by_me';
+				}
+
+				mydigitalstructure.security.share.find(
+				{
+					container: data.container,
+					sharedByContact: sharedByContact,
+					shareType: shareType
+				});
+			}
+		}
+	});
 }
 
 

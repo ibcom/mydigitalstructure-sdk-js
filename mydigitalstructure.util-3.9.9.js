@@ -1571,15 +1571,12 @@ if (typeof $.fn.collapse == 'function')
 		if (controller == undefined) {controller = id};
 
 		if (controller != undefined)
-		{				
-			if (mydigitalstructure._util.controller.exists(controller))
+		{					
+			mydigitalstructure._util.controller.invoke(controller,
 			{
-				mydigitalstructure._util.controller.invoke(controller,
-				{
-					status: 'shown',
-					dataContext: $(event.target).data()
-				});
-			}
+				status: 'shown',
+				dataContext: $(event.target).data()
+			});
 		}
     }
 
@@ -1609,14 +1606,11 @@ if (typeof $.fn.collapse == 'function')
 					app.data[controller].viewStatus = 'show';
 					app.data[controller].dataContext = $(event.target).data();
 
-					if (mydigitalstructure._util.controller.exists(controller))
+					mydigitalstructure._util.controller.invoke(controller,
 					{
-						mydigitalstructure._util.controller.invoke(controller,
-						{
-							status: 'show',
-							dataContext: $(event.target).data()
-						});
-					}
+						status: 'show',
+						dataContext: $(event.target).data()
+					});
 				}
 			}	
 		}
@@ -5764,6 +5758,7 @@ mydigitalstructure._util.factory.core = function (param)
 			var responseController = mydigitalstructure._util.param.get(param, 'responseController').value;
 			var queryController = mydigitalstructure._util.param.get(param, 'queryController').value;
 			var fields = mydigitalstructure._util.param.get(param, 'fields').value;
+			var idField = mydigitalstructure._util.param.get(param, 'idField', {default: 'id'}).value;
 
 			if (defaultValue == undefined)
 			{
@@ -5807,6 +5802,7 @@ mydigitalstructure._util.factory.core = function (param)
 				_.each(filters, function (filter)
 				{
 					if (filter.value1 == undefined) {filter.value1 = filter.value}
+					if (filter.name == undefined) {filter.name = filter.field}
 				});
 			}
 
@@ -6083,10 +6079,14 @@ mydigitalstructure._util.factory.core = function (param)
 				               	var text = [];
 				               	_.each(fields, function (field)
 				               	{
-				               		text.push(row[field.name]);
+				               		if (field.hidden != true)
+				               		{
+				               			text.push(row[field.name]);
+				               		}
 				               	})
 
 										row.text = _.join(text, ' ');
+										row.id = row[idField];
 				               });
 
 				               results = response.data.rows;
@@ -6606,6 +6606,7 @@ mydigitalstructure._util.factory.core = function (param)
 										var startRow = response.startrow;
 										var currentPage = parseInt((_.toNumber(startRow) + _.toNumber(pageRows)) / _.toNumber(pageRows));
 										var tableClass = (options.class!=undefined?options.class:'table-hover');
+										var tableHeader = (options.header!=undefined?options.header:true);
 
 										app._util.data.set(
 										{
@@ -6653,11 +6654,11 @@ mydigitalstructure._util.factory.core = function (param)
 
 										app.vq.add('>', {queue: context});
 
-										app.vq.add('<table class="table ' + tableClass + ' m-b-0">', {queue: context});
+										app.vq.add('<table class="table ' + tableClass + ' mb-0 m-b-0">', {queue: context});
 
 										if (response.data.rows.length != 0)
 										{
-											if (_.size(captions) != 0)
+											if (_.size(captions) != 0 && tableHeader)
 											{
 												app.vq.add('<thead>', {queue: context});
 												app.vq.add('<tr', {queue: context})
