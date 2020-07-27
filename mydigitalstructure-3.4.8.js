@@ -569,8 +569,46 @@ mydigitalstructure.retrieve = function (param)
 					if (_.has(param, 'filters')) { param.data.criteria.filters = param.filters }
 
 					if (_.has(param, 'options')) { param.data.criteria.options = param.options }
-					if (_.has(param, 'customOptions')) { param.data.criteria.customOptions = param.customOptions }
+					if (_.has(param, 'customOptions')) { param.data.criteria.customoptions = param.customOptions }
 					if (_.has(param, 'rows')) { param.data.criteria.options.rows = param.rows }
+
+					if (_.isArray(mydigitalstructure._scope.app.options.customOptions))
+					{
+						var objectCustomOptions = _.filter(mydigitalstructure._scope.app.options.customOptions, function (customOption)
+						{
+							return (customOption.object == param.object)
+						});
+
+						if (objectCustomOptions.length > 0)
+						{
+							var include;
+
+							var customOptions = _.filter(objectCustomOptions, function (objectCustomOption)
+							{
+								include = _.isUndefined(_.find(param.data.criteria.customOptions,
+									function (customOption)
+									{
+										customOption.name != objectCustomOption.name
+									}));
+
+								return include
+							});
+
+							var criteriaCustomOptions = _.map(customOptions, function (customOption)
+							{ 
+								return {name: customOption.name, value: customOption.value}
+							});
+
+							if (_.isArray(param.data.criteria.customOptions))
+							{
+								param.data.criteria.customoptions = _.concat(param.data.criteria.customOptions, criteriaCustomOptions)
+							}
+							else
+							{
+								param.data.criteria.customoptions = criteriaCustomOptions;
+							}
+						}
+					}
 				}
 				else
 				{
