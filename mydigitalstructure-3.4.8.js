@@ -602,9 +602,12 @@ mydigitalstructure.retrieve = function (param)
 						filter.name = 'id'
 					}
 
-					if (filter.comparison == undefined)
+					if (filter.name.toLowerCase() != 'or' && filter.name.toLowerCase() != 'and')
 					{
-						filter.comparison = 'EQUAL_TO'
+						if (filter.comparison == undefined)
+						{
+							filter.comparison = 'EQUAL_TO'
+						}
 					}
 				})
 			}
