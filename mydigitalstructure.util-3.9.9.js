@@ -3719,6 +3719,7 @@ mydigitalstructure._util.data =
 				var value;
 				var clean = mydigitalstructure._util.param.get(param, 'clean', {"default": false}).value;
 				var clone = mydigitalstructure._util.param.get(param, 'clone', {"default": false}).value;
+				var keyBy = mydigitalstructure._util.param.get(param, 'keyBy').value;
 
 				if (controller == undefined)
 				{
@@ -3788,6 +3789,11 @@ mydigitalstructure._util.data =
 				}
 
 				var valueReturn = (clone?_.clone(value):value);
+
+				if (keyBy != undefined)
+				{
+					valueReturn = _.keyBy(valueReturn, keyBy);
+				}
 
 				return valueReturn
 			},
@@ -6579,7 +6585,7 @@ mydigitalstructure._util.factory.core = function (param)
 													html.push(' ' + column.data);
 												}
 
-												html.push('>{{' + name + '}}</td>');
+												html.push('>{{' + _.last(_.split(name, ' ')) + '}}</td>');
 											}	
 										});
 
