@@ -184,6 +184,29 @@ mydigitalstructure._util.view.handlers['myds-click'] = function (event)
 $(document).off('click', '.myds-click, .myds')
 .on('click', '.myds-click, .myds', mydigitalstructure._util.view.handlers['myds-click']);
 
+mydigitalstructure._util.view.handlers['myds-view-table-select-all'] = function (event)
+{
+	var element = $(this);
+	var context = element.attr('data-context');
+
+	if (context != undefined)
+	{
+		var inputs = $('[data-context="' + context + '"] input.myds-view-table-select')
+
+		if (element.prop('checked')) 
+		{
+			inputs.prop('checked', true);
+		}
+		else
+		{
+			inputs.prop('checked', false);
+		}
+	}
+}
+
+$(document).off('click', '.myds-view-table-select-all')
+.on('click', '.myds-view-table-select-all', mydigitalstructure._util.view.handlers['myds-view-table-select-all']);
+
 mydigitalstructure._util.view.handlers['myds-navigate'] = function (event)
 {
 	var controller = $(this).data('controller');
@@ -6255,6 +6278,14 @@ mydigitalstructure._util.factory.core = function (param)
 					var container = mydigitalstructure._util.param.get(param, 'container').value;
 					var deleteConfirm = mydigitalstructure._util.param.get(param, 'deleteConfirm').value;
 
+					var select = mydigitalstructure._util.param.get(param, 'select').value;
+					if (select == undefined && options != undefined)
+					{
+						select = options.select;
+					}
+
+					if (select == undefined) {select = {}}
+
 					if (controller == undefined) {controller = container}
 
 					if (container == undefined)
@@ -6562,7 +6593,29 @@ mydigitalstructure._util.factory.core = function (param)
 										html.push('<tr' + (format.row.class==undefined?'':' class="' + format.row.class + '"') + 
 												(format.row.data==undefined?'':' ' + format.row.data) + '>');
 
-										$.each(columns, function (c, column)
+										if (select.controller != undefined)
+										{
+											html.push('<td id="myds-view-table-select-{{id}}-container">' +
+												'<input type="checkbox" class="myds-view-table-select" id="myds-view-table-select-{{id}}"');
+
+											if (select.data != undefined)
+											{
+												html.push(' ' + select.data);
+											}
+											else if (format.row.data != undefined)
+											{
+												html.push(' ' + format.row.data);
+											}
+
+											if (select.selected)
+											{
+												html.push(' checked="checked"');
+											}
+
+											html.push('></td>');
+										}
+
+										_.each(columns, function (column, c)
 										{
 											if (column.html != undefined)
 											{
@@ -6688,6 +6741,19 @@ mydigitalstructure._util.factory.core = function (param)
 												}
 
 												app.vq.add('>', {queue: context});
+
+												if (select.controller != undefined)
+												{
+													app.vq.add('<th><input class="myds-view-table-select-all" type="checkbox" id="' + context + '-select-all"' +
+														' data-context="' + context + '"', {queue: context})
+
+													if (select.selected)
+													{
+														app.vq.add(' checked="checked"', {queue: context});
+													}
+
+													app.vq.add('></th>', {queue: context});
+												}
 
 												var captionClass;
 												var captionData;

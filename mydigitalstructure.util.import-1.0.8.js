@@ -701,8 +701,8 @@ if (_.isObject(XLSX))
   		}
   	}
 
-	$(document).off('change', '#myds-util-import-sheet-file')
-	.on('change', '#myds-util-import-sheet-file', function(event)
+	$(document).off('change', '#myds-util-import-sheet-file, .myds-util-import-sheet')
+	.on('change', '#myds-util-import-sheet-file, .myds-util-import-sheet', function(event)
 	{
 		mydigitalstructure._util.import.sheet.init(event);
 	});
@@ -710,6 +710,15 @@ if (_.isObject(XLSX))
 
 mydigitalstructure._util.factory.import = function (param)
 {
+	mydigitalstructure._util.controller.add(
+	{
+		name: 'util-import-sheet',
+		code: function (event)
+		{	
+			mydigitalstructure._util.import.sheet.init(event);
+		}
+	});
+
 	mydigitalstructure._util.controller.add(
 	{
 		name: 'util-import-upload-attach',
