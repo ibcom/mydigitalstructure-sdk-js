@@ -162,7 +162,7 @@ if (_.isObject(XLSX))
 				
 						format._processing.name = format.name;
    					format._processing.namebasedoncaption = format.namebasedoncaption;
-   					format._processing.namebasedoncaption_ = format.namebasedoncaption_
+   					format._processing.namebasedoncaption_ = format.namebasedoncaption_;
 					});
 
    				//RESOLVE NAMES
@@ -231,12 +231,6 @@ if (_.isObject(XLSX))
 		   								format.range.header.cell = name.cell;
 		   							}
 		   						}
-
-		   						if (format.range.header.firstRow)
-		   						{
-		   							format.range.header.cell =
-		   								(format.range.header.firstRowColumn!=undefined?format.range.header.firstRowColumn:'A') + '1';
-		   						}
 	   						}
 
    							if (format.range.footer != undefined)
@@ -248,16 +242,41 @@ if (_.isObject(XLSX))
 		   								format.range.footer.cell = name.cell;
 		   							}
 		   						}
-
-		   						if (format.range.footer.lastRow)
-		   						{
-		   							format.range.footer.cell = (format.range.footer.lastRowColumn!=undefined?format.range.footer.lastRowColumn:'A') +
-		   									(numeral(mydigitalstructure._util.import.sheet.data.sheets[format.sheet].maximumRow).value() + 1);
-		   						}
 		   					}
    						}		
    					})
    				});
+
+   				//POST-PROCESS FORMATS; RANGE
+
+   				_.each(mydigitalstructure._util.import.sheet.data.format, function (format, f)
+   				{
+   					if (format.sheet == undefined)
+						{
+							format.sheet = mydigitalstructure._util.import.sheet.data.defaultSheetName;
+						}
+							
+						if (format.range != undefined)
+						{
+							if (format.range.header != undefined)
+	   					{
+	   						if (format.range.header.firstRow)
+	   						{
+	   							format.range.header.cell =
+	   								(format.range.header.firstRowColumn!=undefined?format.range.header.firstRowColumn:'A') + '1';
+	   						}
+   						}
+
+							if (format.range.footer != undefined)
+	   					{
+	   						if (format.range.footer.lastRow)
+	   						{
+	   							format.range.footer.cell = (format.range.footer.lastRowColumn!=undefined?format.range.footer.lastRowColumn:'A') +
+	   									(numeral(mydigitalstructure._util.import.sheet.data.sheets[format.sheet].maximumRow).value() + 1);
+	   						}
+	   					}
+						}	
+					});
 
    				//PROCESS FIELD FORMATS
 
@@ -535,9 +554,9 @@ if (_.isObject(XLSX))
 								}
 							}
 
-							if (field.format.contoller != undefined)
+							if (field.format.controller != undefined)
 							{
-								valueFormatted = mydigitalstructure._util.controller.invoke(field.format.contoller, field, valueFormatted)
+								valueFormatted = mydigitalstructure._util.controller.invoke(field.format.controller, field, valueFormatted)
 							}
 						}
 
@@ -933,7 +952,7 @@ mydigitalstructure._util.factory.import = function (param)
 				}	
 			}
 		}
-	}
+	});
 
 	app.add(
 	{
