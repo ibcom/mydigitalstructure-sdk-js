@@ -2998,7 +2998,7 @@ mydigitalstructure._util =
 
 										if (mydigitalstructure._scope.user != undefined)
 										{	
-											if (role != undefined)
+											if (_role != undefined)
 											{
 												hasRole = ($.grep(mydigitalstructure._scope.user.roles.rows, function (row)
 														{return (exact?row.title==_role.title:row.title.indexOf(_role.title)!=-1)}).length > 0);

@@ -3553,7 +3553,12 @@ mydigitalstructure._util.controller.add(
 		name: 'util-security-access-check',
 		code: function (param)
 		{
-			mydigitalstructure._util.access.has(param);
+			if (_.isString(param))
+			{
+				param = {roles: [{title: param}]};
+			}
+
+			return mydigitalstructure._util.access.has(param);
 		}
 	},
 	{
@@ -4102,6 +4107,11 @@ mydigitalstructure._util._clean = function(param)
 			{
 				returnVal = he.encodeURIComponent(val);
 			}
+
+			val = String(val).replace(/[\u00A0-\u2666]/g, function(c)
+  			{
+				return '&#' + c.charCodeAt(0) + ';';
+			});
 		}
 	}
 	else

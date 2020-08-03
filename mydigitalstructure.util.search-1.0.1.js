@@ -618,79 +618,88 @@ mydigitalstructure._util.factory.search = function (param)
 						search.options.noDataText = search.noDataText;
 					}
 
-					var dataUserFilters = app.get(
+					var filters;
+
+					if (search.filterController != undefined)
 					{
-						scope: 'util-view-search-user-filter',
-						valueDefault: {}
-					});
-
-					// Do user filters
-
-					var filters = _.clone(search.filters);
-					if (filters == undefined) {filters = []}
-
-					var userFilterValue;
-
-					_.each(search.userFilters, function (userFilter)
+						app.invoke(search.filterController, filters)
+					}
+					else
 					{
-						userFilter.value = dataUserFilters[userFilter.name];
-
-						if (userFilter.value == undefined)
+						var dataUserFilters = app.get(
 						{
-							searchUserFilterValue = _.find(search._userFilterValues, function (userFilterValue) {return userFilterValue.name == userFilter.name});
+							scope: 'util-view-search-user-filter',
+							valueDefault: {}
+						});
 
-	              		if (searchUserFilterValue != undefined)
-	              		{
-	              			if (userFilter.type == 'text')
-								{
-	              				userFilter.value = searchUserFilterValue.text;
-	              			}
-	              			else if (userFilter.type == 'date')
-								{
-	              				userFilter.value = searchUserFilterValue.date;
-	              			}
-	              			else
-	              			{
-	              				userFilter.value = searchUserFilterValue.id;
-	              			}
-	              		}
-	              	}
+						// Do user filters
 
-						if (userFilter.storage != undefined)
-						{	
-							if (userFilter.storage.field != undefined
-									&& userFilter.value != undefined
-									&& userFilter.value != ''
-									&& userFilter.value != 'undefined')
+						filters = _.clone(search.filters);
+						if (filters == undefined) {filters = []}
+
+						var userFilterValue;
+
+						_.each(search.userFilters, function (userFilter)
+						{
+							userFilter.value = dataUserFilters[userFilter.name];
+
+							if (userFilter.value == undefined)
 							{
-								if (userFilter.storage.comparison == undefined)
-								{
-									if (userFilter.type == 'text')
+								searchUserFilterValue = _.find(search._userFilterValues, function (userFilterValue) {return userFilterValue.name == userFilter.name});
+
+		              		if (searchUserFilterValue != undefined)
+		              		{
+		              			if (userFilter.type == 'text')
 									{
-										userFilter.storage.comparison = 'TEXT_IS_LIKE';
-									}
-									else
+		              				userFilter.value = searchUserFilterValue.text;
+		              			}
+		              			else if (userFilter.type == 'date')
 									{
-										userFilter.storage.comparison = 'EQUAL_TO';
+		              				userFilter.value = searchUserFilterValue.date;
+		              			}
+		              			else
+		              			{
+		              				userFilter.value = searchUserFilterValue.id;
+		              			}
+		              		}
+		              	}
+
+							if (userFilter.storage != undefined)
+							{	
+								if (userFilter.storage.field != undefined
+										&& userFilter.value != undefined
+										&& userFilter.value != ''
+										&& userFilter.value != 'undefined')
+								{
+									if (userFilter.storage.comparison == undefined)
+									{
+										if (userFilter.type == 'text')
+										{
+											userFilter.storage.comparison = 'TEXT_IS_LIKE';
+										}
+										else
+										{
+											userFilter.storage.comparison = 'EQUAL_TO';
+										}
 									}
-								}
 
-								userFilter._filters =
-								{
-									field: userFilter.storage.field,
-									comparison: userFilter.storage.comparison,
-									value: userFilter.value
-								}
+									userFilter._filters =
+									{
+										field: userFilter.storage.field,
+										comparison: userFilter.storage.comparison,
+										value: userFilter.value
+									}
 
-								if (userFilter.controller != undefined)
-								{
-									app.invoke(userFilter.controller, userFilter, userFilter._filters);
-								}
+									if (userFilter.controller != undefined)
+									{
+										app.invoke(userFilter.controller, userFilter, userFilter._filters);
+									}
 
-								filters.push(userFilter._filters)
+									filters.push(userFilter._filters)
+								}
 							}
-						}
-					});
+						});
+					}
 
 					app.invoke('util-view-table',
 					{
