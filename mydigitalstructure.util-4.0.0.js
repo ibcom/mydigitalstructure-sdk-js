@@ -3268,6 +3268,8 @@ mydigitalstructure._util.whoami = function (param)
 			]
 		}
 	}
+
+	whoamiData.thisInstanceOfMe.functionality.access._asUserRole = JSON.stringify(whoamiData.thisInstanceOfMe.functionality.access.asUserRole)
 	
 	if (whoamiData.thisInstanceOfMe.authenticated)
 	{
