@@ -174,6 +174,12 @@ mydigitalstructure._util.factory.search = function (param)
 				context: 'name'
 			});
 
+			var userFilters = app.get(
+			{
+				scope: 'util-view-search-user-filter',
+				valueDefault: {}
+			});
+
 			var search = _.find(searches, function (search) {return search.name == name});
 
 			if (search == undefined)
@@ -227,6 +233,11 @@ mydigitalstructure._util.factory.search = function (param)
 					{
 						if (userFilter.type == undefined) {userFilter.type = 'text'}
 
+						if (userFilters[userFilter.name] != undefined)
+						{
+							userFilter.value = userFilters[userFilter.name]
+						}
+
 						app.vq.add(
 						[
 							'<div class="col-sm-4">',
@@ -237,7 +248,7 @@ mydigitalstructure._util.factory.search = function (param)
 	          		],
 	          		{queue: 'util-view-search-show-user-filters'});
 
-					   var userFilterValue = _.find(search._userFilterValues, function (userFilterValue) {return userFilterValue.name == userFilter.name});
+						var userFilterValue = _.find(search._userFilterValues, function (userFilterValue) {return userFilterValue.name == userFilter.name});
 
 	              	if (userFilter.type == 'select')
 	              	{
@@ -341,6 +352,11 @@ mydigitalstructure._util.factory.search = function (param)
 
 	              	if (userFilter.type == 'date')
 	              	{
+	              		//if (userFilters[userFilter] != undefined)
+	              		//{
+	              		//	userFilter.value = userFilters[userFilter]
+	              		//}
+
 	              		if (userFilter.value == undefined && userFilterValue != undefined)
 	              		{
 	              			userFilter.value = userFilterValue.date;
@@ -478,9 +494,9 @@ mydigitalstructure._util.factory.search = function (param)
 							'<div class="card">',
 								'<div class="card-header">',
 									'<div class="float-right" data-html2canvas-ignore="true">',
-										'<button class="myds-click btn btn-white btn-sm" role="button" data-controller="', context, '">',
-		               				'<i class="fa fa-times fa-fw"></i> Close',
-		              				'</button>',
+										(context!=undefined?'<button class="myds-click btn btn-white btn-sm" role="button" data-controller="' + context + '">' +
+		               				'<i class="fa fa-times fa-fw"></i> Close' +
+		              				'</button>':''),
 		              				'<div class="btn-group" role="group">',
 				                     '<button class="myds-click btn btn-white btn-sm ml-2" role="button" data-controller="util-view-search-export"',
 				                     	' data-filename="', filename, '">',
