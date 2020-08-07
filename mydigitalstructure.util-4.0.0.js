@@ -5199,7 +5199,7 @@ mydigitalstructure._util.factory.core = function (param)
 				{
 					message = mydigitalstructure._util.param.get(param, 'message').value;
 					time = mydigitalstructure._util.param.get(param, 'time').value;
-					persist = mydigitalstructure._util.param.get(param, 'persist', {default: false}).value;
+					persist = mydigitalstructure._util.param.get(param, 'persist').value;
 					animation = mydigitalstructure._util.param.get(param, 'animation').value;
 					header = mydigitalstructure._util.param.get(param, 'header').value;
 					selector = mydigitalstructure._util.param.get(param, 'selector').value;
@@ -5243,6 +5243,16 @@ mydigitalstructure._util.factory.core = function (param)
 				if (type == undefined)
 				{
 					type = 'info'
+				}
+
+				if (persist == undefined)
+				{
+					persist = false;
+
+					if (type == 'danger')
+					{
+						persist = true;
+					}
 				}
 
 				if (showDismiss == undefined && mydigitalstructure._scope.app.options.styles != undefined)
@@ -5289,7 +5299,7 @@ mydigitalstructure._util.factory.core = function (param)
 
 				if (dismiss == undefined)
 				{
-					dismiss = '<i class="fa fa-times-circle text-muted" style="margin-top:2px;">'
+					dismiss = '<i class="fa fa-times text-muted" style="font-size:1rem;">'
 				}
 
 				if (message == undefined && app.data['notify-message'] != undefined)
