@@ -3262,7 +3262,7 @@ mydigitalstructure._util.whoami = function (param)
 			[
 				{
 					title: userRoleTitle,
-					methods: asUserRoleMethods,
+					methods: _.sortBy(asUserRoleMethods, 'title'),
 					properties: []
 				}
 			]
