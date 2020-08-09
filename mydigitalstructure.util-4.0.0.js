@@ -1639,9 +1639,23 @@ if (typeof $.fn.collapse == 'function')
 		}
    }
 
-   $(document).off('show.bs.collapse', '.myds-collapse:visible')
-	.on('show.bs.collapse', '.myds-collapse:visible', mydigitalstructure._util.view.handlers['myds-collapse-show']);
-}    
+   $(document).off('show.bs.collapse', '.myds-collapse')
+	.on('show.bs.collapse', '.myds-collapse', mydigitalstructure._util.view.handlers['myds-collapse-show']);
+
+	mydigitalstructure._util.view.handlers['myds-collapse-toggle'] = function (event)
+	{
+		var button = $(event.target);
+		if (!$(event.target).is('i'))
+		{
+			button = button.find('i');
+		}
+
+		button.toggleClass('fa-chevron-up').toggleClass('fa-chevron-down');
+	}
+
+	 $(document).off('click', '.myds-collapse-toggle:visible')
+	.on('click', '.myds-collapse-toggle:visible', mydigitalstructure._util.view.handlers['myds-collapse-toggle']);
+}
 
 if (typeof $.fn.popover == 'function')
 { 
@@ -5166,16 +5180,28 @@ mydigitalstructure._util.factory.core = function (param)
 		},
 		{
 			name: 'app-working-start',
-			code: function ()
+			code: function (param)
 			{
-				$('#app-working').removeClass('hidden d-none');
+				var selector = mydigitalstructure._util.param.get(param, 'selector', '#app-working').value;
+				$(selector).removeClass('hidden d-none');
 			}
 		},
 		{
 			name: 'app-working-stop',
 			code: function ()
 			{
-				$('#app-working').addClass('hidden d-none');
+				var selector = mydigitalstructure._util.param.get(param, 'selector', '#app-working').value;
+				$(selector).addClass('hidden d-none');
+			}
+		},
+		{
+			name: 'util-working-show',
+			code: function (selector)
+			{
+				if (selector != undefined)
+				{
+					$(selector).html(app.options.working);
+				}
 			}
 		},
 		{

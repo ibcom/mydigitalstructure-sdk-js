@@ -3457,15 +3457,18 @@ mydigitalstructure._util =
 							var url = mydigitalstructure._util.param.get(param, 'url', {default: '/rpc/attach/?method=ATTACH_FILE'}).value;
 							var filetype = mydigitalstructure._util.param.get(param, 'filetype').value;
 							var fileUploadedController = mydigitalstructure._util.param.get(param, 'fileUploadedController').value;
-							var removeFileOnUpload = mydigitalstructure._util.param.get(param, 'removeFileOnUpload').value;
+							var removeFileOnUpload = mydigitalstructure._util.param.get(param, 'removeFileOnUpload', {default: true}).value;
 							var callback = mydigitalstructure._util.param.get(param, 'callback').value;
 
 							mydigitalstructure._util.attachment.dropzone.data[name] = param;
 							mydigitalstructure._util.attachment.dropzone.data[name]['files'] = {added: [], uploaded: [], errors: []}
 
 							//delete mydigitalstructure._util.attachment.dropzone.object[name];
-							$(selector + ' button.dz-button').remove()
-							$(selector + ' .dz-message').remove()
+							if (false)
+							{
+								$(selector + ' button.dz-button').remove();
+								$(selector + ' .dz-message').remove();
+							}
 
 							if (previewTemplate == undefined)
 							{
@@ -3527,7 +3530,8 @@ mydigitalstructure._util =
 							var inputParams = mydigitalstructure._util.param.get(param, 'inputParams').value;
 							if (inputParams==undefined) {inputParams = mydigitalstructure._util.param.get(param, 'data', {default: []}).value}
 
-							if (mydigitalstructure._util.attachment.dropzone.object[name] == undefined)
+							//if (mydigitalstructure._util.attachment.dropzone.object[name] == undefined)
+							if (true)
 							{
 								mydigitalstructure._util.attachment.dropzone.object[name] = new Dropzone(selector, options);
 
@@ -3600,7 +3604,6 @@ mydigitalstructure._util =
 									{
 										mydigitalstructure._util.attachment.dropzone.object[name].removeFile(file);
 									}
-
 								});
 								
 								mydigitalstructure._util.attachment.dropzone.object[name].on('queuecomplete', function(progress)
