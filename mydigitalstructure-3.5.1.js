@@ -3774,13 +3774,11 @@ mydigitalstructure._util.imageToBase64Data = function (param)
 	};
 
 	var imageContainerSelector = mydigitalstructure._util.param.get(param, 'imageContainerSelector', {default: '#myds-image-show'}).value;
-	
-	var scale = mydigitalstructure._util.param.get(param, 'scale', {default: 1}).value;
-	var width = mydigitalstructure._util.param.get(param, 'width', {default: 150}).value;
-	var height = mydigitalstructure._util.param.get(param, 'height', {default: 150}).value;
-	var smoothing = mydigitalstructure._util.param.get(param, 'smoothing', {default: true}).value;
 	var imageHTMLTemplate = mydigitalstructure._util.param.get(param, 'imageHTMLTemplate', {default: '<img src="{{src}}">'}).value;
 
+	var scale = mydigitalstructure._util.param.get(param, 'scale', {default: 1}).value;
+	var smoothing = mydigitalstructure._util.param.get(param, 'smoothing', {default: true}).value;
+	
 	var set = mydigitalstructure._util.param.get(param, 'set').value;
 	var controller = mydigitalstructure._util.param.get(param, 'controller').value;
 
@@ -3806,9 +3804,6 @@ mydigitalstructure._util.imageToBase64Data = function (param)
 
 			var canvasContext = canvas.getContext("2d");
 
-			//canvas.width = width * scale;
-			//canvas.height = height * scale;
-
 			if (smoothing)
 			{
 				canvasContext.mozImageSmoothingEnabled = true;
@@ -3816,11 +3811,14 @@ mydigitalstructure._util.imageToBase64Data = function (param)
 				canvasContext.imageSmoothingEnabled = true;
 			}
 		
+			image.style.width = image.width * scale;
+			image.style.height = image.height * scale;
+
 			canvas.width = image.width;
 			canvas.height = image.height;
 
 			canvasContext.drawImage(image, 0, 0);
-			
+
 			var dataURI = canvas.toDataURL("image/png");
 
 			if (set != undefined)
@@ -3844,10 +3842,7 @@ mydigitalstructure._util.imageToBase64Data = function (param)
 
 			param = mydigitalstructure._util.param.set(param, 'dataURI', dataURI);
 			
-			mydigitalstructure._util.onComplete(param);
-
-			console.log(dataURI)
-			
+			mydigitalstructure._util.onComplete(param);			
 		};
 	}
 }
