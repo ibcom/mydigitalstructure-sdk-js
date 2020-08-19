@@ -4399,7 +4399,7 @@ mydigitalstructure._util.view.text =
 
 			var font = 
 			{
-				size: $('#certification-body-dashboard').css('font-size').replace('px', ''),
+				size: $(selector).css('font-size').replace('px', ''),
 				unit: 'px',
 				family: $(selector).css('font-family')
 			};
