@@ -4719,78 +4719,83 @@ mydigitalstructure._util.validate =
 				}
 			}
 
-			if (element.attr('data-validate-numeral') != undefined)
+			if (elementValue != '')
 			{
-				if (_.isNull(numeral(elementValue).value()))
+				if (element.attr('data-validate-numeral') != undefined)
 				{
-					errors.push('numeral')
-					app.data[scope]['validate'][context]['errors']['numeral'] = true
-				}
-			}
-
-			var maximum = element.attr('data-validate-numeral-maximum');
-
-			if (maximum != undefined && !_.isNull(numeral(maximum).value()))
-			{
-				if (!_.isNull(numeral(elementValue).value()))
-				{
-					if (numeral(elementValue).value() > numeral(maximum).value())
+					if (_.isNull(numeral(elementValue).value()))
 					{
-						errors.push('numeral-maximum')
-						app.data[scope]['validate'][context]['errors']['numeral-maximum'] = true;
+						errors.push('numeral')
+						app.data[scope]['validate'][context]['errors']['numeral'] = true
+					}	
+				}
+
+				var maximum = element.attr('data-validate-numeral-maximum');
+
+				if (maximum != undefined && !_.isNull(numeral(maximum).value()))
+				{
+					if (!_.isNull(numeral(elementValue).value()))
+					{
+						if (numeral(elementValue).value() > numeral(maximum).value())
+						{
+							errors.push('numeral-maximum')
+							app.data[scope]['validate'][context]['errors']['numeral-maximum'] = true;
+						}
+					}	
+				}
+
+				var minimum = element.attr('data-validate-numeral-minimum');
+
+				if (minimum != undefined && !_.isNull(numeral(minimum).value()))
+				{
+					if (!_.isNull(numeral(elementValue).value()))
+					{
+						if (numeral(elementValue).value() < numeral(minimum).value())
+						{
+							errors.push('numeral-minimum')
+							app.data[scope]['validate'][context]['errors']['numeral-minimum'] = true;
+						}
 					}
 				}
-			}
+				
+				var maximumLength = element.attr('data-validate-maximum-length');
 
-			var minimum = element.attr('data-validate-numeral-minimum');
-
-			if (minimum != undefined && !_.isNull(numeral(minimum).value()))
-			{
-				if (!_.isNull(numeral(elementValue).value()))
+				if (maximumLength != undefined)
 				{
-					if (numeral(elementValue).value() < numeral(minimum).value())
+					if (numeral(elementValue.length).value() > numeral(maximumLength).value())
 					{
-						errors.push('numeral-minimum')
-						app.data[scope]['validate'][context]['errors']['numeral-minimum'] = true;
+						errors.push('maximum-length')
+						app.data[scope]['validate'][context]['errors']['maximum-length'] = true
 					}
 				}
-			}
 
-			var maximumLength = element.attr('data-validate-maximum-length');
-			if (maximumLength != undefined)
-			{
-				if (numeral(elementValue.length).value() > numeral(maximumLength).value())
+				var minimumLength = element.attr('data-validate-minimum-length');
+
+				if (minimumLength != undefined)
 				{
-					errors.push('maximum-length')
-					app.data[scope]['validate'][context]['errors']['maximum-length'] = true
+					if (numeral(elementValue.length).value() < numeral(minimumLength).value())
+					{
+						errors.push('minimum-length')
+						app.data[scope]['validate'][context]['errors']['minimum-length'] = true
+					}
 				}
-			}
-
-			var minimumLength = element.attr('data-validate-minimum-length');
-			if (minimumLength != undefined)
-			{
-				if (numeral(elementValue.length).value() < numeral(minimumLength).value())
+				
+				if (element.attr('data-validate-email') != undefined)
 				{
-					errors.push('minimum-length')
-					app.data[scope]['validate'][context]['errors']['minimum-length'] = true
+					if (!mydigitalstructure._util.validate.isEmail(elementValue))
+					{
+						errors.push('email')
+						app.data[scope]['validate'][context]['errors']['email'] = true
+					}
 				}
-			}
 
-			if (element.attr('data-validate-email') != undefined)
-			{
-				if (!mydigitalstructure._util.validate.isEmail(elementValue))
+				if (element.attr('data-validate-date') != undefined)
 				{
-					errors.push('email')
-					app.data[scope]['validate'][context]['errors']['email'] = true
-				}
-			}
-
-			if (element.attr('data-validate-date') != undefined)
-			{
-				if (!mydigitalstructure._util.validate.isDate(elementValue))
-				{
-					errors.push('date')
-					app.data[scope]['validate'][context]['errors']['date'] = true
+					if (!mydigitalstructure._util.validate.isDate(elementValue))
+					{
+						errors.push('date')
+						app.data[scope]['validate'][context]['errors']['date'] = true
+					}
 				}
 			}
 
