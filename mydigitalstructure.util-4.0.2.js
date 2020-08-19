@@ -4362,7 +4362,8 @@ mydigitalstructure._util.view.text =
 	{
 		var width = mydigitalstructure._util.param.get(param, 'width').value;
 		var _text = mydigitalstructure._util.view.text.getWidth(param);
-		var font = mydigitalstructure._util.param.get(param, 'font', {default: {size: '16', unit: 'px', family: 'times new roman'}}).value;
+		var font = mydigitalstructure._util.param.get(param, 'font', {default: {}}).value;
+		if (font.unit == undefined) {font.unit = 'px'}
 		var ratio;
 		var newFont = _.clone(font);
 		var minimum = mydigitalstructure._util.param.get(param, 'minimum').value;
@@ -4391,20 +4392,36 @@ mydigitalstructure._util.view.text =
 
 		if (selector != undefined)
 		{
-			var text = $(selector).text();
-			param = mydigitalstructure._util.param.set(param, 'text', text);
-			
-			var width = $(selector).width();
-			param = mydigitalstructure._util.param.set(param, 'width', width);
-
-			var font = 
+			if ($(selector).length != 0)
 			{
-				size: $(selector).css('font-size').replace('px', ''),
-				unit: 'px',
-				family: $(selector).css('font-family')
-			};
-			mydigitalstructure._util.param.set(param, 'font', font);
+				var text = mydigitalstructure._util.param.get(param, 'text').value;
+				if (text == undefined)
+				{
+					text = $(selector).text();
+					param = mydigitalstructure._util.param.set(param, 'text', text);
+				}
+				
+				var width = mydigitalstructure._util.param.get(param, 'width').value;
+				if (width == undefined)
+				{
+					width = $(selector).width();
+					param = mydigitalstructure._util.param.set(param, 'width', width);
+				}
+				
+				var font = mydigitalstructure._util.param.get(param, 'font').value;
 
+				if (font == undefined)
+				{
+					font = 
+					{
+						size: $(selector).css('font-size').replace('px', ''),
+						unit: 'px',
+						family: $(selector).css('font-family')
+					}
+					mydigitalstructure._util.param.set(param, 'font', font);
+				}
+			}
+			
 			var getFontSize = mydigitalstructure._util.view.text.getFontSize(param);
 			var newFont = getFontSize.font;
 
