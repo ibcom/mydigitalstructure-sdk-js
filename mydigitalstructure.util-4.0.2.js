@@ -663,7 +663,7 @@ mydigitalstructure._util.view.handlers['myds-check'] = function (event)
 
 			if (controller != undefined)
 			{	
-				app.invoke(controller, param);
+				mydigitalstructure._util.controller.invoke(controller, param);
 			}
 		}		
 	}
@@ -1792,8 +1792,8 @@ if (typeof $.fn.carousel == 'function')
 		}	
 	}
 
-	$(document).off('slid.bs.carousel', '.myds-slide')
-	.on('slid.bs.carousel', '.myds-slide', mydigitalstructure._util.view.handlers['myds-slid']);
+	$(document).off('slid.bs.carousel', '.myds-slid')
+	.on('slid.bs.carousel', '.myds-slid', mydigitalstructure._util.view.handlers['myds-slid']);
 }
 
 if (typeof $.fn.dropdown == 'function')
@@ -2896,36 +2896,7 @@ mydigitalstructure._util.view._refresh = function (param)
 		mydigitalstructure._util.param.set(param, 'controller', scope)
 	}
 
-	if (!_.isUndefined(data) && !_.isUndefined(scope))
-	{
-		_.each(data, function (value, key)
-		{
-			$('[data-scope="' + scope + '"][data-context="' + key + '"]').html(value);
-		});
-
-		if (_.has(data, 'id'))
-		{			
-			var elementIDs = $('[data-scope="' + scope + '-' + '"][data-id]');
-			var elementID;
-
-			_.each(elementIDs, function (element)
-			{
-				elementID = $(element).attr('id');
-				$(element).attr('data-id', data.id);
-				$(element).attr('id', elementID + data.id)
-				$(element).attr('data-scope', scope + '-' + data.id)
-			});
-
-			elementIDs = $('input[data-scope="' + scope + '-' + data.id + '"][data-value]');
-			var elementContext;
-
-			_.each(elementIDs, function (element)
-			{
-				elementContext = $(element).attr('data-context');
-				$(element).attr('data-value', data[elementContext]);
-			});
-		}
-	}
+	/*Setting of element values moved to after template is set.*/
 
 	if (!_.isUndefined(dataScope) && !_.isUndefined(data))
 	{
@@ -2991,6 +2962,62 @@ mydigitalstructure._util.view._refresh = function (param)
 		//{
 		//	$(selector + ' input.myds-check[data-context="' + key + '"][data-id="' + value + '"]').attr('checked', 'checked')
 		//});
+	}
+
+	if (!_.isUndefined(data) && !_.isUndefined(scope))
+	{
+		_.each(data, function (value, key)
+		{
+			$('[data-scope="' + scope + '"][data-context="' + key + '"]').html(value);
+		});
+
+		if (_.has(data, 'id'))
+		{			
+			var elementIDs = $('[data-scope="' + scope + '-' + '"][data-id]');
+			var elementID;
+
+			_.each(elementIDs, function (element)
+			{
+				elementID = $(element).attr('id');
+				$(element).attr('data-id', data.id);
+				$(element).attr('id', elementID + data.id)
+				$(element).attr('data-scope', scope + '-' + data.id)
+			});
+
+			elementIDs = $('input[data-scope="' + scope + '-' + data.id + '"][data-value]');
+			var elementContext;
+			var elementValue;
+
+			_.each(elementIDs, function (element)
+			{
+				elementContext = $(element).attr('data-context');
+
+				if (elementContext != undefined)
+				{
+					elementValue = data[elementContext];
+					if (elementValue == undefined) {elementValue = ''}
+
+					$(element).attr('data-value', elementValue);
+					$(element).val(elementValue);
+				}
+			});
+
+			elementIDs = $('textarea[data-scope="' + scope + '-' + data.id + '"]');
+			var elementContext;
+			var elementValue;
+
+			_.each(elementIDs, function (element)
+			{
+				elementContext = $(element).attr('data-context');
+
+				if (elementContext != undefined)
+				{
+					elementValue = data[elementContext];
+					if (elementValue == undefined) {elementValue = ''}
+					$(element).val(elementValue);
+				}
+			});
+		}
 	}
 
 	if (!_.isUndefined(show))
@@ -3079,7 +3106,10 @@ mydigitalstructure._util.view.datepicker = function (param)
 		options = _.assign(options, mydigitalstructure._scope.app.options.styles.datePicker.options);
 	}
 
-	$(selector).datetimepicker(options);
+	if ($.fn.datetimepicker != undefined)
+	{
+		$(selector).datetimepicker(options);
+	}
 }
 
 mydigitalstructure._util.controller.add(
@@ -3835,6 +3865,7 @@ mydigitalstructure._util.data =
 				var clean = mydigitalstructure._util.param.get(param, 'clean', {"default": false}).value;
 				var clone = mydigitalstructure._util.param.get(param, 'clone', {"default": false}).value;
 				var keyBy = mydigitalstructure._util.param.get(param, 'keyBy').value;
+				var cleanForCloudStorage = mydigitalstructure._util.param.get(param, 'cleanForCloudStorage', {"default": false}).value;
 
 				if (controller == undefined)
 				{
@@ -3885,22 +3916,43 @@ mydigitalstructure._util.data =
 					app._util.data.set(param);
 				}
 
-				if (_.isObject(value) && clean)
+				if (_.isObject(value) && (clean || cleanForCloudStorage))
 				{
 					value = _.pickBy(value, function (valueValue, key)
-								{
-									var include = true;
+					{
+						var include = true;
 
-									if (_.startsWith(key, '_'))
-									{
-										if (value[key.substr(1)] != undefined)
-										{
-											include = false;
-										}
-									}
+						if (_.startsWith(key, '_'))
+						{
+							if (value[key.substr(1)] != undefined)
+							{
+								include = false;
+							}
+						}
 
-									return include
-								})
+						if (cleanForCloudStorage)
+						{
+							if (key == 'validate' && _.isObject(value[key]))
+							{
+								include = false
+							}
+
+							if (	key == 'scope'
+									|| key == 'context'
+									|| key == 'name'
+									|| key == 'target'
+									|| key == 'value'
+									|| key == '_param'
+									|| key == 'dataContext'
+									|| key == 'viewStatus'
+									|| _.startsWith(key, 'validate'))
+							{
+								include = false
+							}
+						}
+
+						return include
+					})
 				}
 
 				var valueReturn = (clone?_.clone(value):value);

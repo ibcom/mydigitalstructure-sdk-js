@@ -1780,7 +1780,10 @@ mydigitalstructure._util =
 											}
 
 											mydigitalstructure._util.doCallBack(param, response);
-											delete mydigitalstructure._scope.data._send.data[response.moreid];
+											if (_.has(mydigitalstructure, '_scope.data._send.data'))
+											{
+												delete mydigitalstructure._scope.data._send.data[response.moreid];
+											}
 										}
 									}
 									else
