@@ -982,54 +982,134 @@ mydigitalstructure._util.security.trusted =
 		{
 			data: {},
 
+			verify: function (token, key, acceptField)
+			{
+				//https://kjur.github.io/jsrsasign/api/symbols/KJUR.jws.JWS.html#.verifyJWT
+				//https://github.com/kjur/jsrsasign/blob/master/sample/sample_jwsverify.html
+
+				//var sJWS = token;
+				//var hN = key.n;
+				//var hE = key.e;
+				//pubKey = KEYUTIL.getKey({n: hN, e: hE});
+
+				var jws = new KJUR.jws.JWS();
+				var isValid = false;
+				var pubKey;
+				var hasError = false;
+				var error;
+
+				if (acceptField == undefined)
+				{
+					acceptField = {alg: ["RS256"]}
+				}
+
+				try
+				{
+					pubKey = KEYUTIL.getKey(key);
+					jws.parseJWS(token);
+					isValid = KJUR.jws.JWS.verifyJWT(token, pubKey, acceptField);
+				}
+				catch (ex)
+				{
+					error = ex;
+					hasError = true;
+					isValid = false;
+				}
+
+				var returnValue = {valid: isValid};
+
+				if (hasError)
+				{
+					returnValue.error = error;
+				}
+				else
+				{
+					if (isValid)
+					{
+						returnValue.parsedJWT = jws.parsedJWS
+					}
+				}
+
+				return returnValue;
+			},
+
 			decode: function (param)
 			{
 				if (_.isObject(window.Base64))
 				{
 					if (mydigitalstructure._util.versionCheck('3.4.4', Base64.VERSION))
 					{
-						var jwt = mydigitalstructure._util.param.get(param, 'token').value;
-						var jwk = mydigitalstructure._util.param.get(param, 'key').value;
+						var token = mydigitalstructure._util.param.get(param, 'token').value;
+						var key = mydigitalstructure._util.param.get(param, 'key').value;
 						var secret = mydigitalstructure._util.param.get(param, 'secret').value;
+						var keys = mydigitalstructure._util.security.trusted._util.jwt.data.keys;
+						var keyType = 'cert';
 
-						if (jwt != undefined)
+						if (token != undefined)
 						{
-							var _jwt = jwt.split('.');
-							
-							var parsedJWT = 
+							if (key == undefined && keys == undefined)
 							{
-								header: _jwt[0],
-								payload: _jwt[1],
-								signature: _jwt[2]
+								param = mydigitalstructure._util.param.set(param, 'onComplete', mydigitalstructure._util.security.trusted._util.jwt.decode);
+								mydigitalstructure._util.security.trusted._util.jwt.getKeys(param)
 							}
-
-							var decodedJWT = 
+							else
 							{
-								header: Base64.fromBase64(parsedJWT.header),
-								payload: Base64.fromBase64(parsedJWT.payload),
-								signature: CryptoJS.enc.Base64.parse(parsedJWT.signature)
+								var _token = token.split('.');
+								
+								var parsedJWT = 
+								{
+									header: _token[0],
+									payload: _token[1],
+									signature: _token[2]
+								}
+
+								var decodedJWT = 
+								{
+									header: JSON.parse(Base64.fromBase64(parsedJWT.header)),
+									payload: JSON.parse(Base64.fromBase64(parsedJWT.payload))
+								}
+
+								if (key == undefined)
+								{
+									if (keyType == 'cert')
+									{
+										key = keys[decodedJWT.header.kid]
+									}
+									else
+									{
+										mydigitalstructure._util.security.trusted._util.jwt.data._key = _.find(keys, function (key) {return key.kid == decodedJWT.header.kid});
+									}
+
+									if (mydigitalstructure._util.security.trusted._util.jwt.data._key != undefined)
+									{
+										key = mydigitalstructure._util.security.trusted._util.jwt.data._key.n;
+									}
+								}
+
+								var verification;
+
+								if (keyType == 'cert')
+								{
+									verification = mydigitalstructure._util.security.trusted._util.jwt.verify(token, key)
+								}
+								else
+								{
+									verification = mydigitalstructure._util.security.trusted._util.jwt.verify(token, mydigitalstructure._util.security.trusted._util.jwt.data._key)
+								}
+
+								mydigitalstructure._util.security.trusted._util.jwt.data = _.assign(
+								mydigitalstructure._util.security.trusted._util.jwt.data,
+								{
+									sourceJWT: token,
+									_sourceJWT: _token,
+									parsedJWT: parsedJWT,
+									decodedJWT: decodedJWT,
+									verification: verification
+								});
+
+								//console.log(mydigitalstructure._util.security.trusted._util.jwt.data)
+								mydigitalstructure._util.onComplete(param)
 							}
-
-							var processedJWT = 
-							{
-								_hashSignature: CryptoJS.HmacSHA256(parsedJWT.header + '.' + parsedJWT.header, jwk)
-							}
-
-							processedJWT.hashSignature = CryptoJS.enc.Base64.stringify(processedJWT._hashSignature)
-
-							processedJWT.decodedSignature = ''
-
-							mydigitalstructure._util.security.trusted._util.jwt.data = _.assign(
-							mydigitalstructure._util.security.trusted._util.jwt.data,
-							{
-								sourceJWT: jwt,
-								_sourceJWT: _jwt,
-								parsedJWT: parsedJWT,
-								decodedJWT: decodedJWT,
-								processedJWT: processedJWT
-							});
-
-							console.log(mydigitalstructure._util.security.trusted._util.jwt.data)
 						}
 					}
 					else
@@ -1040,23 +1120,51 @@ mydigitalstructure._util.security.trusted =
 
 			},
 
-			getKeys: function (param, reponse)
+			getKeys: function (param, response)
 			{
 				var keysURI = mydigitalstructure._util.param.get(param, 'keyURI',
-									{default: 'https://www.googleapis.com/oauth2/v3/certs'}).value;
+									{default: 'https://www.googleapis.com/oauth2/v1/certs'}).value;
 
 				if (mydigitalstructure._util.security.trusted._util.jwt.data.keys == undefined)
 				{
-					$.ajax(
+					if (response == undefined)
 					{
-						type: 'GET',
-						url: keysURI,
-						dataType: 'json',
-						success: function(data)
+						mydigitalstructure.cloud.invoke(
 						{
-							mydigitalstructure._util.security.trusted._util.jwt.data.keys = data;
+							method: 'core_url_get',
+							data:
+							{
+								url: keysURI,
+								asis: 'Y'
+							},
+							callback: mydigitalstructure._util.security.trusted._util.jwt.getKeys,
+							callbackParam: param
+						})
+					}
+					else
+					{
+						if (_.has(response, 'keys'))
+						{
+							mydigitalstructure._util.security.trusted._util.jwt.data.keys = response.keys;
 						}
-					});
+						else
+						{
+							mydigitalstructure._util.security.trusted._util.jwt.data.keys = response;
+						}
+
+						if (response != undefined)
+						{
+							mydigitalstructure._util.onComplete(param, response);
+						}
+						else
+						{
+							console.log('Can not get keys')
+						}
+					}
+				}
+				else
+				{
+					mydigitalstructure._util.onComplete(param)
 				}
 				
 			}
