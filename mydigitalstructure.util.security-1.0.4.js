@@ -984,6 +984,7 @@ mydigitalstructure._util.security.trusted =
 
 			verify: function (token, key, acceptField)
 			{
+				//https://github.com/kjur/jsrsasign
 				//https://kjur.github.io/jsrsasign/api/symbols/KJUR.jws.JWS.html#.verifyJWT
 				//https://github.com/kjur/jsrsasign/blob/master/sample/sample_jwsverify.html
 
@@ -1041,7 +1042,6 @@ mydigitalstructure._util.security.trusted =
 					{
 						var token = mydigitalstructure._util.param.get(param, 'token').value;
 						var key = mydigitalstructure._util.param.get(param, 'key').value;
-						var secret = mydigitalstructure._util.param.get(param, 'secret').value;
 						var keys = mydigitalstructure._util.security.trusted._util.jwt.data.keys;
 						var keyType = 'cert';
 
@@ -1122,7 +1122,7 @@ mydigitalstructure._util.security.trusted =
 
 			getKeys: function (param, response)
 			{
-				var keysURI = mydigitalstructure._util.param.get(param, 'keyURI',
+				var keysURI = mydigitalstructure._util.param.get(param, 'keysURI',
 									{default: 'https://www.googleapis.com/oauth2/v1/certs'}).value;
 
 				if (mydigitalstructure._util.security.trusted._util.jwt.data.keys == undefined)
