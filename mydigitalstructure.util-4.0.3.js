@@ -3875,6 +3875,11 @@ mydigitalstructure._util.data =
 					cleanForCloudStorage = deepClean
 				}
 
+				if (cleanForCloudStorage)
+				{
+					clone = true;
+				} 
+
 				if (controller == undefined)
 				{
 					controller = scope;
@@ -3916,6 +3921,8 @@ mydigitalstructure._util.data =
 				{
 					value = $.grep(value, function (v) {return v.id == id})[0];
 				}
+
+				value = (clone?_.clone(value):value);
 				
 				if (value == undefined && valueDefault != undefined)
 				{
