@@ -7431,7 +7431,8 @@ mydigitalstructure._util.factory.core = function (param)
 		'queryLanguage',
 		'dashboard',
 		'security',
-		'search'
+		'search',
+		'editor'
 	], function (namespace)
 	{
 		if (_.isFunction(mydigitalstructure._util.factory[namespace]))

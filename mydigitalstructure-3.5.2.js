@@ -1806,13 +1806,23 @@ mydigitalstructure._util =
 										mydigitalstructure._util.doCallBack(param);
 									}
 
-									if (param.notify != undefined)
+									if (response.status == 'OK' && param.notify != undefined)
 									{
 										mydigitalstructure._util.sendToView(
 										{
 											from: 'myds-send',
 											status: 'notify',
 											message: param.notify
+										});
+									}
+
+									if (response.status == 'ER' && param.notifyError != undefined)
+									{
+										mydigitalstructure._util.sendToView(
+										{
+											from: 'myds-send',
+											status: 'notify',
+											message: param.notifyError
 										});
 									}
 								},
