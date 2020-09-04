@@ -2185,6 +2185,16 @@ mydigitalstructure._util =
 										$(selector).removeClass('disabled');
 									},
 
+									hide: function (selector, param)
+									{
+										$(selector).addClass('d-none hidden');
+									},
+
+									show: function (selector, param)
+									{
+										$(selector).removeClass('d-none hidden');
+									},
+
 									userHasAccess: function (param)
 									{
 										var queue = mydigitalstructure._util.param.get(param, 'queue').value;
@@ -2552,9 +2562,11 @@ mydigitalstructure._util =
 										var append = mydigitalstructure._util.param.get(param, 'append', {"default": false}).value;
 										var appendSelector = mydigitalstructure._util.param.get(param, 'appendSelector', {"default": 'table tr:last'}).value;
 										var disableSelector = mydigitalstructure._util.param.get(param, 'disable').value;
-										var enableSelector = mydigitalstructure._util.param.get(param, 'enabler').value;
+										var enableSelector = mydigitalstructure._util.param.get(param, 'enable').value;
 										var includeDates = mydigitalstructure._util.param.get(param, 'includeDates', {"default": true}).value;
 										var setInputs = mydigitalstructure._util.param.get(param, 'setInputs', {"default": true}).value;
+										var hideSelector = mydigitalstructure._util.param.get(param, 'hide').value;
+										var showSelector = mydigitalstructure._util.param.get(param, 'show').value;
 
 										if (queue == undefined)
 										{
@@ -2603,8 +2615,11 @@ mydigitalstructure._util =
 													}	
 												}
 
-												if (disableSelector) {mydigitalstructure._util.view.queue._util.disable(disableSelector, param)};
-												if (enableSelector) {mydigitalstructure._util.view.queue._util.enable(enableSelector, param)};
+												if (disableSelector != undefined) {mydigitalstructure._util.view.queue._util.disable(disableSelector, param)};
+												if (enableSelector != undefined) {mydigitalstructure._util.view.queue._util.enable(enableSelector, param)};
+
+												if (hideSelector != undefined) {mydigitalstructure._util.view.queue._util.hide(hideSelector, param)};
+												if (showSelector != undefined) {mydigitalstructure._util.view.queue._util.show(showSelector, param)};
 			
 												if (includeDates)
 												{
