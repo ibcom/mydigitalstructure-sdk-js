@@ -1527,7 +1527,11 @@ if (typeof $.fn.collapse == 'function')
 
 				if (mydigitalstructure._util.controller.exists(controller))
 				{
-					mydigitalstructure._util.controller.invoke(controller, {status: 'hidden'});
+					mydigitalstructure._util.controller.invoke(controller,
+					{
+						status: 'hidden',
+						dataContext: $(event.target).data()
+					});
 				}
 			}
 		}	
@@ -2897,8 +2901,6 @@ mydigitalstructure._util.view._refresh = function (param)
 		mydigitalstructure._util.param.set(param, 'controller', scope)
 	}
 
-	/*Setting of element values moved to after template is set.*/
-
 	if (!_.isUndefined(dataScope) && !_.isUndefined(data))
 	{
 		var dataScopeAll = mydigitalstructure._util.data.get(
@@ -2909,24 +2911,40 @@ mydigitalstructure._util.view._refresh = function (param)
 		});
 
 		var dataInScopeAll = _.find(dataScopeAll, function (d) {return d.id == data.id});
+		var utilViewParam = mydigitalstructure._util.data.get(
+		{
+			scope: dataScope,
+			context: '_param'
+		});
+
+		if (!_.isUndefined(utilViewParam))
+		{
+			if (_.isUndefined(dataController))
+			{
+				if (_.has(utilViewParam, 'format.row.controller'))
+				{
+					dataController = utilViewParam.format.row.controller;
+				}
+			}
+
+			if (_.has(utilViewParam, 'format.row.method'))
+			{
+				utilViewParam.format.row.method(data);
+			}
+		}
+
+		if (!_.isUndefined(dataController))
+		{
+			mydigitalstructure._util.controller.invoke(dataController, data)
+		}
 
 		if (_.isUndefined(dataInScopeAll))
 		{
-			if (!_.isUndefined(dataController))
-			{
-				mydigitalstructure._util.controller.invoke(dataController, data)
-			}
-
 			dataScopeAll.push(data);
 		}
 		else
 		{
 			dataInScopeAll = _.assign(dataInScopeAll, data);
-
-			if (!_.isUndefined(dataController))
-			{
-				mydigitalstructure._util.controller.invoke(dataController, dataInScopeAll)
-			}
 		}
 	}
 
@@ -3131,6 +3149,60 @@ mydigitalstructure._util.controller.add(
 	code: function (param)
 	{
 		mydigitalstructure._util.view.datepicker(param);
+	}
+});
+
+mydigitalstructure._util.view.dateFormat = function (param)
+{
+	var dateFormat = mydigitalstructure._util.param.get(param, 'format').value;
+	var dateCurrentFormat = mydigitalstructure._util.param.get(param, 'currentFormat').value;
+	var date = mydigitalstructure._util.param.get(param, 'date').value;
+	var clean = mydigitalstructure._util.param.get(param, 'clean', {default: false}).value;
+	
+	if (clean)
+	{
+		date = date.replace(' 00:00:00', '')
+	}
+
+	if (dateCurrentFormat == undefined)
+	{
+		dateCurrentFormat = mydigitalstructure._scope.app.options.dateFormats;
+	}
+	
+	if (dateCurrentFormat == undefined)
+	{
+		dateCurrentFormat = ["DD MMM YYYY", "D MMM YYYY", "D/MM/YYYY", "DD/MM/YYYY", "DD MMM YYYY HH:mm:ss"]
+	}
+
+	if (date != '' && date != undefined && dateFormat != undefined)
+	{
+		date = moment(date, dateCurrentFormat).format(dateFormat)
+	}
+
+	return date;
+}
+
+mydigitalstructure._util.controller.add(
+{
+	name: 'util-view-date-format',
+	code: function (param)
+	{
+		return mydigitalstructure._util.view.dateFormat(param);
+	}
+});
+
+mydigitalstructure._util.controller.add(
+{
+	name: 'util-view-date-clean',
+	code: function (date)
+	{
+		var param = 
+		{
+			date: date,
+			clean:true
+		}
+		
+		return mydigitalstructure._util.view.dateFormat(param);
 	}
 });
 
@@ -6877,7 +6949,7 @@ mydigitalstructure._util.factory.core = function (param)
 								{
 									var noDataText = options.noDataText;
 									if (noDataText == undefined) {noDataText = 'No data'}
-									app.vq.show('#' + container, '<div class="text-muted mx-auto text-center">' + noDataText + '</div>', {queue: context});
+									app.vq.show('#' + container, '<div class="text-muted mx-auto text-center myds-no-data">' + noDataText + '</div>', {queue: context});
 								} 
 								else
 								{	
