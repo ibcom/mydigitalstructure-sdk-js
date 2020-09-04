@@ -2488,20 +2488,29 @@ mydigitalstructure._util =
 
 										if (data != undefined)
 										{
+											var _data = {};
+
 											for (var key in data)
 									  		{
 									     		if (data.hasOwnProperty(key))
 									     		{
 									     			selector = s.replaceAll(selector, '{{' + key.toLowerCase() + '}}', data[key]);
 									     			selector = s.replaceAll(selector, '{{~' + key.toLowerCase() + '}}', _.escape(data[key]));
+									     			
+									     			_data[key] = data[key];
+									     		
+										     		if (data[key] == '')
+										     		{
+										     			_data['myds-hide-if-empty-' + key] = 'd-none';
+										     		}
 									     		}
 									     	}
 										}
 
 										mydigitalstructure._util.view.queue.reset(param)
 										mydigitalstructure._util.view.queue.add(template, {queue: param.queue, type: 'template'});
-										mydigitalstructure._util.view.queue.add({queue: param.queue, useTemplate: true}, data);
-										mydigitalstructure._util.view.queue.render(selector, {queue: param.queue}, data);
+										mydigitalstructure._util.view.queue.add({queue: param.queue, useTemplate: true}, _data);
+										mydigitalstructure._util.view.queue.render(selector, {queue: param.queue}, _data);
 										mydigitalstructure._util.view.queue.focus(selector, {queue: param.queue});
 									}
 								},
