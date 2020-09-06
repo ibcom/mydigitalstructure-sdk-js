@@ -576,9 +576,7 @@ mydigitalstructure.retrieve = function (param)
 				{
 					param.managed = false;
 				}
-			}
-
-			
+			}	
 		}
 
 		if (_.has(param, 'data'))
@@ -604,7 +602,7 @@ mydigitalstructure.retrieve = function (param)
 						filter.name = 'id'
 					}
 
-					if (filter.name.toLowerCase() != 'or' && filter.name.toLowerCase() != 'and')
+					if (filter.name.toLowerCase() != 'or' && filter.name.toLowerCase() != 'and' && filter.name != '(' && filter.name != ')')
 					{
 						if (filter.comparison == undefined)
 						{
@@ -2420,6 +2418,17 @@ mydigitalstructure._util =
 									     			{
 									     				data[key] = ''
 									     			}
+
+									     			if (data[key] == '')
+										     		{
+										     			content = s.replaceAll(content, '{{' + 'myds-hide-if-empty-' + key.toLowerCase() + '}}', 'd-none');
+										     			content = s.replaceAll(content, '{{' + 'myds-hide-if-empty-' + key + '}}', 'd-none');
+										     		}
+										     		else
+										     		{
+										     			content = s.replaceAll(content, '{{' + 'myds-hide-if-empty-' + key.toLowerCase() + '}}', '');
+										     			content = s.replaceAll(content, '{{' + 'myds-hide-if-empty-' + key + '}}', '');
+										     		}
 
 									     			keyData = String(data[key]);
 

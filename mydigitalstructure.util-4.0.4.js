@@ -511,6 +511,44 @@ mydigitalstructure._util.view.handlers['myds-dropdown'] = function (event)
 $(document).off('click', '.myds-dropdown')
 .on('click', '.myds-dropdown', mydigitalstructure._util.view.handlers['myds-dropdown']);
 
+mydigitalstructure._util.view.handlers['myds-range'] = function (event)
+{
+	var id = $(this).attr('id');
+	var controller = $(this).data('controller');
+	var scope = $(this).data('scope');
+	var context = $(this).data('context');
+	var disabled = $(this).hasClass('disabled');
+
+	if (!disabled)
+	{
+		if (scope == undefined) {scope = controller}
+
+		if (scope == undefined)
+		{
+			scope = id
+		}
+
+		var param = {}
+		param.dataContext = mydigitalstructure._util.data.clean($(this).data());
+		
+		if (context != undefined)
+		{
+			if (app.data[scope] == undefined) {app.data[scope] = {}}
+
+			app.data[scope][context] = $(this).val();
+			app.data[scope]['_' + context] = $(this).data();
+		}	
+
+		if (controller != '')
+		{
+			mydigitalstructure._util.controller.invoke(controller, param);
+		}
+	}
+}
+
+$(document).off('change', '.myds-range')
+.on('change', '.myds-range', mydigitalstructure._util.view.handlers['myds-range']);
+
 mydigitalstructure._util.view.handlers['myds-list'] = function (event)
 {
 	var element = $(this);
@@ -2856,6 +2894,25 @@ mydigitalstructure._util.view.set = function (param)
 	});
 }
 
+mydigitalstructure._util.view.clear = function (param)
+{
+	var selector;
+
+	if (_.isObject(param))
+	{
+		selector = mydigitalstructure._util.param.get(param, 'selector').value;
+	}
+	else
+	{
+		selector = param;
+	}
+
+	if (selector != undefined)
+	{
+		$(selector).html('')
+	}
+}
+
 mydigitalstructure._util.view.refresh = function (param)
 {
 	if (_.isArray(param))
@@ -3102,6 +3159,15 @@ mydigitalstructure._util.controller.add(
 	}
 });
 
+mydigitalstructure._util.controller.add(
+{
+	name: 'util-view-clear',
+	code: function (param)
+	{
+		mydigitalstructure._util.view.clear(param);
+	}
+});
+
 mydigitalstructure._util.view.datepicker = function (param)
 {
 	var selector = mydigitalstructure._util.param.get(param, 'selector').value;
@@ -3201,7 +3267,7 @@ mydigitalstructure._util.controller.add(
 			date: date,
 			clean:true
 		}
-		
+
 		return mydigitalstructure._util.view.dateFormat(param);
 	}
 });
