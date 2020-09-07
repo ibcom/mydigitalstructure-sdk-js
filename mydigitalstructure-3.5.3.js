@@ -390,7 +390,8 @@ mydigitalstructure._create = function (param)
 		url: '/rpc/' + endpoint + '/?method=' + (param.object).toUpperCase() + '_MANAGE',
 		manageErrors: param.manageErrors,
 		managed: param.managed,
-		notify: param.notify
+		notify: param.notify,
+		set: param.set
 	});
 }
 
@@ -1706,6 +1707,21 @@ mydigitalstructure._util =
 								status: 'start'
 							});
 
+							if (_.isObject(set) && data != undefined)
+							{
+								if (set.guid)
+								{
+									if (data.datareturn == undefined)
+									{
+										data.datareturn = 'guid';
+									}
+									else
+									{
+										data.datareturn = data.datareturn + ',guid';
+									}
+								}
+							}
+
 							$.ajax(
 							{
 								type: type,
@@ -1789,6 +1805,30 @@ mydigitalstructure._util =
 														name: set.name,
 														value: response.id
 													});
+
+													if (set.guid && data != undefined)
+													{
+														if (_.has(response, 'data.rows'))
+														{
+															data.guid = _.first(response.data.rows)['guid']
+														}
+													}
+
+													if (set.data && data != undefined)
+													{
+														data.id = response.id;
+														delete data._id;
+														delete data.logonkey;
+														delete data.sid;
+														delete data.datareturn;
+
+														mydigitalstructure._util.data.set(
+														{
+															scope: set.scope + '-' + response.id,
+															value: data,
+															merge: true
+														});
+													}
 												}
 											}
 
