@@ -2481,11 +2481,17 @@ mydigitalstructure._util =
 										     		{
 										     			content = s.replaceAll(content, '{{' + 'myds-hide-if-empty-' + key.toLowerCase() + '}}', 'd-none');
 										     			content = s.replaceAll(content, '{{' + 'myds-hide-if-empty-' + key + '}}', 'd-none');
+
+										     			content = s.replaceAll(content, '{{' + 'myds-show-if-empty-' + key.toLowerCase() + '}}', '');
+										     			content = s.replaceAll(content, '{{' + 'myds-show-if-empty-' + key + '}}', '');
 										     		}
 										     		else
 										     		{
 										     			content = s.replaceAll(content, '{{' + 'myds-hide-if-empty-' + key.toLowerCase() + '}}', '');
 										     			content = s.replaceAll(content, '{{' + 'myds-hide-if-empty-' + key + '}}', '');
+
+										     			content = s.replaceAll(content, '{{' + 'myds-show-if-empty-' + key.toLowerCase() + '}}', 'd-none');
+										     			content = s.replaceAll(content, '{{' + 'myds-show-if-empty-' + key + '}}', 'd-none');
 										     		}
 
 									     			keyData = String(data[key]);
@@ -2569,6 +2575,12 @@ mydigitalstructure._util =
 										     		if (data[key] == '')
 										     		{
 										     			_data['myds-hide-if-empty-' + key] = 'd-none';
+										     			_data['myds-show-if-empty-' + key] = '';
+										     		}
+										     		else
+										     		{
+										     			_data['myds-hide-if-empty-' + key] = '';
+										     			_data['myds-show-if-empty-' + key] = 'd-none';
 										     		}
 									     		}
 									     	}
