@@ -5450,6 +5450,14 @@ mydigitalstructure._util.factory.core = function (param)
 
 							if (instructionMatch)
 							{
+								if (instruction.roles != undefined)
+								{
+									instructionMatch = mydigitalstructure._util.access.has(
+									{
+										roles: _.map(instruction.roles, function (role) {return {title: role}})
+									});
+								}
+
 								if (instruction.onlyApplyIfURIDataContextNotEmpty || instruction.onlyApplyIfURIDataContextSet)
 								{
 									instructionMatch = !_.isEmpty(mydigitalstructure._scope.app.dataContext)
@@ -5482,6 +5490,14 @@ mydigitalstructure._util.factory.core = function (param)
 
 								if (instructionMatch)
 								{
+									if (instruction.roles != undefined)
+									{
+										instructionMatch = mydigitalstructure._util.access.has(
+										{
+											roles: _.map(instruction.roles, function (role) {return {title: role}})
+										});
+									}
+
 									if (instruction.onlyApplyIfURIDataContextNotEmpty)
 									{
 										instructionMatch = !_.isEmpty(mydigitalstructure._scope.app.dataContext)
@@ -5578,10 +5594,76 @@ mydigitalstructure._util.factory.core = function (param)
 			}
 		},
 		{
+			name: 'app-route-check',
+			code: function (param)
+			{
+				var uri = mydigitalstructure._util.param.get(param, 'uri',
+						{default: mydigitalstructure._scope.app.uri}).value;
+
+				var uriContext = mydigitalstructure._util.param.get(param, 'uriContext',
+						{default: mydigitalstructure._scope.app.uriContext}).value;
+
+				var dataContext = mydigitalstructure._util.param.get(param, 'dataContext',
+						{default: mydigitalstructure._scope.app.dataContext}).value;
+
+				var isReload = mydigitalstructure._util.param.get(param, 'isReload').value;
+
+				var routeValid
+
+				if (mydigitalstructure._scope.app.options.routing.toURI == undefined)
+				{
+					routeValid = true;
+				}
+				else
+				{
+					routeValid = false;
+
+					var routingInstruction = _.find(mydigitalstructure._scope.app.options.routing.toURI, function (instruction)
+					{
+						var instructionMatch = (instruction.uri == uri && _.includes(instruction.uriContext, uriContext))
+
+						if (instructionMatch)
+						{
+							if (instruction.roles != undefined)
+							{
+								instructionMatch = mydigitalstructure._util.access.has(
+								{
+									roles: _.map(instruction.roles, function (role) {return {title: role}})
+								});
+							}
+
+							if (instruction.onlyApplyIfURIDataContextNotEmpty || instruction.onlyApplyIfURIDataContextSet)
+							{
+								instructionMatch = !_.isEmpty(dataContext)
+							}
+
+							if (instructionMatch && instruction.onlyApplyIfDataIsEmpty)
+							{
+								var controller = mydigitalstructure._scope.app.uriContext.replace('#', '');
+								instructionMatch = _.isEmpty(app.data[controller])
+							}
+
+							if (instructionMatch && !instruction.applyEvenIfReload)
+							{
+								instructionMatch = isReload
+							}
+
+							if (!routeValid)
+							{
+								routeValid = instructionMatch;
+							}
+						}
+					});
+				}
+
+				return routeValid;
+			}
+		},
+		{
 			name: 'app-working-start',
 			code: function (param)
 			{
-				var selector = mydigitalstructure._util.param.get(param, 'selector', '#app-working').value;
+				var selector = mydigitalstructure._util.param.get(param, 'selector', {default: '#app-working'}).value;
 				$(selector).removeClass('hidden d-none');
 			}
 		},
@@ -5589,7 +5671,7 @@ mydigitalstructure._util.factory.core = function (param)
 			name: 'app-working-stop',
 			code: function ()
 			{
-				var selector = mydigitalstructure._util.param.get(param, 'selector', '#app-working').value;
+				var selector = mydigitalstructure._util.param.get(param, 'selector', {default: '#app-working'}).value;
 				$(selector).addClass('hidden d-none');
 			}
 		},
