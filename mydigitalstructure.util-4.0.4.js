@@ -4192,6 +4192,7 @@ mydigitalstructure._util.data =
 				var dataController = mydigitalstructure._util.param.get(param, 'dataController').value;
 				var dataScope = mydigitalstructure._util.param.get(param, 'dataScope', {'default': 'setup'}).value;
 				var dataContext = mydigitalstructure._util.param.get(param, 'dataContext', {'default': 'all'}).value;
+				var dataName = mydigitalstructure._util.param.get(param, 'dataName', {'default': 'id'}).value;
 
 				if (dataController == undefined) {dataController = dataScope}
 
@@ -4234,7 +4235,8 @@ mydigitalstructure._util.data =
 						
 						if  (_.size(_id) == 1)
 						{
-							var value = _.find(data, function (d) {return d.id == _id[0]})
+							//var value = _.find(data, function (d) {return d.id == _id[0]})
+							var value = _.find(data, function (d) {return d[dataName] == _id[0]})
 
 							if (name != undefined && value != undefined)
 							{
@@ -4252,7 +4254,7 @@ mydigitalstructure._util.data =
 							
 							_.each(_id, function (id)
 							{
-								_value = _.find(data, function (d) {return d.id == id})
+								_value = _.find(data, function (d) {return d[dataName] == id})
 
 								if (name != undefined && _value != undefined)
 								{
