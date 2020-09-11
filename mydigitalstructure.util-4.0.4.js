@@ -930,6 +930,7 @@ mydigitalstructure._util.view.handlers['myds-text-select-change'] = function (ev
 	var controller = $(this).data('controller');
 	var scope = $(this).data('scope');
 	var context = $(this).data('context');
+	var contextText = $(this).data('context-text');
 	var disabled = $(this).hasClass('disabled');
 
 	if (!disabled)
@@ -950,7 +951,17 @@ mydigitalstructure._util.view.handlers['myds-text-select-change'] = function (ev
 		var clean = $(this).data('clean');
 
 		var val = $(this).val();
+
 		var data = $(this).data();
+
+		if (_.isFunction($(this).select2))
+		{
+			var _data = $(this).select2('data');
+			if (_data.length != 0)
+			{
+				data = _data[0]
+			}
+		}
 
 		if (clean != 'disabled')
 		{
@@ -966,6 +977,11 @@ mydigitalstructure._util.view.handlers['myds-text-select-change'] = function (ev
 			{
 				app.data[scope]['_' + context] = undefined;
 				app.data[scope][context] = '';
+
+				if (contextText != undefined)
+				{
+					app.data[scope][contextText] = '';
+				}
 
 				if ($(this).attr('data-none') != undefined)
 				{
@@ -987,6 +1003,11 @@ mydigitalstructure._util.view.handlers['myds-text-select-change'] = function (ev
 				else
 				{
 		 			app.data[scope][context] = val;
+		 			if (contextText != undefined && data != undefined)
+					{
+						app.data[scope][contextText] = data.text;
+					}
+
 		 			$(this).attr('data-id', val);
 		 			app.data[scope]['_' + context] = data;
 		 			app.data[scope]['_' + context]._type = 'change';
@@ -1021,6 +1042,12 @@ mydigitalstructure._util.view.handlers['myds-text-select-change'] = function (ev
 			else
 			{
 	 			app.data[controller][context] = val;
+	 			
+	 			if (contextText != undefined && data != undefined)
+				{
+					app.data[scope][contextText] = data.text;
+				}
+
 	 			app.data[controller]['_' + context] = data;
 	 			delete app.data[controller]['_' + context].chosen;  //?
 	 			app.data[controller]['_' + context]._type = 'change';
