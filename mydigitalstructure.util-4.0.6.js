@@ -6608,6 +6608,7 @@ mydigitalstructure._util.factory.core = function (param)
 							url: '/rpc/' + endpoint + '/?method=' + object + '_search',
 							type: 'POST',
 							delay: 500,
+							global: false,
 							data: function (query)
 							{
 								var dataQuery = {};
