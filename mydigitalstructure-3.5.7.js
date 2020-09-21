@@ -977,6 +977,45 @@ mydigitalstructure._util =
 						});
 					});
 
+					if (_.has(mydigitalstructure, '_scope.app.options.authView'))
+					{
+						var uri = window.location.host;
+
+						var optionsAuth = _.find(mydigitalstructure._scope.app.options.authView, function (auth)
+						{
+							return _.includes(auth.uris, uri)
+						});
+
+						if (optionsAuth != undefined)
+						{
+							$('.myds-signup').addClass('d-none');
+							if (optionsAuth.signup == true)
+							{
+								$('.myds-signup').removeClass('d-none');
+							}
+
+							$('.myds-auth-info').addClass('d-none');
+							if (optionsAuth.caption != undefined || optionsAuth.note != undefined)
+							{
+								$('.myds-auth-info').removeClass('d-none');
+							}
+
+							$('.myds-auth-info-caption').addClass('d-none');
+							if (optionsAuth.caption != undefined)
+							{
+								$('.myds-auth-info-caption').html(optionsAuth.caption);
+								$('.myds-auth-info-caption').removeClass('d-none');
+							}
+						
+							$('.myds-auth-info-note').addClass('d-none');
+							if (optionsAuth.note != undefined)
+							{
+								$('.myds-auth-info-note').html(optionsAuth.note);
+								$('.myds-auth-info-note').removeClass('d-none');
+							}
+						}
+					}
+
 					if (mydigitalstructure._objects == undefined && mydigitalstructure._scope.app.options.objects)
 					{	
 						$.ajax(
@@ -1026,45 +1065,18 @@ mydigitalstructure._util =
 						{
 							mydigitalstructure._util.loadScript('/jscripts/md5-min.js')
 
-							$(document).on('click', '#myds-logon', function(event)
-							{
-								mydigitalstructure.auth(
+							/*
+								Remove:
+								$(document).on('click', '#myds-logon', function(event)
 								{
-									logon: $('#myds-logonname').val(),
-									password: $('#myds-logonpassword').val(),
-									code: $('#myds-logoncode').val()
-								})
-							});
-
-							if (_.has(mydigitalstructure, '_scope.app.options.auth'))
-							{
-								var uri = window.location.host;
-
-								var optionsAuth = _.find(mydigitalstructure._scope.app.options.auth, function (auth)
-								{
-									return _.includes(auth.uris, uri)
+									mydigitalstructure.auth(
+									{
+										logon: $('#myds-logonname').val(),
+										password: $('#myds-logonpassword').val(),
+										code: $('#myds-logoncode').val()
+									})
 								});
-
-								if (optionsAuth != undefined)
-								{
-									$('.myds-signup').addClass('d-none');
-
-									if (optionsAuth.signup == true)
-									{
-										$('.myds-signup').removeClass('d-none');
-									}
-
-									if (optionsAuth.caption != undefined)
-									{
-										$('.myds-auth-caption').html(optionsAuth.caption)
-									}
-
-									if (optionsAuth.note != undefined)
-									{
-										$('.myds-auth-note').html(optionsAuth.note)
-									}
-								}
-							}
+							*/
 						}	
 					}	
 					else
