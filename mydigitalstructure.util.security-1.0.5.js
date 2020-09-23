@@ -276,8 +276,18 @@ mydigitalstructure._util.security =
 				{
 					init: function (param, response)
 					{
-						param = mydigitalstructure._util.param.set(param, 'onComplete', mydigitalstructure._util.security.share.link._util.add.process);
-						mydigitalstructure._util.security.share.link._util.getUser(param)
+						var shareWithContactBusiness = mydigitalstructure._util.param.get(param, 'shareWithContactBusiness').value;
+
+						if (shareWithContactBusiness == '' || shareWithContactBusiness == undefined)
+						{
+							param = mydigitalstructure._util.param.set(param, 'onComplete', mydigitalstructure._util.security.share.link._util.add.process);
+							mydigitalstructure._util.security.share.link._util.getUser(param);
+						}
+						else
+						{
+							param = mydigitalstructure._util.param.set(param, 'onComplete', mydigitalstructure._util.security.share.link._util.add.processUserContactBusiness);
+							mydigitalstructure._util.security.share.link._util.getUserContactBusiness(param);
+						}
 					},
 
 					process: function (param, response)
@@ -285,10 +295,8 @@ mydigitalstructure._util.security =
 						//sharedBy = {contactbusiness:, contactperson:}
 
 						var shareWithUser = mydigitalstructure._util.param.get(param, 'shareWithUser').value;
-						var shareWithUserContactBusiness = mydigitalstructure._util.param.get(param, 'shareWithUserContactBusiness', {default: false}).value;
 
 						var sharedBy = mydigitalstructure._util.param.get(param, 'sharedBy').value;
-
 						var sharedByContact = mydigitalstructure._util.param.get(param, 'sharedByContact').value;
 						var sharedByType = mydigitalstructure._util.param.get(param, 'sharedByType', {default: 'contact_person'}).value;
 
@@ -321,6 +329,45 @@ mydigitalstructure._util.security =
 								data.notes = 'Shared with ' + shareWithUser['username'] + ' by ' + mydigitalstructure._scope.user.userlogonname
 							}
 
+							mydigitalstructure.save(
+							{
+								object: 'setup_user_data_access',
+								data: data,
+								callback: mydigitalstructure._util.security.share.link._util.add.finalise,
+								callbackParam: param
+							});
+						}
+					},
+
+					processUserContactBusiness: function (param, response)
+					{
+						var shareWithUserContactBusiness = mydigitalstructure._util.param.get(param, 'shareWithUserContactBusiness').value;
+
+						var sharedBy = mydigitalstructure._util.param.get(param, 'sharedBy').value;
+						var sharedByContact = mydigitalstructure._util.param.get(param, 'sharedByContact').value;
+						var sharedByType = mydigitalstructure._util.param.get(param, 'sharedByType', {default: 'contact_person'}).value;
+
+						if (shareWithUserContactBusiness != undefined && mydigitalstructure._scope.user != undefined)
+						{
+							if (sharedByContact == undefined)
+							{
+								sharedByContact = {contactbusiness: mydigitalstructure._scope.user.contactbusiness}
+								if (sharedByType == 'contact_person')
+								{
+									sharedByContact.contactperson = mydigitalstructure._scope.user.contactperson
+								} 
+							}
+
+							var data = 
+							{
+								contactbusiness: sharedByContact.contactbusiness,
+								contactperson: sharedByContact.contactperson
+							}
+
+							data.usercontactbusiness = shareWithUserContactBusiness['id'];
+							data.notes = 'Shared with ' + shareWithUserContactBusiness['tradename'] +
+													' by ' + mydigitalstructure._scope.user.userlogonname
+							
 							mydigitalstructure.save(
 							{
 								object: 'setup_user_data_access',
@@ -436,6 +483,61 @@ mydigitalstructure._util.security =
 						}
 
 						param.shareWithUser = mydigitalstructure._util.security.share.link._util.data.getUser;
+						mydigitalstructure._util.onComplete(param);
+					}	
+				},
+
+				getUserContactBusiness: function (param, response)
+				{
+					var shareWithContactBusiness = mydigitalstructure._util.param.get(param, 'shareWithContactBusiness').value;
+
+					if (response == undefined)
+					{
+						if (shareWithContactBusiness != undefined)
+						{
+							mydigitalstructure._util.security.share.link._util.data.getUserContactBusiness = undefined;
+
+							var filters = [];
+
+							filters.push(
+							{
+								name: 'id',
+								comparison: 'EQUAL_TO',
+								value: shareWithContactBusiness
+							});
+							
+							mydigitalstructure.retrieve(
+							{
+								object: 'contact_business',
+								data:
+								{
+									criteria:
+									{
+										fields:
+										[
+											{name: 'tradename'}
+										],
+										filters: filters,
+										options: {rows: 1}
+									}
+								},
+								callback: mydigitalstructure._util.security.share.link._util.getUserContactBusiness,
+								callbackParam: param
+							});
+						}
+						else
+						{
+							mydigitalstructure._util.log.add({message: 'mydigitalstructure._util.security.share.link._util.getUserContactBusiness: Missing shareWithContactBusiness:', keep: true });
+						}	
+					}
+					else
+					{
+						if (response.data.rows.length != 0)
+						{
+							mydigitalstructure._util.security.share.link._util.data.getUserContactBusiness = response.data.rows[0];
+						}
+
+						param.shareWithUserContactBusiness = mydigitalstructure._util.security.share.link._util.data.getUserContactBusiness;
 						mydigitalstructure._util.onComplete(param);
 					}	
 				},
