@@ -1121,7 +1121,8 @@ mydigitalstructure._util =
 									else
 									{
 										mydigitalstructure._scope.user = data;
-
+										mydigitalstructure._scope.user.id = data.user;
+										
 										if (mydigitalstructure._scope.user.roles.rows != 0 )
 										{
 											var role = mydigitalstructure._scope.user.roles.rows[0].title.toLowerCase().replaceAll(' ', '-');
