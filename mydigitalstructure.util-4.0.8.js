@@ -624,13 +624,21 @@ mydigitalstructure._util.view.handlers['myds-check'] = function (event)
 		{	
 			if (app.data[scope] == undefined) {app.data[scope] = {}}
 
-			var dataID = $(this).data('id');
 			var selected = $(this).prop('checked');
-			var dataUnselectedID = $(this).data('unselectedId');
+
+			var dataID = $(this).data('id');
+			var dataSelectedID = $(this).attr('data-selected-id');
+			
+			if (dataSelectedID != undefined)
+			{
+				 dataID = dataSelectedID;
+			}
+
+			var dataUnselectedID = $(this).attr('data-unselected-id');
 
 			if (dataUnselectedID == undefined)
 			{
-				dataUnselectedID = $(this).data('uncheckedId');
+				dataUnselectedID = $(this).attr('data-unchecked-id');
 			}
 			
 			if (!selected && dataUnselectedID != undefined)
@@ -667,7 +675,6 @@ mydigitalstructure._util.view.handlers['myds-check'] = function (event)
 			if (controller != undefined)
 			{
 				var inputs = $('input.myds-check[data-controller="' + controller + '"][data-context="' + context + '"]:visible');
-			
 				
 				if (inputs.length != 1)
 				{
@@ -691,7 +698,18 @@ mydigitalstructure._util.view.handlers['myds-check'] = function (event)
 				if (inputs.length != 1)
 				{
 		 			var checked = $('input.myds-check[data-scope="' + scope + '"][data-context="' + context + '"]:checked:visible');
-		 			ids = $.map(checked, function (c) {return $(c).data('id')});
+
+		 			ids = $.map(checked, function (c)
+		 			{
+		 				if ($(c).hasAttr('data-id'))
+		 				{
+		 					return $(c).attr('data-id');
+		 				}
+		 				else if ($(c).hasAttr('data-selected-id'))
+		 				{
+		 					return $(c).attr('data-selected-id');
+		 				}
+		 			});
 
 		 			var unchecked = $('input.myds-check[data-scope="' + scope + '"][data-context="' + context + '"]:not(:checked):visible');
 		 			uncheckedids = $.map(unchecked, function (c)
@@ -3077,10 +3095,22 @@ mydigitalstructure._util.view._refresh = function (param)
 			}
 		});
 
-		//_.each(data, function (value, key)
-		//{
-		//	$(selector + ' input.myds-check[data-context="' + key + '"][data-id="' + value + '"]').attr('checked', 'checked')
-		//});
+		_.each($(selector + ' input.myds-check[data-context][data-selected-id]'),
+			function (element)
+		{
+			var context = $(element).data('context');
+			var value = data[context];
+
+			if (value != undefined)
+			{
+				$(selector + ' input.myds-check[data-context="' + context + '"][data-selected-id="' + value + '"]').attr('checked', 'checked')
+			}
+		});
+
+		_.each(data, function (value, key)
+		{
+			$(selector + ' input.myds-select[data-context="' + key + '"][value="' + value + '"]').attr('checked', 'checked')
+		});
 	}
 
 	if (!_.isUndefined(data) && !_.isUndefined(scope))
