@@ -240,6 +240,7 @@ mydigitalstructure._util.factory.dashboard = function (param)
 				var name = app._util.param.get(dashboard, 'name').value;
 				var noDataText = app._util.param.get(dashboard, 'noDataText', {default: '<div class="text-muted">No data.</div>'}).value;
 				var chartData = app._util.param.get(dashboard, 'chartData').value;
+				var fields = app._util.param.get(dashboard, 'fields', {default: {}}).value;
 				
 				if (containerSelector == undefined && name != undefined)
 				{
@@ -277,10 +278,30 @@ mydigitalstructure._util.factory.dashboard = function (param)
 							if (chartData.labels != undefined) {setLabels = false}
 							if (chartData.series != undefined) {setSeries = false}
 						}
+
+						var labelsField = fields.labels;
+						if (labelsField == undefined)
+						{
+							labelsField = _.first(_.keys(_.first(rows)));
+						}
+
+						var dataField = fields.data;
+						if (dataField == undefined)
+						{
+							dataField = _.last(_.keys(_.first(rows)));
+						}
+
 						_.each(rows, function (row)
 						{
-							if (setLabels) {chartData.labels.push(row.categorytext)};
-							if (setSeries) {chartData.series[0].data.push(row.count)};
+							if (setLabels)
+							{
+								chartData.labels.push(row[labelsField])
+							};
+
+							if (setSeries)
+							{
+								chartData.series[0].data.push(row[dataField])
+							};
 						});
 
 						if (app._util.controller.exists('util-view-chart-render'))
