@@ -7827,7 +7827,8 @@ mydigitalstructure._util.factory.core = function (param)
 		'dashboard',
 		'security',
 		'search',
-		'editor'
+		'editor',
+		'chart'
 	], function (namespace)
 	{
 		if (_.isFunction(mydigitalstructure._util.factory[namespace]))
