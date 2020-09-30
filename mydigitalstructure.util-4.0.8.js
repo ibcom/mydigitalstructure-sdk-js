@@ -3107,9 +3107,16 @@ mydigitalstructure._util.view._refresh = function (param)
 			}
 		});
 
-		_.each(data, function (value, key)
+		_.each($(selector + ' input.myds-select[data-context][value]'),
+			function (element)
 		{
-			$(selector + ' input.myds-select[data-context="' + key + '"][value="' + value + '"]').attr('checked', 'checked')
+			var context = $(element).data('context');
+			var value = data[context];
+
+			if (value != undefined)
+			{
+				$(selector + ' input.myds-select[data-context="' + context + '"][value="' + value + '"]').attr('checked', 'checked')
+			}
 		});
 	}
 
