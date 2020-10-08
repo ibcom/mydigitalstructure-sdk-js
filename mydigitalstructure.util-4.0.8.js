@@ -1239,6 +1239,57 @@ mydigitalstructure._util.view.handlers['myds-sort'] = function (event)
 $(document).off('click', '.myds-sort')
 .on('click', '.myds-sort', mydigitalstructure._util.view.handlers['myds-sort']);
 
+mydigitalstructure._util.view.handlers['myds-page-rows'] = function (event)
+{
+	var rowsperpage = $(this).attr('data-rowsperpage');
+	var controller = $(this).attr('data-controller');
+	var scope = $(this).attr('data-scope');
+	var context = $(this).attr('data-context');
+	var clean = $(this).data('clean');
+
+	var data = $(this).data();
+
+	if (scope == undefined) {scope = controller}
+
+	if (clean != 'disabled')
+	{
+		data = mydigitalstructure._util.data.clean(data);
+	}
+
+	if (_.isUndefined(controller))
+	{
+		controller = $(this).parent().attr('data-controller');
+	}
+
+	if (_.isUndefined(context))
+	{
+		context = $(this).parent().attr('data-context');
+	}
+
+	if (_.isUndefined(context))
+	{
+		context = 'rowsperpage';
+	}
+
+	if (controller != undefined && context != undefined)
+	{	
+ 		if (app.data[controller] == undefined) {app.data[controller] = {}}
+
+ 		app.data[controller][context] = {count: rowsperpage};
+ 		app.data[controller]['_' + context] = data;
+
+		if (app.controller[controller] != undefined)
+		{	
+			var param = {rowsPerPage: app.data[controller][context]}
+			param.context = context;
+			app.controller[controller](param);
+		}
+	}		
+}
+
+$(document).off('click', '.myds-page-rows')
+.on('click', '.myds-page-rows', mydigitalstructure._util.view.handlers['myds-page-rows']);
+
 mydigitalstructure._util.view.handlers['myds-validate'] = function (event)
 {
 	mydigitalstructure._util.validate.check(
@@ -2339,11 +2390,24 @@ mydigitalstructure._util.view.more = function (response, param)
 	var styles = mydigitalstructure._scope.app.options.styles;
 	var buttonClass = 'btn btn-default btn-sm';
 	var orientation = mydigitalstructure._util.param.get(param, 'orientation', {"default": 'vertical'}).value;
-	var pageRows = mydigitalstructure._util.param.get(param, 'rows', {"default": mydigitalstructure._scope.app.options.rows}).value;
 	var progressive = mydigitalstructure._util.param.get(param, 'progressive', {"default": true}).value;
 	var containerID = mydigitalstructure._util.param.get(param, 'containerID').value;
 	var showAlways = mydigitalstructure._util.param.get(param, 'showAlways', {"default": false}).value;
 	var showFooter = mydigitalstructure._util.param.get(param, 'showFooter', {"default": true}).value;
+
+	var pageRows = mydigitalstructure._util.param.get(param, 'rows').value;
+
+	if (pageRows == undefined)
+	{
+		pageRows = mydigitalstructure._scope.app.options.rows;
+	}
+
+	var pageRowsSelections = mydigitalstructure._util.param.get(param, 'rowsSelections').value;
+	
+	if (pageRowsSelections == undefined)
+	{
+		pageRowsSelections = mydigitalstructure._scope.app.options.rowsSelections;
+	}
 
 	if (scope == undefined) {scope = queue}
 
@@ -2507,10 +2571,39 @@ mydigitalstructure._util.view.more = function (response, param)
 		var html = [];
 
 		html.push('<nav aria-label="page navigation">' +
-						  	'<ul class="pagination">');
+						  	'<ul class="pagination justify-content-center">');
 
 		if (!progressive)
 		{
+			if (_.isArray(pageRowsSelections))
+			{
+				//html.push('<li class="page-item data-id="' + response.moreid + '">' +
+				//				'<div class="small">Rows</div>' +
+				//			'</li>');
+
+				html.push('<li class="page-item data-id="' + response.moreid + '">' +
+							'<div class="dropdown">' +
+  								'<button class="btn btn-white btn-outline btn-sm dropdown-toggle"' +
+  								' href="#" role="button" id="myds-page-rows-selection-' + response.moreid + '"' +
+  								' style="padding-top: 2px; padding-bottom: 2px; margin-right: 6px;" ' +
+  								' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">' +
+  								' <span class="myds-dropdown-text small">' + pageRows + '</span></button>' +
+				 				' <div class="dropdown-menu" aria-labelledby="myds-page-rows-selection-' + response.moreid + '">' +
+				 				' <div class="dropdown-header text-muted" style="font-size:0.75rem; padding-bottom:2px;">Rows Per Page</div>');
+
+				_.each(pageRowsSelections, function (pageRowsSelection)
+				{
+					html.push('<a class="dropdown-item myds-page-rows" href="#" ' +
+								' data-controller="util-view-table"' +
+								' data-context="' + context + '" ' +
+								' data-rowsperpage="' + pageRowsSelection + '">' + pageRowsSelection + '</a>');
+				});
+		
+				html.push(		'</div>' +
+							'</div>' +
+						'</li>');
+			}
+
 			html.push('<li class="page-item' + (bPrevious?'':' disabled') + ' myds-previous"' +
 									' data-id="' + response.moreid + '"' +
 									'>' +
@@ -6932,7 +7025,7 @@ mydigitalstructure._util.factory.core = function (param)
 				{
 					$('#' + container).addClass('hidden d-none');
 
-					if (response != undefined || param.sort != undefined)
+					if (response != undefined || param.sort != undefined || param.rowsPerPage != undefined)
 					{
 						if (response != undefined)
 						{
@@ -6951,6 +7044,7 @@ mydigitalstructure._util.factory.core = function (param)
 						}
 
 						var sort = param.sort;
+						var rowsPerPage = param.rowsPerPage;
 
 						param = app._util.data.get(
 						{
@@ -6961,6 +7055,11 @@ mydigitalstructure._util.factory.core = function (param)
 						if (sort != undefined)
 						{
 							param.sort = sort;
+						}
+				
+						if (rowsPerPage != undefined)
+						{
+							param.options.rows = rowsPerPage.count;
 						}
 					}
 
@@ -6979,6 +7078,8 @@ mydigitalstructure._util.factory.core = function (param)
 					var scope = mydigitalstructure._util.param.get(param, 'scope').value;
 					var container = mydigitalstructure._util.param.get(param, 'container').value;
 					var deleteConfirm = mydigitalstructure._util.param.get(param, 'deleteConfirm').value;
+
+					var rows = mydigitalstructure._util.param.get(options, 'rows').value;
 
 					var select = mydigitalstructure._util.param.get(param, 'select').value;
 					if (select == undefined && options != undefined)
@@ -7106,7 +7207,10 @@ mydigitalstructure._util.factory.core = function (param)
 								});
 							}
 
-							var rows = (options.rows!=undefined ? options.rows : app.options.rows);
+							if (rows == undefined)
+							{
+								rows = (options.rows!=undefined ? options.rows : app.options.rows);
+							}
 
 							var search = 
 							{
@@ -7117,7 +7221,7 @@ mydigitalstructure._util.factory.core = function (param)
 									customoptions: customOptions,
 									options:
 									{
-										rows: options.rows
+										rows: rows
 									},
 									sorts: sorts
 								}
@@ -7561,7 +7665,8 @@ mydigitalstructure._util.factory.core = function (param)
 										controller: 'util-view-table',
 										context: context,
 										orientation: options.orientation,
-										rows: options.rows,
+										rows: pageRows,
+										rowsSelections: options.rowsSelections,
 										progressive: options.progressive,
 										containerID: controller + '-navigation',
 										showAlways: options.showAlways,
