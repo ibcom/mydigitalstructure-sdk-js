@@ -2570,40 +2570,39 @@ mydigitalstructure._util.view.more = function (response, param)
 
 		var html = [];
 
+		if (_.isArray(false && pageRowsSelections))
+		{
+			//html.push('<li class="page-item data-id="' + response.moreid + '">' +
+			//				'<div class="small">Rows</div>' +
+			//			'</li>');
+
+			html.push(
+						'<div class="dropdown">' +
+								'<button class="btn btn-white btn-outline btn-sm dropdown-toggle"' +
+								' href="#" role="button" id="myds-page-rows-selection-' + response.moreid + '"' +
+								' style="padding-top: 2px; padding-bottom: 2px; margin-right: 6px;" ' +
+								' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">' +
+								' <span class="myds-dropdown-text small">' + pageRows + '</span></button>' +
+			 				' <div class="dropdown-menu" aria-labelledby="myds-page-rows-selection-' + response.moreid + '">' +
+			 				' <div class="dropdown-header text-muted" style="font-size:0.75rem; padding-bottom:2px;">Rows Per Page</div>');
+
+			_.each(pageRowsSelections, function (pageRowsSelection)
+			{
+				html.push('<a class="dropdown-item myds-page-rows" href="#" ' +
+							' data-controller="util-view-table"' +
+							' data-context="' + context + '" ' +
+							' data-rowsperpage="' + pageRowsSelection + '">' + pageRowsSelection + '</a>');
+			});
+	
+			html.push(		'</div>' +
+						'</div>');
+		}
+
 		html.push('<nav aria-label="page navigation">' +
 						  	'<ul class="pagination justify-content-center">');
 
 		if (!progressive)
 		{
-			if (_.isArray(pageRowsSelections))
-			{
-				//html.push('<li class="page-item data-id="' + response.moreid + '">' +
-				//				'<div class="small">Rows</div>' +
-				//			'</li>');
-
-				html.push('<li class="page-item data-id="' + response.moreid + '">' +
-							'<div class="dropdown">' +
-  								'<button class="btn btn-white btn-outline btn-sm dropdown-toggle"' +
-  								' href="#" role="button" id="myds-page-rows-selection-' + response.moreid + '"' +
-  								' style="padding-top: 2px; padding-bottom: 2px; margin-right: 6px;" ' +
-  								' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">' +
-  								' <span class="myds-dropdown-text small">' + pageRows + '</span></button>' +
-				 				' <div class="dropdown-menu" aria-labelledby="myds-page-rows-selection-' + response.moreid + '">' +
-				 				' <div class="dropdown-header text-muted" style="font-size:0.75rem; padding-bottom:2px;">Rows Per Page</div>');
-
-				_.each(pageRowsSelections, function (pageRowsSelection)
-				{
-					html.push('<a class="dropdown-item myds-page-rows" href="#" ' +
-								' data-controller="util-view-table"' +
-								' data-context="' + context + '" ' +
-								' data-rowsperpage="' + pageRowsSelection + '">' + pageRowsSelection + '</a>');
-				});
-		
-				html.push(		'</div>' +
-							'</div>' +
-						'</li>');
-			}
-
 			html.push('<li class="page-item' + (bPrevious?'':' disabled') + ' myds-previous"' +
 									' data-id="' + response.moreid + '"' +
 									'>' +
@@ -2711,7 +2710,7 @@ mydigitalstructure._util.view.more = function (response, param)
 						        	'<span class="sr-only">More</span>' +
 						      '</a>' +
 						   '</li>' +
-						  	'</ul>' +
+						  '</ul>' +
 						'</nav>');
 
 			}
@@ -2738,6 +2737,35 @@ mydigitalstructure._util.view.more = function (response, param)
 						  	'</ul>' +
 						'</nav>');
 			}	
+		}
+
+		app.vq.add('<div class="text-center small text-muted" data-id="' + response.moreid + '">' + 
+									html.join('') + '</div>', param);
+
+		var html = [];
+
+		if (_.isArray(pageRowsSelections))
+		{
+			html.push(
+						'<div class="dropdown">' +
+								'<a class="dropdown-toggle"' +
+								' href="#" role="button" id="myds-page-rows-selection-' + response.moreid + '"' +
+								' style="padding-top: 2px; padding-bottom: 2px; margin-right: 6px;" ' +
+								' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">' +
+								' <span class="myds-dropdown-text text-muted">' + pageRows + ' rows per page</span></a>' +
+			 				' <ul class="dropdown-menu" aria-labelledby="myds-page-rows-selection-' + response.moreid + '">' +
+			 				' <li><div class="dropdown-header text-muted" style="font-size:0.75rem; padding-bottom:2px;">Rows Per Page</div></li>');
+
+			_.each(pageRowsSelections, function (pageRowsSelection)
+			{
+				html.push('<li><a class="dropdown-item myds-page-rows" href="#" ' +
+							' data-controller="util-view-table"' +
+							' data-context="' + context + '" ' +
+							' data-rowsperpage="' + pageRowsSelection + '">' + pageRowsSelection + '</a></li>');
+			});
+	
+			html.push(		'</ul>' +
+						'</div>');
 		}
 
 		app.vq.add('<div class="text-center m-b mb-2 small text-muted" data-id="' + response.moreid + '">' + 
