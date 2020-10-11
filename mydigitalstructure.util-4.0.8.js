@@ -980,7 +980,8 @@ mydigitalstructure._util.view.handlers['myds-text-select-change'] = function (ev
 
 		var data = $(this).data();
 
-		if (_.isFunction($(this).select2))
+		//if (_.isFunction($(this).select2))
+		if ($(this).data('select2') != undefined)
 		{
 			var _data = $(this).select2('data');
 			if (_data.length != 0)
