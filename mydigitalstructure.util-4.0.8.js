@@ -2600,7 +2600,7 @@ mydigitalstructure._util.view.more = function (response, param)
 								' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">' +
 								' <span class="myds-dropdown-text small">' + pageRows + '</span></button>' +
 			 				' <div class="dropdown-menu" aria-labelledby="myds-page-rows-selection-' + response.moreid + '">' +
-			 				' <div class="dropdown-header text-muted" style="font-size:0.75rem; padding-bottom:2px;">Rows Per Page</div>');
+			 				' <div class="dropdown-header text-muted" style="font-size:0.75rem; padding-bottom:2px;">Rows Per Page<span class="caret"></span></div>');
 
 			_.each(pageRowsSelections, function (pageRowsSelection)
 			{
@@ -2763,13 +2763,13 @@ mydigitalstructure._util.view.more = function (response, param)
 		if (_.isArray(pageRowsSelections))
 		{
 			html.push(
-						'<div class="dropdown">' +
-								'<a class="dropdown-toggle"' +
+						'<div class="dropdown text-center m-x-auto mx-auto" style="width:150px;">' +
+								'<a class="dropdown-toggle text-muted"' +
 								' href="#" role="button" id="myds-page-rows-selection-' + response.moreid + '"' +
 								' style="padding-top: 2px; padding-bottom: 2px; margin-right: 6px;" ' +
 								' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">' +
-								' <span class="myds-dropdown-text text-muted">' + pageRows + ' rows per page</span></a>' +
-			 				' <ul class="dropdown-menu" aria-labelledby="myds-page-rows-selection-' + response.moreid + '">' +
+								' <span class="myds-dropdown-text text-muted">' + pageRows + ' rows per page</span><span class="caret"></span></a>' +
+			 				' <ul class="dropdown-menu m-x-auto" aria-labelledby="myds-page-rows-selection-' + response.moreid + '">' +
 			 				' <li><div class="dropdown-header text-muted" style="font-size:0.75rem; padding-bottom:2px;">Rows Per Page</div></li>');
 
 			_.each(pageRowsSelections, function (pageRowsSelection)
