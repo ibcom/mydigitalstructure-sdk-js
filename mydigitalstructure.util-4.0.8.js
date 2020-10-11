@@ -681,8 +681,19 @@ mydigitalstructure._util.view.handlers['myds-check'] = function (event)
 		 			var checked = $('input.myds-check[data-controller="' + controller + '"][data-context="' + context + '"]:checked:visible');
 		 			ids = $.map(checked, function (c)
 		 			{
-		 				return $(c).data('id')}
-		 			);
+		 				if ($(c).attr('data-id') != undefined)
+		 				{
+		 					return $(c).attr('data-id');
+		 				}
+		 				else if ($(c).attr('data-selected-id') != undefined)
+		 				{
+		 					return $(c).attr('data-selected-id');
+		 				}
+		 				else
+		 				{
+		 					return $(c).val();
+		 				}
+					});
 
 		 			var unchecked = $('input.myds-check[data-controller="' + controller + '"][data-context="' + context + '"]:not(:checked):visible');
 		 			uncheckedids = $.map(unchecked, function (c)
@@ -701,13 +712,17 @@ mydigitalstructure._util.view.handlers['myds-check'] = function (event)
 
 		 			ids = $.map(checked, function (c)
 		 			{
-		 				if ($(c).hasAttr('data-id'))
+		 				if ($(c).attr('data-id') != undefined)
 		 				{
 		 					return $(c).attr('data-id');
 		 				}
-		 				else if ($(c).hasAttr('data-selected-id'))
+		 				else if ($(c).attr('data-selected-id') != undefined)
 		 				{
 		 					return $(c).attr('data-selected-id');
+		 				}
+		 				else
+		 				{
+		 					return $(c).val();
 		 				}
 		 			});
 
@@ -3256,10 +3271,13 @@ mydigitalstructure._util.view._refresh = function (param)
 
 			_.each(elementIDs, function (element)
 			{
-				elementID = $(element).attr('id');
-				$(element).attr('data-id', data.id);
-				$(element).attr('id', elementID + data.id)
-				$(element).attr('data-scope', scope + '-' + data.id)
+				if (!$(element).hasClass('myds-check'))
+				{
+					elementID = $(element).attr('id');
+					$(element).attr('data-id', data.id);
+					$(element).attr('id', elementID + data.id);
+					$(element).attr('data-scope', scope + '-' + data.id);
+				}
 			});
 
 			elementIDs = $('input[data-scope="' + scope + '-' + data.id + '"][data-value]');
@@ -3268,15 +3286,18 @@ mydigitalstructure._util.view._refresh = function (param)
 
 			_.each(elementIDs, function (element)
 			{
-				elementContext = $(element).attr('data-context');
-
-				if (elementContext != undefined)
+				if (!$(element).hasClass('myds-text-select'))
 				{
-					elementValue = data[elementContext];
-					if (elementValue == undefined) {elementValue = ''}
+					elementContext = $(element).attr('data-context');
 
-					$(element).attr('data-value', elementValue);
-					$(element).val(elementValue);
+					if (elementContext != undefined)
+					{
+						elementValue = data[elementContext];
+						if (elementValue == undefined) {elementValue = ''}
+
+						$(element).attr('data-value', elementValue);
+						$(element).val(elementValue);
+					}
 				}
 			});
 
