@@ -7171,7 +7171,7 @@ mydigitalstructure._util.factory.core = function (param)
 							valueDefault: {}
 						});
 
-						if (dataSort.direction != undefined)
+						if (dataSort.direction != undefined && dataSort.name != 'undefined')
 						{
 							var columnSort = $.grep(format.columns, function (column) {return column.param == dataSort.name})[0];
 
