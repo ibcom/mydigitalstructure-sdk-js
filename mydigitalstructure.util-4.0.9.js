@@ -7493,7 +7493,12 @@ mydigitalstructure._util.factory.core = function (param)
 										var startRow = response.startrow;
 										var currentPage = parseInt((_.toNumber(startRow) + _.toNumber(pageRows)) / _.toNumber(pageRows));
 										var tableClass = (options.class!=undefined?options.class:'table-hover');
+
+										if (options.header == undefined) {options.header == options.showHeader}
 										var tableHeader = (options.header!=undefined?options.header:true);
+
+										if (options.footer == undefined) {options.footer == options.showFooter}
+										var tableFooter = (options.footer!=undefined?options.footer:true);
 
 										app._util.data.set(
 										{
@@ -7692,7 +7697,7 @@ mydigitalstructure._util.factory.core = function (param)
 										progressive: options.progressive,
 										containerID: controller + '-navigation',
 										showAlways: options.showAlways,
-										showFooter: options.showFooter
+										showFooter: tableFooter
 									});
 								}
 
