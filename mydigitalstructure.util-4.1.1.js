@@ -971,7 +971,6 @@ mydigitalstructure._util.view.handlers['myds-text-select-change'] = function (ev
 	var controller = $(this).data('controller');
 	var scope = $(this).data('scope');
 	var context = $(this).data('context');
-	var contextText = $(this).data('context-text');
 	var disabled = $(this).hasClass('disabled');
 
 	if (!disabled)
@@ -990,12 +989,16 @@ mydigitalstructure._util.view.handlers['myds-text-select-change'] = function (ev
 		}
 
 		var clean = $(this).data('clean');
-
 		var val = $(this).val();
-
 		var data = $(this).data();
 
-		//if (_.isFunction($(this).select2))
+		var contextText = $(this).attr('context-text');
+
+		if (contextText == undefined && context != undefined)
+		{
+			contextText = context + 'text';
+		}
+
 		if ($(this).data('select2') != undefined)
 		{
 			var _data = $(this).select2('data');
