@@ -6352,6 +6352,13 @@ mydigitalstructure._util.factory.core = function (param)
 			}
 		},
 		{
+			name: 'util-svg-as-image',
+			code: function (param)
+			{
+				return mydigitalstructure._util.svgAsImage(param)
+			}
+		},
+		{
 			name: 'util-image-to-base64',
 			code: function (param)
 			{
