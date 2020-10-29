@@ -4208,8 +4208,6 @@ mydigitalstructure._util.svgToCanvas = function (param)
 		else
 		{
 			v = canvg.Canvg.fromString(ctx, '<svg width="600" height="600"><text x="50" y="50">Hello World!</text></svg>');
-
-	    // Start SVG rendering with animations and mouse handling.
 			v.start();
 		}
 	}
