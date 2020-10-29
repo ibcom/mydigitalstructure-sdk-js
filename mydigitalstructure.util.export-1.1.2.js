@@ -496,7 +496,7 @@ mydigitalstructure._util.factory.export = function (param)
 				onComplete: mydigitalstructure._util.downloadImage	
 			}
 			
-			mydigitalstructure._util.svgToImage(param);
+			mydigitalstructure._util.svgAsImage(param);
 		}	
 	}
 

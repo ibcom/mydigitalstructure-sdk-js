@@ -4046,12 +4046,19 @@ mydigitalstructure._util.svgAsImage = function (param)
 	{
 		imageContainerID = mydigitalstructure._util.param.get(param, 'imageContainerID').value;
 	}
+
 	var imageContainerSelector = mydigitalstructure._util.param.get(param, 'imageContainerSelector').value;
 
 	if (imageContainerSelector == undefined && imageContainerID != undefined)
 	{
 		imageContainerSelector = '#' + imageContainerID
 	}
+
+	var imageHTMLTemplate = mydigitalstructure._util.param.get(param, 'imageHTMLTemplate', {default: '<img src="{{src}}">'}).value;
+
+	var downloadContainerSelector = mydigitalstructure._util.param.get(param, 'downloadContainerSelector').value;
+	var downloadHTMLTemplate = mydigitalstructure._util.param.get(param, 'downloadHTMLTemplate', {default: '<a download="image.png" href="{{src}}">'}).value;
+	var download = mydigitalstructure._util.param.get(param, 'download', {default: false}).value;
 
 	var cssData = mydigitalstructure._util.param.get(param, 'cssData').value;
 	var styles = mydigitalstructure._util.param.get(param, 'styles').value;
@@ -4063,7 +4070,7 @@ mydigitalstructure._util.svgAsImage = function (param)
 						']]></style>'
 	}
 
-	var cache = mydigitalstructure._util.param.get(param, 'cache').value;
+	var set = mydigitalstructure._util.param.get(param, 'setDefault').value;
 	var smoothing = mydigitalstructure._util.param.get(param, 'smoothing', {"default": false}).value;
 
 	var viewScale = mydigitalstructure._util.param.get(param, 'viewScale', {"default": 1}).value;
@@ -4073,6 +4080,7 @@ mydigitalstructure._util.svgAsImage = function (param)
 	var boxHeight = (parseInt(height) / viewScale);
 	var boxWidth = (parseInt(width) / viewScale);
 
+	var scale = mydigitalstructure._util.param.get(param, 'scale', {"default": 15}).value;
 	var clean = mydigitalstructure._util.param.get(param, 'clean', {default: false}).value;
 
 	if (clean && svgSelector != undefined)
@@ -4086,11 +4094,6 @@ mydigitalstructure._util.svgAsImage = function (param)
 	var svgHTML = $(svgSelector).html();
 	var debug = mydigitalstructure._util.param.get(param, 'debug', {default: false}).value;
 
-	//var svgHTML = svg
-	//		.attr("version", 1.1)
-	//		.attr("xmlns", "http://www.w3.org/2000/svg")
-	//		.html();
-
 	if (styles == undefined) {styles = ''}
 
 	var html = '<svg viewBox="0 0 ' + boxWidth + ' ' + boxHeight + '" version="1.1" xmlns="http://www.w3.org/2000/svg" ' +
@@ -4099,12 +4102,16 @@ mydigitalstructure._util.svgAsImage = function (param)
 			svgHTML
 			 + '</svg>';
 
-	var imgsrc = 'data:image/svg+xml;base64,' + btoa(html);
+	var svgDataURI = 'data:image/svg+xml;base64,' + btoa(html);
        	
-	if (cache != undefined) {cache.dataSVG = imgsrc}
-	param = mydigitalstructure._util.param.set(param, 'dataSVG', imgsrc);
+	if (set != undefined)
+	{
+		mydigitalstructure._util.data.set(_.assign(set, {value: svgDataURI}))
+	}
 
-	var canvas; // = document.getElementById(elementImageContainerID + '_canvas');
+	param = mydigitalstructure._util.param.set(param, 'svgDataURI', svgDataURI);
+
+	var canvas = mydigitalstructure._util.param.get(param, 'canvas').value;
 
 	if (canvas == undefined)
 	{
@@ -4118,32 +4125,50 @@ mydigitalstructure._util.svgAsImage = function (param)
 
 	if (smoothing)
 	{
-		context.mozImageSmoothingEnabled = smoothing;
-		context.msImageSmoothingEnabled = smoothing;
-		context.imageSmoothingEnabled = smoothing;
+		context.mozImageSmoothingEnabled = true;
+		context.msImageSmoothingEnabled = true;
+		context.imageSmoothingEnabled = true;
 	}
 
 	if (debug)
 	{
 		console.log('imageToBase64Data SVG URI');
-		console.log(imgsrc);
+		console.log(svgDataURI);
 	}
 		
 	var image = new Image;
-	image.style.height = (parseInt(height) - 20) + 'px';
-	image.style.width = width + 'px';
-  	image.src = imgsrc;
+  	image.src = svgDataURI;
   
-  	$(imageContainerSelector).html('<img src="' + imgsrc + '">');
-
  	image.onload = function()
  	{
 		context.drawImage(image, 0, 0, width, height);
 
-		var canvasdata = canvas.toDataURL("image/png");
-		if (cache) {cache.dataPNG = canvasdata}
-		param = mydigitalstructure._util.param.set(param, 'dataPNG', canvasdata);
-		$(imageContainerSelector).html('<img src="' + canvasdata + '">');
+		var imageDataURI = canvas.toDataURL('image/png');
+
+		if (set != undefined)
+		{
+			mydigitalstructure._util.data.set(_.assign(set, {value: imageDataURI}))
+		}
+
+		param = mydigitalstructure._util.param.set(param, 'imageDataURI', imageDataURI);
+
+		if (imageContainerSelector != undefined)
+		{
+			imageHTMLTemplate = imageHTMLTemplate.replace('{{src}}', imageDataURI);
+			$(imageContainerSelector).html(imageHTMLTemplate);
+		}
+
+		if (downloadContainerSelector != undefined)
+		{
+			downloadHTMLTemplate = downloadHTMLTemplate.replace('{{src}}', imageDataURI);
+			$(downloadContainerSelector).html(downloadHTMLTemplate);
+		}
+
+		if (download)
+		{
+			mydigitalstructure._util.downloadImage({imageDataURI: imageDataURI})
+		}
+
 		mydigitalstructure._util.onComplete(param);
 	};
 }
@@ -4404,7 +4429,6 @@ mydigitalstructure._util.imageGetStyles = function (param)
 	{
 		mydigitalstructure._util.onComplete(param);
 	}
-
 }
 
 mydigitalstructure._util._imageGetStyles = function (param)
@@ -4438,40 +4462,31 @@ mydigitalstructure._util._imageGetStyles = function (param)
 
 mydigitalstructure._util.downloadImage = function (param, response)
 {
-	if (_.isUndefined(response))
+	var local = mydigitalstructure._util.param.get(param, 'local', {default: true}).value;
+	var imageDataURI = mydigitalstructure._util.param.get(param, 'imageDataURI').value;
+
+	var imageContainerID = mydigitalstructure._util.param.get(param, 'imageContainerID').value;
+	var imageContainerSelector = mydigitalstructure._util.param.get(param, 'imageContainerSelector').value;
+
+	if (imageContainerSelector == undefined && imageContainerID != undefined)
 	{
-		var elementImageContainerID = mydigitalstructure._util.param.get(param, 'elementImageContainerID').value;
-		var dataPNG = mydigitalstructure._util.param.get(param, 'dataPNG').value;
-		var filename = mydigitalstructure._util.param.get(param, 'elementContainerID',
-				{"default": _.kebabCase(mydigitalstructure._scope.user.spacename) + '-' + _.now() + '.png'}).value;
-
-		var data =
-		{
-			base64: dataPNG,
-			object: 12,
-			objectcontext: 1331758,
-			filename: filename,
-			elementImageContainerID: elementImageContainerID
-		}
-
-		mydigitalstructure._util.send(
-		{
-			data: data,
-			callback: mydigitalstructure._util.downloadImage,
-			type: 'POST',
-			url: '/rpc/core/?method=CORE_ATTACHMENT_FROM_BASE64',
-		});
+		imageContainerSelector = '#' + imageContainerID
 	}
-	else
+
+	var filename = mydigitalstructure._util.param.get(param, 'filename',
+			{"default": _.kebabCase(mydigitalstructure._scope.user.spacename) + '-' + _.now() + '.png'}).value;
+
+	if (local)
 	{
-		var elementImageContainerID = mydigitalstructure._util.param.get(param.data, 'elementImageContainerID').value;
-
-		$('#' + elementImageContainerID + '_image_png').html(
-			'<img src="/image/' + response.attachmentlink + '" style="width:100%; min-height:180px;">');
-
-		$('#' + elementImageContainerID + '_image_download').attr('href', '/download/' + response.attachmentlink);
+		var aLink = document.createElement('a');
+		aLink.download = filename;
+		aLink.href = imageDataURI;
+		aLink.dataset.downloadurl = ['image/png', aLink.download, aLink.href].join(':');
+		document.body.appendChild(aLink);
+		aLink.click();
+		document.body.removeChild(aLink);
 	}
-},		
+}
 
 mydigitalstructure._util.convert =
 {

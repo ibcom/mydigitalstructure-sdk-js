@@ -6355,7 +6355,7 @@ mydigitalstructure._util.factory.core = function (param)
 			name: 'util-svg-as-image',
 			code: function (param)
 			{
-				return mydigitalstructure._util.svgAsImage(param)
+				return mydigitalstructure._util.svgAsImageWithStyles(param)
 			}
 		},
 		{
