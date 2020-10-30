@@ -26,103 +26,114 @@ mydigitalstructure._util.factory.export = function (param)
 				context: '_param'
 			});
 
-			app._util.data.clear(
+			if (tableParam == undefined)
 			{
-				scope: scope,
-				context: 'export',
-				name: 'cancelProcessing'
-			});
-
-			if (tableParam.format != undefined)
+				mydigitalstructure._util.notify({message: 'There is no data to export.', type: 'danger'})
+			}
+			else
 			{
-				var captions = $.grep(tableParam.format.columns, function (column)
-				{
-					return ((column.param != undefined || column.name != undefined) && (column.caption != undefined))
-				});
-
-				$.each(captions, function(c, caption)
-				{
-					caption.text = caption.caption;
-
-					if (caption.exportName != undefined)
-					{
-						caption.source = caption.exportName
-					}
-					else
-					{
-						caption.source = caption.param;
-						if (caption.source == undefined) {caption.source = caption.name}
-					}
-				});
-
-				app._util.data.set(
+				app._util.data.clear(
 				{
 					scope: scope,
 					context: 'export',
-					name: 'captions',
-					value: captions
+					name: 'cancelProcessing'
 				});
-
-				if (tableParam.format.row != undefined)
-				{
-					if (_.isFunction(tableParam.format.row.method))
-					{
-						app._util.data.set(
-						{
-							scope: scope,
-							context: 'export',
-							name: 'exportController',
-							value: tableParam.format.row.method
-						});
-					}
-
-					if (!_.isUndefined(tableParam.format.row.controller))
-					{
-						app._util.data.set(
-						{
-							scope: scope,
-							context: 'export',
-							name: 'exportController',
-							value: tableParam.format.row.controller
-						});
-					}
-				}
 
 				if (tableParam.format != undefined)
 				{
-					var methodColumns = $.grep(tableParam.format.columns, function (column)
+					var captions = $.grep(tableParam.format.columns, function (column)
 					{
-						return (column.method != undefined || column.controller != undefined)
+						return ((column.param != undefined || column.name != undefined) && (column.caption != undefined) && (column.export == undefined || column.export == true))
+					});
+
+					$.each(captions, function(c, caption)
+					{
+						caption.text = caption.caption;
+						if (caption.exportCaption != undefined)
+						{
+							caption.text = caption.exportCaption;
+						}
+
+						if (caption.exportName != undefined)
+						{
+							caption.source = caption.exportName
+						}
+						else
+						{
+							caption.source = caption.param;
+							if (caption.source == undefined) {caption.source = caption.name}
+						}
 					});
 
 					app._util.data.set(
 					{
 						scope: scope,
 						context: 'export',
-						name: 'exportControllerColumns',
-						value: methodColumns
+						name: 'captions',
+						value: captions
 					});
-				}
 
-				if (filename == undefined)
-				{
-					filename = 'export-' + scope.replace('_table-', '') + '.csv'
-				}
+					if (tableParam.format.row != undefined)
+					{
+						if (_.isFunction(tableParam.format.row.method))
+						{
+							app._util.data.set(
+							{
+								scope: scope,
+								context: 'export',
+								name: 'exportController',
+								value: tableParam.format.row.method
+							});
+						}
 
-				app._util.data.set(
-				{
-					scope: scope,
-					context: 'export',
-					name: 'filename',
-					value: filename
-				});
+						if (!_.isUndefined(tableParam.format.row.controller))
+						{
+							app._util.data.set(
+							{
+								scope: scope,
+								context: 'export',
+								name: 'exportController',
+								value: tableParam.format.row.controller
+							});
+						}
+					}
 
-				app.controller['util-export-download'](
-				{
-					source: scope,
-					filename: filename
-				})
-			}	
+					if (tableParam.format != undefined)
+					{
+						var methodColumns = $.grep(tableParam.format.columns, function (column)
+						{
+							return (column.method != undefined || column.controller != undefined)
+						});
+
+						app._util.data.set(
+						{
+							scope: scope,
+							context: 'export',
+							name: 'exportControllerColumns',
+							value: methodColumns
+						});
+					}
+
+					if (filename == undefined)
+					{
+						filename = 'export-' + scope.replace('_table-', '') + '.csv'
+					}
+
+					app._util.data.set(
+					{
+						scope: scope,
+						context: 'export',
+						name: 'filename',
+						value: filename
+					});
+
+					app.controller['util-export-download'](
+					{
+						source: scope,
+						filename: filename
+					})
+				}	
+			}
 		}
 	}
 
