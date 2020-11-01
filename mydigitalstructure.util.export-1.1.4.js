@@ -43,7 +43,7 @@ mydigitalstructure._util.factory.export = function (param)
 				{
 					var captions = $.grep(tableParam.format.columns, function (column)
 					{
-						return ((column.param != undefined || column.name != undefined) && (column.caption != undefined) && (column.export == undefined || column.export == true))
+						return ((column.param != undefined || column.name != undefined) && (column.caption != undefined || caption.exportCaption != undefined) && (column.export == undefined || column.export == true))
 					});
 
 					$.each(captions, function(c, caption)
