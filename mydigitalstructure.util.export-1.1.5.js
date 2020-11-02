@@ -13,6 +13,7 @@ mydigitalstructure._util.factory.export = function (param)
 		var context = mydigitalstructure._util.param.get(param, 'context').value;
 		var container = mydigitalstructure._util.param.get(param, 'container').value;
 		var filename = mydigitalstructure._util.param.get(param, 'filename').value;
+		var filenamePrefix = mydigitalstructure._util.param.get(param, 'filenamePrefix').value;
 		var scope = mydigitalstructure._util.param.get(param, 'scope').value;
 
 		if (context == undefined) {context = container}
@@ -114,7 +115,7 @@ mydigitalstructure._util.factory.export = function (param)
 						});
 					}
 
-					if (filename == undefined)
+					if (filename == undefined && filenamePrefix == undefined)
 					{
 						filename = 'export-' + scope.replace('_table-', '') + '.csv'
 					}
