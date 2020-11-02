@@ -295,7 +295,7 @@ mydigitalstructure._util.factory.export = function (param)
 
 				if (beforeExportController != undefined)
 				{
-					var _fileData = mydigitalstructure._util.controller.invoke('beforeExportController', param);
+					var _fileData = mydigitalstructure._util.controller.invoke(beforeExportController, param);
 					if (_fileData != undefined)
 					{
 						param.fileData = _fileData
