@@ -3440,6 +3440,7 @@ mydigitalstructure._util.view.dateFormat = function (param)
 	var dateCurrentFormat = mydigitalstructure._util.param.get(param, 'currentFormat').value;
 	var date = mydigitalstructure._util.param.get(param, 'date').value;
 	var clean = mydigitalstructure._util.param.get(param, 'clean', {default: false}).value;
+	var dateSet = mydigitalstructure._util.param.get(param, 'set').value;
 	
 	if (clean)
 	{
@@ -3458,7 +3459,19 @@ mydigitalstructure._util.view.dateFormat = function (param)
 
 	if (date != '' && date != undefined && dateFormat != undefined)
 	{
-		date = moment(date, dateCurrentFormat).format(dateFormat)
+		var _date = moment(date, dateCurrentFormat).format(dateFormat);
+
+		if (_.isObject(set))
+		{
+			var method = 'add';
+			if (set.direction == 'backwards') {method = 'subtract'}
+			if (set.units == undefined) {set.units = 'days'}
+			if (set.duration == undefined) {set.duration = 'days'}
+		}
+
+		_date = _date[method](set.duration, set.units);
+
+		date = moment(_date, dateCurrentFormat).format(dateFormat);
 	}
 
 	return date;
@@ -3481,8 +3494,31 @@ mydigitalstructure._util.controller.add(
 		var param = 
 		{
 			date: date,
-			clean:true
+			clean: true
 		}
+
+		return mydigitalstructure._util.view.dateFormat(param);
+	}
+});
+
+mydigitalstructure._util.controller.add(
+{
+	name: 'util-date',
+	code: function (param)
+	{
+		var date = mydigitalstructure._util.param.get(param, 'date').value;
+
+		if (date == undefined)
+		{
+			date = moment().format('DD MMM YYYY')
+		}
+
+		var param = _.assign(
+		{
+			date: date,
+			clean: true
+		},
+		param);
 
 		return mydigitalstructure._util.view.dateFormat(param);
 	}

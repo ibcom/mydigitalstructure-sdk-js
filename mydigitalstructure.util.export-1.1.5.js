@@ -630,7 +630,7 @@ if (mydigitalstructure._util.export = {})
 
 //https://github.com/sheetjs/sheetjs
 
-if (_.isObject(XLSX))
+if (_.isObject(window.XLSX))
 {
 	mydigitalstructure._util.export.sheet =
 	{
