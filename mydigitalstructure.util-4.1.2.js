@@ -5044,7 +5044,7 @@ mydigitalstructure._util.view.spinner =
 
 	removeAll: function (param)
 	{
-		var elements = $('.myds-spinner');
+		var elements = $('.myds-spinner,[data-spinner]');
 
 		_.each(elements, function (element)
 		{
