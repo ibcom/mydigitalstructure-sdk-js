@@ -1,3 +1,9 @@
+/*
+    {
+        title: "Util; Financial",
+    }
+*/
+
 /*!
  * ibCom Pty Ltd ATF ibCom Unit Trust & contributors
  * Licensed as Attribution-ShareAlike 4.0 International
@@ -22,33 +28,36 @@
 if (mydigitalstructure._util.financial == undefined) {mydigitalstructure._util.financial = {}}
 if (mydigitalstructure._util.financial.collect === undefined) {mydigitalstructure._util.financial.collect = {}}
 
-$(document).ready(function()
+/*$(document).ready(function()
 {  
-    var aContext = [];
-    var oContext = {};
-
-    if (window.mydigitalstructureContextId != undefined && window.mydigitalstructureContextId != '')
-    {
-        aContext = window.mydigitalstructureContextId.split('|'); 
-    }
-    else if (window.location.hash != '')
-    {
-        aContext = window.location.hash.replace('#', '').split('|');
-    }
-
-    $.each(aContext, function (c, context)
-    {
-        oContext[context.split('=')[0]] = context.split('=')[1]
-    })
-
-    mydigitalstructure._util.financial.collect.data.context = oContext;
-    mydigitalstructure._util.financial.collect.init(oContext)
-});
+   mydigitalstructure._util.financial.collect.getContext()
+});*/
 
 
 mydigitalstructure._util.financial.collect =
 {
-    data: {_publicKey: undefined, option: {autoReceipt: true}},
+    data: {_publicKey: undefined},
+    option: {autoReceipt: true},
+    provider: {},
+
+    getContext: function (param)
+    {  
+        var hashContexts = [];
+        var context = {};
+
+       if (window.location.hash != '')
+        {
+            hashContexts = window.location.hash.replace('#', '').split('|');
+        }
+
+        _.each(hashContexts, function (hashContext)
+        {
+            context[hashContext.split('=')[0]] = hashContext.split('=')[1]
+        })
+
+        mydigitalstructure._util.financial.collect.data.context = context;
+        mydigitalstructure._util.financial.collect.init(context)
+    },
 
     init: function (param)
     {    
@@ -58,37 +67,37 @@ mydigitalstructure._util.financial.collect =
         }
         else
         {
-            mydigitalstructure._util.financial.collect.data.xhtmlContainer = 
-                $('#myds-util-financial-collect-container-stripe');
+        	//Get stripe public key from _scope.
 
-            mydigitalstructure._util.financial.collect.data.xhtmlContainerSuccess = 
-                $('#myds-util-financial-collect-container-stripe-Success');
+			var collect = mydigitalstructure._util.financial.collect;
 
-            mydigitalstructure._util.financial.collect.data.option.stripe =
-                (mydigitalstructure._util.financial.collect.data.xhtmlContainer != undefined)
+			collect.data.xhtmlContainer = $('#myds-util-financial-collect-container-stripe');
 
-            if (mydigitalstructure._util.financial.collect.option.stripe && window.Stripe == undefined)
-            {
-                mydigitalstructure._util.financial.collect.data.option.stripe = false
-            }
+			collect.data.xhtmlContainerSuccess = $('#myds-util-financial-collect-container-stripe-Success');
 
-            if (mydigitalstructure._util.financial.collect.data.option.stripe)
-            {
-                if (window.stripePublicKey != undefined)
-                {
-                    mydigitalstructure._util.financial.collect.data._publicKey = window.stripePublicKey;
-                }
+			collect.option.stripe = (collect.data.xhtmlContainer != undefined)
 
-                if (window.siteAccount != undefined)
-                {
-                    mydigitalstructure._util.financial.collect.data._siteAccount = window.siteAccount;
-                }
+			if (collect.option.stripe && window.Stripe == undefined)
+			{
+				collect.option.stripe = false
+			}
 
-                mydigitalstructure._util.financial.collect.data.option.elements =
-                    (mydigitalstructure._util.financial.collect.data.xhtmlContainer.attr('data-ui') == 'elements')
-                
-                mydigitalstructure._util.financial.collect.stripe.init(param);
-            }    
+			if (collect.option.stripe)
+			{
+				if (window.stripePublicKey != undefined)
+				{
+					collect.data._publicKey = window.stripePublicKey;
+				}
+
+				if (window.siteAccount != undefined)
+				{
+					collect.data._siteAccount = window.siteAccount;
+				}
+
+				collect.option.elements = (collect.data.xhtmlContainer.attr('data-ui') == 'elements')
+
+				mydigitalstructure._util.financial.collect.stripe.init(param);
+			}    
         }    
     },
 
@@ -103,13 +112,15 @@ mydigitalstructure._util.financial.collect =
 
         init: function (param, response)
         {
+        	var collect = mydigitalstructure._util.financial.collect;
+
             if (response == undefined)
             {
-                if (mydigitalstructure._util.financial.collect.data._publicKey != undefined)
+                if (collect.data._publicKey != undefined)
                 {
                     mydigitalstructure._util.financial.collect.stripe.init(param,
                     {
-                        data: {rows: [{apikey: mydigitalstructure._util.financial.collect.data._publicKey}]},
+                        data: {rows: [{apikey: collect.data._publicKey}]},
                         status: 'OK'
                     }); 
                 }
@@ -122,7 +133,7 @@ mydigitalstructure._util.financial.collect =
                         filters:
                         [
                             field: 'id',
-                            value: mydigitalstructure._util.financial.collect.data._siteAccount
+                            value: collect.data._siteAccount
                         ],
                         callback: ns1blankspace.util.site.collect.stripe.init,
                         callbackParam: param
@@ -131,12 +142,12 @@ mydigitalstructure._util.financial.collect =
             }
             else
             {
-                if (oResponse.status == 'OK')
+                if (response.status == 'OK')
                 {
-                    if (oResponse.data.rows.length > 0)
+                    if (response.data.rows.length > 0)
                     {
-                        mydigitalstructure._util.financial.collect.data._publicKey = oResponse.data.rows[0].apikey;
-                        ns1blankspace.util.site.collect.data.stripe = Stripe(mydigitalstructure._util.financial.collect.data._publicKey);
+                        collect.data._publicKey = _.first(response.data.rows).apikey;
+                        collect.data.stripe = Stripe(collect.data._publicKey);
                         ns1blankspace.util.site.collect.stripe.render(param);
                     }
                     else
@@ -152,82 +163,81 @@ mydigitalstructure._util.financial.collect =
             }    
         },
 
-        render: function (param)
-        { 
-            if (mydigitalstructure._util.financial.collect.data.xhtmlContainer.html() == '')
-            {
-                console.log('STRIPE ERROR NO HTML');
+		render: function (param)
+		{ 
+			var collect = mydigitalstructure._util.financial.collect;
 
-                /*$.ajax(
-                {
-                    type: 'GET',
-                    url: window.location.protocol + '//' + window.location.host + '/site/' + mydigitalstructureSiteId + '/1blankspace.util.site.collect-1.0.0.html',
-                    dataType: 'text',
-                    global: false,
-                    success: function(data)
-                    {
-                        if (data != '')
-                        {
-                            ns1blankspace.util.site.collect.data.xhtmlContainer.html(data);
-                            ns1blankspace.util.site.collect.stripe.render(param);
-                        } 
-                    },
-                    error: function(data)
-                    {
-                        ns1blankspace.util.site.collect.error('No payment collection template');
-                    }
-                });*/
-            }
-            else
-            {                
-                mydigitalstructure._util.financial.collect.data.xhtmlContainerSuccess.hide();
+			if (mydigitalstructure._util.financial.collect.data.xhtmlContainer.html() == '')
+			{
+				console.log('STRIPE ERROR NO HTML');
 
-                mydigitalstructure._util.financial.collect.data.xhtml = mydigitalstructure._util.financial.collect.data.xhtmlContainer.html();
+				/*$.ajax(
+				{
+				type: 'GET',
+				url: window.location.protocol + '//' + window.location.host + '/site/' + mydigitalstructureSiteId + '/1blankspace.util.site.collect-1.0.0.html',
+				dataType: 'text',
+				global: false,
+				success: function(data)
+				{
+				if (data != '')
+				{
+				ns1blankspace.util.site.collect.data.xhtmlContainer.html(data);
+				ns1blankspace.util.site.collect.stripe.render(param);
+				} 
+				},
+				error: function(data)
+				{
+				ns1blankspace.util.site.collect.error('No payment collection template');
+				}
+				});*/
+			}
+			else
+			{                
+				collect.data.xhtmlContainerSuccess.hide();
+				collect.data.xhtml = collect.data.xhtmlContainer.html();
+				collect.data.xhtml = collect.data.xhtml.replace(/\[\[Amount\]\]/g, param.amount);
 
-                mydigitalstructure._util.financial.collect.data.xhtml =
-                    mydigitalstructure._util.financial.collect.data.xhtml.replace(/\[\[Amount\]\]/g, param.amount);
+				collect.data.xhtmlContainer.html(collect.data.xhtml);
 
-                mydigitalstructure._util.financial.collect.data.xhtmlContainer.html(mydigitalstructure._util.financial.collect.data.xhtml);
-
-                if (mydigitalstructure._util.financial.collect.data.option.elements)
-                {
-                    mydigitalstructure._util.financial.collect.stripe.elements.init(param);
-                }
-                else
-                {
-                    mydigitalstructure._util.financial.collect.stripe.bind(param);
-                }    
-            }    
-        },
+				if (collect.option.elements)
+				{
+					mydigitalstructure._util.financial.collect.stripe.elements.init(param);
+				}
+				else
+				{
+					mydigitalstructure._util.financial.collect.stripe.bind(param);
+				}
+			}
+		},
 
         bind: function (param)
         {
              //CHECK HTML IDS
 
-            $("#payment-form").submit(function(event)
+            $("#myds-util-financial-collect-payment-form").submit(function(event)
             {
                 event.preventDefault();
 
                 //CHECK ID
-                if ($('#site-collect-process').length == 0)
+                if ($('#myds-financial-collect-collect-process').length == 0)
                 {
                     mydigitalstructure._util.financial.collect.stripe.getToken()
                 }   
             });
 
-            $("#site-collect-container").submit(function(event)
+            $("#myds-util-financial-collect-collect-container").submit(function(event)
             {
                 event.preventDefault();
 
-                if ($('#site-collect-process').length == 0)
+                if ($('#myds-financial-collect-collect-process').length == 0)
                 {
                     mydigitalstructure._util.financial.collect.stripe.getToken();
                 }
             });
 
-            $('#site-collect-process').click(function(event)
+            $('#myds-util-financial-collect-collect-process').click(function(event)
             {
-                if (mydigitalstructure._util.financial.collect.data.option.elements)
+                if (mydigitalstructure._util.financial.collect.option.elements)
                 {
                     mydigitalstructure._util.financial.collect.stripe.getToken();
                 }
@@ -237,21 +247,21 @@ mydigitalstructure._util.financial.collect =
                 }    
             });
 
-            if (mydigitalstructure._util.financial.collect.data.option.elements)
+            if (mydigitalstructure._util.financial.collect.option.elements)
             {
                 mydigitalstructure._util.financial.collect.data.card.addEventListener('change', function(event)
                 {
                     if (event.error)
                     {
                         mydigitalstructure._util.financial.collect.data.error = true;
-                        $('#card-errors').addClass('alert alert-danger');
-                        $('#card-errors').html(event.error.message);
+                        $('#myds-util-financial-collect-card-errors').addClass('alert alert-danger');
+                        $('#myds-util-financial-collect-card-errors').html(event.error.message);
                     }
                     else
                     {
                         mydigitalstructure._util.financial.collect.data.error = false;
-                        $('#card-errors').removeClass('alert alert-danger');
-                        $('#card-errors').html('');
+                        $('#myds-util-financial-collect-card-errors').removeClass('alert alert-danger');
+                        $('#myds-util-financial-collect-card-errors').html('');
                     }
                 });
             }    
@@ -259,71 +269,71 @@ mydigitalstructure._util.financial.collect =
 
         process: function (param)
         {
-            //If not using Stripe Elements
+			//If not using Stripe Elements
 
-            if (param == undefined) {param = {}}
-            param.error = false;
-            param.errorMessages = [];
-     
-            param.number = $('.card-number').val();
-            if (param.number == undefined) {param.number = $('.number').val()}
+			if (param == undefined) {param = {}}
+			param.error = false;
+			param.errorMessages = [];
 
-            param.cvc = $('.card-cvc').val();
-            if (param.cvc == undefined) {param.cvc = $('.cvc').val()}
-            
-            param.exp_month = $('.card-expiry-month').val();
-            if (param.exp_month == undefined) {param.exp_month = $('.expiry-month').val()}
-            
-            param.exp_year = $('.card-expiry-year').val();
-            if (param.exp_year == undefined) {param.exp_year = $('.expiry-year').val()}
+			param.number = $('.card-number').val();
+			if (param.number == undefined) {param.number = $('.number').val()}
 
-            if ((param.exp_year == undefined || param.exp_year == '')
-                    && (param.exp_month == undefined || param.exp_month == ''))
-            {
-                param.expiry = $('.expiry').val();
-                if (param.expiry != undefined)
-                {
-                    var aExpiry = param.expiry.split('/');
-                    if (aExpiry.length > 0)
-                    {
-                        param.exp_month = aExpiry[0];
-                        param.exp_year = aExpiry[1];
-                    }    
-                }
-            }
-            
-            if (!Stripe.card.validateCardNumber(param.number))
-            {
-                param.error = true;
-                param.errorMessages.push('<div>The credit card number appears to be invalid.</div>');
-            }
-             
-            if (!Stripe.card.validateCVC(param.cvc))
-            {
-                param.error = true;
-                param.errorMessages.push('<div>The CVC number appears to be invalid.</div>');
-            }
-             
-            if (!Stripe.card.validateExpiry(param.exp_month, param.exp_year))
-            {
-                param.error = true;
-                param.errorMessages.push('<div>The expiration date appears to be invalid.</div>');
-            }
+			param.cvc = $('.card-cvc').val();
+			if (param.cvc == undefined) {param.cvc = $('.cvc').val()}
 
-            if (!param.error)
-            {
-                ns1blankspace.util.site.collect.stripe.getToken()
-            }
-            else
-            {
-                ns1blankspace.util.site.collect.stripe.error(param.errorMessages.join(''));
-            }
+			param.exp_month = $('.card-expiry-month').val();
+			if (param.exp_month == undefined) {param.exp_month = $('.expiry-month').val()}
+
+			param.exp_year = $('.card-expiry-year').val();
+			if (param.exp_year == undefined) {param.exp_year = $('.expiry-year').val()}
+
+			if ((param.exp_year == undefined || param.exp_year == '')
+			&& (param.exp_month == undefined || param.exp_month == ''))
+			{
+				param.expiry = $('.expiry').val();
+				if (param.expiry != undefined)
+				{
+					var aExpiry = param.expiry.split('/');
+					if (aExpiry.length > 0)
+					{
+						param.exp_month = aExpiry[0];
+						param.exp_year = aExpiry[1];
+					}    
+				}
+			}
+
+			if (!Stripe.card.validateCardNumber(param.number))
+			{
+				param.error = true;
+				param.errorMessages.push('<div>The credit card number appears to be invalid.</div>');
+			}
+
+			if (!Stripe.card.validateCVC(param.cvc))
+			{
+				param.error = true;
+				param.errorMessages.push('<div>The CVC number appears to be invalid.</div>');
+			}
+
+			if (!Stripe.card.validateExpiry(param.exp_month, param.exp_year))
+			{
+				param.error = true;
+				param.errorMessages.push('<div>The expiration date appears to be invalid.</div>');
+			}
+
+			if (!param.error)
+			{
+				ns1blankspace.util.site.collect.stripe.getToken()
+			}
+			else
+			{
+				ns1blankspace.util.site.collect.stripe.error(param.errorMessages.join(''));
+			}
         },  
 
         getToken: function (param)
         {
             //CHECK ID
-            $('#site-collect-process').prop('disabled', true);
+            $('#myds-util-financial-collect-process').prop('disabled', true);
 
             mydigitalstructure._util.financial.collect.data.stripe.createToken(mydigitalstructure._util.financial.collect.data.card)
             .then(function(result)
@@ -513,6 +523,18 @@ mydigitalstructure._util.financial.collect =
     }
 }
 
-
+mydigitalstructure._util.factory.financial = function (param)
+{
+    app.add(
+    [
+        {
+            name: 'util-financial-collect-initialise',
+            code: function (param)
+            {
+                mydigitalstructure._util.financial.collect(param);
+            }
+        }
+    ]
+}
 
 
