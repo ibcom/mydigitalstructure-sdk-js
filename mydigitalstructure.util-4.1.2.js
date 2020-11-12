@@ -7255,6 +7255,13 @@ mydigitalstructure._util.factory.core = function (param)
 								value: param
 							});
 
+							app._util.data.set(
+							{
+						        controller: 'util-view-table',
+						        context: context,
+						        value: {}
+						    });
+
 							if (fields == undefined)
 							{
 								var fields = $.map(format.columns, function (column)
@@ -8032,7 +8039,8 @@ mydigitalstructure._util.factory.core = function (param)
 		'search',
 		'editor',
 		'chart',
-		'calendar'
+		'calendar',
+		'financial'
 	], function (namespace)
 	{
 		if (_.isFunction(mydigitalstructure._util.factory[namespace]))

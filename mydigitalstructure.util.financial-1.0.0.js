@@ -21,6 +21,16 @@
     <div id="ns1blankspaceUtilFinancialStripeContainer"></div>
 
     !!!!! TO BE CONVERTED TO MYDIGITALSRUCTURE NAMESPACE & FACTORY GENERATED CONTROLLERS
+
+    //FLOW
+    //Stripe: Elements;
+    //1. Create a page with HTML container with data-ui="elements"
+    //2. Get the Context; ie the invoice number, amount etc - via hash or direct passed if admin doing it
+    //3. Get the stripe public key from financial account based on accountID set in the app options or passed
+    //4. User enters card details 
+    //5. Details tokenised by stripe
+    //6. Tokenised details sent to Stripe with private key via site_collect_payment_stripe method
+    //7. Response handled
  */
 
 "use strict";
@@ -36,7 +46,7 @@ if (mydigitalstructure._util.financial.collect === undefined) {mydigitalstructur
 
 mydigitalstructure._util.financial.collect =
 {
-    data: {_publicKey: undefined},
+    data: {_publicKey: undefined, _siteAccount: undefined, context: {currency: 'AUD'}},
     option: {autoReceipt: true},
     provider: {},
 
@@ -55,7 +65,9 @@ mydigitalstructure._util.financial.collect =
             context[hashContext.split('=')[0]] = hashContext.split('=')[1]
         })
 
-        mydigitalstructure._util.financial.collect.data.context = context;
+        mydigitalstructure._util.financial.collect.data.context =
+            _.assign(context, mydigitalstructure._util.financial.collect.data.context);
+        
         mydigitalstructure._util.financial.collect.init(context)
     },
 
@@ -68,12 +80,14 @@ mydigitalstructure._util.financial.collect =
         else
         {
         	//Get stripe public key from _scope.
+            mydigitalstructure._util.financial.collect.data.context =
+                _.assign(param, mydigitalstructure._util.financial.collect.data.context);
 
 			var collect = mydigitalstructure._util.financial.collect;
 
-			collect.data.xhtmlContainer = $('#myds-util-financial-collect-container-stripe');
+			collect.data.xhtmlContainer = $('#util-financial-collect-container-stripe');
 
-			collect.data.xhtmlContainerSuccess = $('#myds-util-financial-collect-container-stripe-Success');
+			collect.data.xhtmlContainerSuccess = $('#util-financial-collect-container-stripe-success');
 
 			collect.option.stripe = (collect.data.xhtmlContainer != undefined)
 
@@ -84,19 +98,29 @@ mydigitalstructure._util.financial.collect =
 
 			if (collect.option.stripe)
 			{
-				if (window.stripePublicKey != undefined)
+                if (collect.data._publicKey == undefined)
+                {
+                    collect.data._publicKey = collect.data.context.publicKey;
+                }
+
+				if (collect.data._publicKey == undefined)
 				{
 					collect.data._publicKey = window.stripePublicKey;
 				}
 
-				if (window.siteAccount != undefined)
-				{
-					collect.data._siteAccount = window.siteAccount;
-				}
+                if (collect.data._siteAccount == undefined)
+                {
+                    collect.data._siteAccount = collect.data.context.account;
+                }
+
+                if (collect.data._siteAccount == undefined)
+                {
+                    collect.data._siteAccount = window.siteAccount;
+                }
 
 				collect.option.elements = (collect.data.xhtmlContainer.attr('data-ui') == 'elements')
 
-				mydigitalstructure._util.financial.collect.stripe.init(param);
+				collect.stripe.init(param);
 			}    
         }    
     },
@@ -118,7 +142,7 @@ mydigitalstructure._util.financial.collect =
             {
                 if (collect.data._publicKey != undefined)
                 {
-                    mydigitalstructure._util.financial.collect.stripe.init(param,
+                    collect.stripe.init(param,
                     {
                         data: {rows: [{apikey: collect.data._publicKey}]},
                         status: 'OK'
@@ -132,10 +156,12 @@ mydigitalstructure._util.financial.collect =
                         fields: ['apikey'],
                         filters:
                         [
-                            field: 'id',
-                            value: collect.data._siteAccount
+                            {
+                                field: 'id',
+                                value: collect.data._siteAccount
+                            }
                         ],
-                        callback: ns1blankspace.util.site.collect.stripe.init,
+                        callback: mydigitalstructure._util.financial.collect.stripe.init,
                         callbackParam: param
                     });
                 }    
@@ -147,18 +173,18 @@ mydigitalstructure._util.financial.collect =
                     if (response.data.rows.length > 0)
                     {
                         collect.data._publicKey = _.first(response.data.rows).apikey;
-                        collect.data.stripe = Stripe(collect.data._publicKey);
-                        ns1blankspace.util.site.collect.stripe.render(param);
+                        collect.provider.stripe = Stripe(collect.data._publicKey);
+                        collect.stripe.render(param);
                     }
                     else
                     {
-                        mydigitalstructure._util.financial.collect.error('Error: No public key set up.')
+                        collect.error('Error: No public key set up.')
                     }
                    
                 }
                 else
                 {
-                    mydigitalstructure._util.financial.collect.error('Error in getting key public key.')
+                    collect.error('Error in getting key public key.')
                 }
             }    
         },
@@ -167,9 +193,10 @@ mydigitalstructure._util.financial.collect =
 		{ 
 			var collect = mydigitalstructure._util.financial.collect;
 
-			if (mydigitalstructure._util.financial.collect.data.xhtmlContainer.html() == '')
+			if (collect.data.xhtmlContainer.html() == '')
 			{
 				console.log('STRIPE ERROR NO HTML');
+                //DO FUNCTION TO CREATE STANDARD HTML AS PER .HTML FILE
 
 				/*$.ajax(
 				{
@@ -195,37 +222,75 @@ mydigitalstructure._util.financial.collect =
 			{                
 				collect.data.xhtmlContainerSuccess.hide();
 				collect.data.xhtml = collect.data.xhtmlContainer.html();
-				collect.data.xhtml = collect.data.xhtml.replace(/\[\[Amount\]\]/g, param.amount);
+                var amount = mydigitalstructure._util.param.get(param, 'amount', {default: ''}).value;
 
+                collect.data.xhtml = collect.data.xhtml.replace(/\[\[Amount\]\]/g, amount);
+                
 				collect.data.xhtmlContainer.html(collect.data.xhtml);
 
 				if (collect.option.elements)
 				{
-					mydigitalstructure._util.financial.collect.stripe.elements.init(param);
+					collect.stripe.createCard(param);
 				}
 				else
 				{
-					mydigitalstructure._util.financial.collect.stripe.bind(param);
+					collect.stripe.bind(param);
 				}
 			}
 		},
 
+        createCard: function (param)
+        {        
+            var collect = mydigitalstructure._util.financial.collect;
+
+            collect.provider.elements = collect.provider.stripe.elements();
+
+            collect.data.style =
+            {
+                base:
+                {
+                    color: '#32325d',
+                    lineHeight: '18px',
+                    fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
+                    fontSmoothing: 'antialiased',
+                    fontSize: '16px',
+                    '::placeholder':
+                    {
+                        color: '#aab7c4'
+                    }
+                },
+                invalid:
+                {
+                    color: '#fa755a',
+                    iconColor: '#fa755a'
+                }
+            }
+
+            collect.provider.card = collect.provider.elements.create('card',
+                {style: collect.data.style});
+
+            collect.provider.card.mount('#card-element');
+
+            collect.stripe.bind(param);
+        },
+
         bind: function (param)
         {
              //CHECK HTML IDS
+            var collect = mydigitalstructure._util.financial.collect;
 
-            $("#myds-util-financial-collect-payment-form").submit(function(event)
+            $("#util-financial-collect-container").submit(function(event)
             {
                 event.preventDefault();
 
                 //CHECK ID
                 if ($('#myds-financial-collect-collect-process').length == 0)
                 {
-                    mydigitalstructure._util.financial.collect.stripe.getToken()
+                    collect.stripe.getToken()
                 }   
             });
 
-            $("#myds-util-financial-collect-collect-container").submit(function(event)
+            /* $("#myds-util-financial-collect-container").submit(function(event)
             {
                 event.preventDefault();
 
@@ -233,33 +298,35 @@ mydigitalstructure._util.financial.collect =
                 {
                     mydigitalstructure._util.financial.collect.stripe.getToken();
                 }
-            });
+            });*/
 
-            $('#myds-util-financial-collect-collect-process').click(function(event)
+            $('#util-financial-collect-collect-process').click(function(event)
             {
-                if (mydigitalstructure._util.financial.collect.option.elements)
+                var collect = mydigitalstructure._util.financial.collect;
+
+                if (collect.option.elements)
                 {
-                    mydigitalstructure._util.financial.collect.stripe.getToken();
+                    collect.stripe.getToken();
                 }
                 else
                 {
-                    mydigitalstructure._util.financial.collect.stripe.process();
+                    collect.stripe.process();
                 }    
             });
 
-            if (mydigitalstructure._util.financial.collect.option.elements)
+            if (collect.option.elements)
             {
-                mydigitalstructure._util.financial.collect.data.card.addEventListener('change', function(event)
+                collect.provider.card.addEventListener('change', function(event)
                 {
                     if (event.error)
                     {
-                        mydigitalstructure._util.financial.collect.data.error = true;
+                        collect.data.error = true;
                         $('#myds-util-financial-collect-card-errors').addClass('alert alert-danger');
                         $('#myds-util-financial-collect-card-errors').html(event.error.message);
                     }
                     else
                     {
-                        mydigitalstructure._util.financial.collect.data.error = false;
+                        collect.data.error = false;
                         $('#myds-util-financial-collect-card-errors').removeClass('alert alert-danger');
                         $('#myds-util-financial-collect-card-errors').html('');
                     }
@@ -270,6 +337,7 @@ mydigitalstructure._util.financial.collect =
         process: function (param)
         {
 			//If not using Stripe Elements
+            var collect = mydigitalstructure._util.financial.collect;
 
 			if (param == undefined) {param = {}}
 			param.error = false;
@@ -322,57 +390,61 @@ mydigitalstructure._util.financial.collect =
 
 			if (!param.error)
 			{
-				ns1blankspace.util.site.collect.stripe.getToken()
+				collect.provider.stripe.getToken()
 			}
 			else
 			{
-				ns1blankspace.util.site.collect.stripe.error(param.errorMessages.join(''));
+				collect.error(param.errorMessages.join(''));
 			}
         },  
 
         getToken: function (param)
         {
-            //CHECK ID
-            $('#myds-util-financial-collect-process').prop('disabled', true);
+             var collect = mydigitalstructure._util.financial.collect;
 
-            mydigitalstructure._util.financial.collect.data.stripe.createToken(mydigitalstructure._util.financial.collect.data.card)
+            //CHECK ID
+            $('#util-financial-collect-process').addClass('disabled').prop('disabled', true);
+
+            collect.provider.stripe.createToken(collect.provider.card)
             .then(function(result)
             {
                 if (result.error)
                 {
-                    mydigitalstructure._util.financial.collect.stripe.error(result.error.message);
+                    collect.stripe.error(result.error.message);
                 }
                 else
                 {
-                    mydigitalstructure._util.financial.collect.stripe.processToken(result.token);
+                    collect.stripe.processToken(result.token);
                 }
             });
         },
 
         processToken: function (token)
         {
+            var collect = mydigitalstructure._util.financial.collect;
+
             if (token != undefined)
             {
-                var currency = mydigitalstructure._util.financial.collect.data.context.currency;
+                var currency = collect.data.context.currency;
                 if (currency == undefined) {currency = 'AUD'}
 
                 var data =
                 {
                     token: token.id,
                     currency: currency,
-                    amount: mydigitalstructure._util.financial.collect.data.context.amount,
-                    invoiceGUID: mydigitalstructure._util.financial.collect.data.context.invoiceGUID,
-                    description: mydigitalstructure._util.financial.collect.data.context.description,
-                    account: mydigitalstructure._util.financial.collect.data._siteAccount,
+                    amount: collect.data.context.amount,
+                    invoiceGUID: collect.data.context.invoiceGUID,
+                    description: collect.data.context.description,
+                    account: collect.data._siteAccount,
                     site: window.mydigitalstructureSiteId
                 }
 
                 mydigitalstructure.cloud.invoke(
                 {
-                    method: 'site_collect_payment_stripe'
+                    method: 'site_collect_payment_stripe',
                     data: data,
                     callback: mydigitalstructure._util.financial.collect.stripe.processTokenResponse,
-                    callbackParam: param
+                    callbackParam: token
                 });
 
                /* $.ajax(
@@ -393,66 +465,80 @@ mydigitalstructure._util.financial.collect =
             }
             else
             {
-                ns1blankspace.util.site.collect.stripe.error('Bad token')
+                collect.error('Bad token')
             }    
         },
 
-        processTokenResponse: function (response)
+        processTokenResponse: function (param, response)
         {
             var error = false;
+            var collect = mydigitalstructure._util.financial.collect;
 
             if (error)
             {
                 console.log('STRIPE ERROR');
                 console.log(response);
-                ns1blankspace.util.site.collect.stripe.error(data.responseJSON.error.errornotes);
+                collect.error(data.responseJSON.error.errornotes);
             }
             else
             {
-                ns1blankspace.util.site.collect.stripe.processComplete(response);
+                collect.stripe.processComplete(response);
             }
         },
 
-        processComplete: function (oResponse)
+        processComplete: function (response)
         {
-            if (oResponse.status == 'OK')
+            var collect = mydigitalstructure._util.financial.collect;
+
+            if (response.status == 'OK')
             {
-                if (oResponse.stripe_status == 'succeeded')
+                if (response.stripe_status == 'succeeded')
                 {
-                    if (ns1blankspace.util.site.collect.data.option.autoReceipt)
+                    if (collect.option.autoReceipt)
                     {   
-                        ns1blankspace.util.site.collect.stripe.autoReceipt({chargeToken: oResponse.stripe_id})
+                        collect.stripe.autoReceipt({chargeToken: response.stripe_id})
                     }
                     else
                     {
-                        ns1blankspace.util.site.collect.data.xhtmlContainer.hide();
-                        ns1blankspace.util.site.collect.data.xhtmlContainerSuccess.show();
+                        collect.data.xhtmlContainer.hide();
+                        collect.data.xhtmlContainerSuccess.show();
                     }
                 }
                 else
                 {
-                    ns1blankspace.util.site.collect.stripe.error(oResponse.stripe_outcome_sellermessage)
+                    collect.stripe.error(response.stripe_outcome_sellermessage)
                 }
             }
             else
             {
-                ns1blankspace.util.site.collect.data.xhtmlContainer.html('<h3>There is something wrong with the set up of this page!')
+               collect.data.xhtmlContainer.html('<h3>There is something wrong with the set up of this page!')
             }
         },
 
-        autoReceipt: function (param, oResponse)
+        autoReceipt: function (param, response)
         {
-            if (oResponse == undefined)
+             var collect = mydigitalstructure._util.financial.collect;
+
+            if (response == undefined)
             {
-                var oData =
+                var data =
                 {
-                    amount: ns1blankspace.util.site.collect.data.context.amount,
-                    guid: ns1blankspace.util.site.collect.data.context.invoiceGUID,
-                    description: param.chargeToken,
-                    site: window.mydigitalstructureSiteId
+                    amount: collect.data.context.amount,
+                    guid: collect.data.context.invoiceGUID,
+                    description: param.chargeToken  
                 }
 
-                $.ajax(
+                // site: window.mydigitalstructureSiteId
+
+                mydigitalstructure.cloud.invoke(
+                {
+                    method: 'site_collect_payment_stripe',
+                    data: data,
+                    callback: mydigitalstructure._util.financial.collect.stripe.autoReceipt,
+                    callbackParam: param
+                });
+
+               /* $.ajax(
                 {
                     type: 'POST',
                     url: '/rpc/site/?method=SITE_AUTO_RECEIPT',
@@ -460,20 +546,20 @@ mydigitalstructure._util.financial.collect =
                     dataType: 'json',
                     success: function (data)
                     {
-                        ns1blankspace.util.site.collect.stripe.autoReceipt(param, data);
+                        mydigitalstructure._util.financial.collect.stripe.autoReceipt(param, data);
                     }
-                });
+                });*/
             }
             else
             {
-                if (oResponse.status == 'ER')
+                if (response.status == 'ER')
                 {
-                    ns1blankspace.util.site.collect.stripe.error(oResponse.error.errornotes)
+                    collect.stripe.error(response.error.errornotes)
                 }
                 else
                 {
-                    ns1blankspace.util.site.collect.data.xhtmlContainer.hide();
-                    ns1blankspace.util.site.collect.data.xhtmlContainerSuccess.show();
+                    collect.data.xhtmlContainer.hide();
+                    collect.data.xhtmlContainerSuccess.show();
                 }
             }    
         },
@@ -483,43 +569,9 @@ mydigitalstructure._util.financial.collect =
             $('#card-errors').html(sMessage).addClass('alert alert-danger');
             $('#site-collect-process').prop('disabled', false);
             return false;
-        },
+        }
 
-        elements:
-        {
-            init: function (param)
-            {        
-                mydigitalstructure._util.financial.collect.data.elements = mydigitalstructure._util.financial.collect.data.stripe.elements();
-
-                mydigitalstructure._util.financial.collect.data.style =
-                {
-                    base:
-                    {
-                        color: '#32325d',
-                        lineHeight: '18px',
-                        fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
-                        fontSmoothing: 'antialiased',
-                        fontSize: '16px',
-                        '::placeholder':
-                        {
-                          color: '#aab7c4'
-                        }
-                    },
-                    invalid:
-                    {
-                        color: '#fa755a',
-                        iconColor: '#fa755a'
-                    }
-                }
-
-                mydigitalstructure._util.financial.collect.data.card = mydigitalstructure._util.financial.collect.data.elements
-                    .create('card', {style: mydigitalstructure._util.financial.collect.data.style});
-
-                mydigitalstructure._util.financial.collect.data.card.mount('#card-element');
-
-                ns1blankspace.util.site.collect.stripe.bind(param);
-            }
-        }  
+       
     }
 }
 
@@ -531,10 +583,10 @@ mydigitalstructure._util.factory.financial = function (param)
             name: 'util-financial-collect-initialise',
             code: function (param)
             {
-                mydigitalstructure._util.financial.collect(param);
+                mydigitalstructure._util.financial.collect.init(param);
             }
         }
-    ]
+    ]);
 }
 
 
