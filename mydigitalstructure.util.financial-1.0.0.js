@@ -80,8 +80,7 @@ mydigitalstructure._util.financial.collect =
         else
         {
         	//Get stripe public key from _scope.
-            mydigitalstructure._util.financial.collect.data.context =
-                _.assign(param, mydigitalstructure._util.financial.collect.data.context);
+            mydigitalstructure._util.financial.collect.data.context = param;
 
 			var collect = mydigitalstructure._util.financial.collect;
 
@@ -532,7 +531,7 @@ mydigitalstructure._util.financial.collect =
 
                 mydigitalstructure.cloud.invoke(
                 {
-                    method: 'site_collect_payment_stripe',
+                    method: 'site_auto_receipt',
                     data: data,
                     callback: mydigitalstructure._util.financial.collect.stripe.autoReceipt,
                     callbackParam: param
@@ -564,9 +563,9 @@ mydigitalstructure._util.financial.collect =
             }    
         },
 
-        error: function (sMessage)
+        error: function (message)
         {
-            $('#card-errors').html(sMessage).addClass('alert alert-danger');
+            $('#card-errors').html(message).addClass('alert alert-danger');
             $('#site-collect-process').prop('disabled', false);
             return false;
         }
