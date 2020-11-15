@@ -2409,6 +2409,14 @@ mydigitalstructure._util =
 
 									mydigitalstructure._scope.viewQueue['roles'][queue] = userRoles;
 
+									mydigitalstructure._util.view.queue['_' + queue] = {};
+
+									_.each(['add', 'apply', 'clear', 'focus', 'get', 'render', 'reset', 'show', 'templateRender', 'update', 'template'],
+										function (method)
+										{
+											mydigitalstructure._util.view.queue['_' + queue][method] = mydigitalstructure._util.view.queue[method];
+										});
+
 									var html = '';
 									
 									if (selector != undefined)
@@ -2441,7 +2449,23 @@ mydigitalstructure._util =
 										mydigitalstructure._scope.data.defaultQueue = 'base';
 									}
 
-									if (!preserve) {mydigitalstructure._scope.viewQueue[type][queue] = []};
+									if (!preserve)
+									{
+										mydigitalstructure._scope.viewQueue[type][queue] = [];
+										delete mydigitalstructure._util.view.queue['_' + queue];
+									};
+								},
+
+								template: function (content, param)
+								{
+									param = mydigitalstructure._util.param.set(param, 'type', 'template')
+								
+									if (_.isArray(content))
+									{
+										content = _.join(content, '')
+									}
+
+									mydigitalstructure._util.view.queue._add(content, param)
 								},
 
 								add: function (content, param)
