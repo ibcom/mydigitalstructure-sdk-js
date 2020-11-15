@@ -7490,7 +7490,7 @@ mydigitalstructure._util.factory.core = function (param)
 										var html = [];
 
 										html.push('<tr' + (format.row.class==undefined?'':' class="' + format.row.class + '"') + 
-												(format.row.dataAll==undefined?'':' ' + format.row.dataAll) + '>');
+												(format.row.dataAll==undefined?' data-id={{id}}':' ' + format.row.dataAll) + '>');
 
 										if (select.controller != undefined)
 										{
