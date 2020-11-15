@@ -2409,14 +2409,6 @@ mydigitalstructure._util =
 
 									mydigitalstructure._scope.viewQueue['roles'][queue] = userRoles;
 
-									mydigitalstructure._util.view.queue['_' + queue] = {};
-
-									_.each(['add', 'apply', 'clear', 'focus', 'get', 'render', 'reset', 'show', 'templateRender', 'update', 'template'],
-										function (method)
-										{
-											mydigitalstructure._util.view.queue['_' + queue][method] = mydigitalstructure._util.view.queue[method];
-										});
-
 									var html = '';
 									
 									if (selector != undefined)
@@ -2428,6 +2420,16 @@ mydigitalstructure._util =
 									if (clear) {mydigitalstructure._util.view.queue.clear(param)};
 									if (disableSelector) {mydigitalstructure._util.view.queue._util.disable(disableSelector, param)};
 									if (enableSelector) {mydigitalstructure._util.view.queue._util.enable(enableSelector, param)};
+
+									mydigitalstructure._util.view.queue['_' + queue] = {};
+
+									_.each(['add', 'apply', 'clear', 'focus', 'get', 'render', 'reset', 'show', 'templateRender', 'update', 'template'],
+										function (method)
+										{
+											mydigitalstructure._util.view.queue['_' + queue][method] = mydigitalstructure._util.view.queue[method];
+										});
+
+									return mydigitalstructure._util.view.queue['_' + queue];
 								},
 
 								reset: function (param)
