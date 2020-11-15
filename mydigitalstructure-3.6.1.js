@@ -1537,11 +1537,11 @@ mydigitalstructure._util =
 													}
 												}
 											}	
-										}
-
-										if (remove) {delete param[name]};
-										if (set) {param[name] = data.value};
+										}	
 									}
+
+									if (remove) {delete param[name]};
+									if (set) {param[name] = data.value};
 
 									return data;
 								},
@@ -2426,7 +2426,34 @@ mydigitalstructure._util =
 									_.each(['add', 'apply', 'clear', 'focus', 'get', 'render', 'reset', 'show', 'templateRender', 'update', 'template'],
 										function (method)
 										{
-											mydigitalstructure._util.view.queue['_' + queue][method] = mydigitalstructure._util.view.queue[method];
+											mydigitalstructure._util.view.queue['_' + queue][method] = function ()
+											{
+												var applyArguments = [];
+
+												_.each(arguments, function(argument, a)
+												{
+													if (a <= 1)
+													{
+														if (_.isObject(argument))
+														{
+															argument = _.assign(argument, {queue: queue})
+														}
+													}
+
+													applyArguments.push(argument);
+												});
+
+												if (arguments.length == 1 && !_.isPlainObject(arguments[0]))
+												{
+													applyArguments.push({queue: queue});
+												}
+												else if (arguments.length == 0)
+												{
+													applyArguments.push({queue: queue});
+												}
+
+												return mydigitalstructure._util.view.queue[method].apply(null, applyArguments);
+											}
 										});
 
 									return mydigitalstructure._util.view.queue['_' + queue];
