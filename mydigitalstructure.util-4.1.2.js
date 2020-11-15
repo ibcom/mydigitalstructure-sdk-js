@@ -7546,7 +7546,9 @@ mydigitalstructure._util.factory.core = function (param)
 										if (options.containerController != undefined && options.containerController != '')
 										{
 											html.push('<tr id="' + options.containerController + '-{{id}}-container" class="collapse myds-collapse" data-id="{{id}}"' +
-											' data-controller="' + options.containerController + '">' +
+											' data-controller="' + options.containerController + '" data-context="' +  context + '"' +
+											(options.containerControllerData==undefined?'':' ' + options.containerControllerData) +
+											'>' +
 											'<td colspan="' + captions.length + '" id="' + options.containerController + '-{{id}}-container-view"></td></tr>')
 										}
 

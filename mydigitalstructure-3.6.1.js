@@ -3827,6 +3827,10 @@ mydigitalstructure._util =
 									{	
 										formData.append((inputParam.id!=undefined?inputParam.id:inputParam.name) + '0', inputParam.value);
 									});
+
+									var scope = mydigitalstructure._util.param.get(param, 'scope').value;
+									var data = app.get({scope: scope + '-upload'});
+									if (data.type != undefined) {formData.append('type0', data.type)}
 								});
 
 								mydigitalstructure._util.attachment.dropzone.object[name].on('addedfile', function(file)
