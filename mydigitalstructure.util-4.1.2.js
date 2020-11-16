@@ -7205,11 +7205,11 @@ mydigitalstructure._util.factory.core = function (param)
 								includeColumn = (column.roles.length == 0);
 							}
 
-							if (includeColumn)
+							if (!includeColumn)
 							{
 								_.each(column.roles, function (role)
 								{
-									if (includeColumn)
+									if (!includeColumn)
 									{	
 										includeColumn = mydigitalstructure._util.user.roles.has({role: role, exact: true})
 									}	
