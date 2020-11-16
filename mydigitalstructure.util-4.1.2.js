@@ -3459,19 +3459,19 @@ mydigitalstructure._util.view.dateFormat = function (param)
 
 	if (date != '' && date != undefined && dateFormat != undefined)
 	{
-		var _date = moment(date, dateCurrentFormat).format(dateFormat);
+		var _date = moment(date, dateCurrentFormat);
 
-		if (_.isObject(set))
+		if (_.isObject(dateSet))
 		{
 			var method = 'add';
-			if (set.direction == 'backwards') {method = 'subtract'}
-			if (set.units == undefined) {set.units = 'days'}
-			if (set.duration == undefined) {set.duration = 'days'}
+			if (dateSet.direction == 'backwards') {method = 'subtract'}
+			if (dateSet.units == undefined) {dateSet.units = 'days'}
+			if (dateSet.duration == undefined) {dateSet.duration = 'days'}
+		
+			_date = _date[method](dateSet.duration, dateSet.units);
 		}
 
-		_date = _date[method](set.duration, set.units);
-
-		date = moment(_date, dateCurrentFormat).format(dateFormat);
+		date = _date.format(dateFormat);
 	}
 
 	return date;
