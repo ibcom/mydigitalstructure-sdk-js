@@ -3992,7 +3992,6 @@ mydigitalstructure._util.svgToImage = function (param)
 	if (!window.atob) window.atob = base64.decode
 
 	var svgURI = mydigitalstructure._util.param.get(param, 'svgURI').value;
-	var svgContainerSelector = mydigitalstructure._util.param.get(param, 'svgContainerSelector', {default: '#myds-svg'}).value;
 	var svgContainerID = mydigitalstructure._util.param.get(param, 'svgContainerID', {default: 'myds-svg'}).value;
 	var imageContainerSelector = mydigitalstructure._util.param.get(param, 'imageContainerSelector').value;
 	var attachmentLink = mydigitalstructure._util.param.get(param, 'attachmentLink').value;
@@ -4003,7 +4002,7 @@ mydigitalstructure._util.svgToImage = function (param)
 	var imageHTMLTemplate = mydigitalstructure._util.param.get(param, 'imageHTMLTemplate', {default: '<img src="{{src}}">'}).value;
 	var base64 = mydigitalstructure._util.param.get(param, 'base64', {default: false}).value;
 	var serialise = mydigitalstructure._util.param.get(param, 'serialise', {default: true}).value;
-	var showSVGURI = mydigitalstructure._util.param.get(param, 'showSVGURI', {default: true}).value;
+	var showSVGURI = mydigitalstructure._util.param.get(param, 'showSVGURI', {default: false}).value;
 	var svgData = mydigitalstructure._util.param.get(param, 'svgData').value;
 
 	if (svgURI == undefined && attachmentLink != undefined)
@@ -4011,7 +4010,7 @@ mydigitalstructure._util.svgToImage = function (param)
 		svgURI = '/rpc/core/?method=CORE_IMAGE_SHOW&contenttype=image/svg%2Bxml&id=' + attachmentLink;
 	}
 
-	if (svgURI == undefined && svgContainerSelector != undefined)
+	if (svgURI == undefined)
 	{
 		var svgElement;
 
@@ -4027,6 +4026,10 @@ mydigitalstructure._util.svgToImage = function (param)
 				svgData = $('#' + svgContainerID).html();
 			}
 		}
+		else
+		{
+			svgData = svgData.replace('<?xml version=\'1.0\'?>', '');
+		}
 
 		if (base64)
 		{
@@ -4036,7 +4039,10 @@ mydigitalstructure._util.svgToImage = function (param)
 		{
 			svgURI = 'data:image/svg+xml;charset=utf8, ' + encodeURIComponent(svgData);
 		}
+	}
 		
+	if (svgURI != undefined)
+	{
 		if (showSVGURI)
 		{
 			if (imageContainerSelector != undefined)
@@ -4048,37 +4054,36 @@ mydigitalstructure._util.svgToImage = function (param)
 				$('#' + svgContainerID).after('<img src="' + svgURI + '">');
 			}
 		}
-	}
-
-	if (svgURI != undefined)
-	{
-		var canvas = document.getElementById("canvas.myds-image");
-
-		if (canvas == null)
+		else
 		{
-			canvas = document.createElement('canvas');
+			var canvas = document.getElementById("canvas.myds-image");
+
+			if (canvas == null)
+			{
+				canvas = document.createElement('canvas');
+			}
+
+			var context = canvas.getContext("2d");
+
+			canvas.width = width * scale;
+			canvas.height = height * scale;
+
+			if (smoothing)
+			{
+				context.mozImageSmoothingEnabled = true;
+				context.msImageSmoothingEnabled = true;
+				context.imageSmoothingEnabled = true;
+			}
+			
+			var svgImage = new Image;
+			svgImage.src = svgURI;
+			svgImage.onload = function()
+			{
+				context.drawImage(svgImage, 0, 0);
+				imageHTMLTemplate = imageHTMLTemplate.replace('{{src}}', canvas.toDataURL("image/png"));
+				$(imageContainerSelector).html(imageHTMLTemplate);
+			};
 		}
-
-		var context = canvas.getContext("2d");
-
-		canvas.width = width * scale;
-		canvas.height = height * scale;
-
-		if (smoothing)
-		{
-			context.mozImageSmoothingEnabled = true;
-			context.msImageSmoothingEnabled = true;
-			context.imageSmoothingEnabled = true;
-		}
-		
-		var svgImage = new Image;
-		svgImage.src = svgURI;
-		svgImage.onload = function()
-		{
-			context.drawImage(svgImage, 0, 0);
-			imageHTMLTemplate = imageHTMLTemplate.replace('{{src}}', canvas.toDataURL("image/png"));
-			$(imageContainerSelector).html(imageHTMLTemplate);
-		};
 	}
 }
 
