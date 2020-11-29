@@ -5461,6 +5461,16 @@ mydigitalstructure._util.factory.core = function (param)
 					var uri = data.uri;
 					var uriContext = data.uriContext;
 
+					if (data.isLoggedOn)
+					{	
+						if (mydigitalstructure._scope.user.roles.rows.length != 0 )
+						{
+							var role = mydigitalstructure._scope.user.roles.rows[0].title.toLowerCase().replaceAll(' ', '-');
+							uri = uri.replace('{{role}}', role);
+							uriContext = uriContext.replace('{{role}}', role);
+						}
+					}
+
 					var uriPath = window.location.pathname;
 					var uriName = (uriPath).replace(/\//g,'');
 					

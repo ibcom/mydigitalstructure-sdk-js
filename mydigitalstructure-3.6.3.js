@@ -1123,11 +1123,19 @@ mydigitalstructure._util =
 										mydigitalstructure._scope.user = data;
 										mydigitalstructure._scope.user.id = data.user;
 										
-										if (mydigitalstructure._scope.user.roles.rows != 0 )
+										if (mydigitalstructure._scope.user.roles.rows.length != 0 )
 										{
 											var role = mydigitalstructure._scope.user.roles.rows[0].title.toLowerCase().replaceAll(' ', '-');
 											mydigitalstructure._scope.app.options.startURI = mydigitalstructure._scope.app.options.startURI.replace('{{role}}', role);
 											mydigitalstructure._scope.app.options.startURIContext = mydigitalstructure._scope.app.options.startURIContext.replace('{{role}}', role);
+										}
+
+										if (mydigitalstructure._scope.route != undefined)
+										{
+											if (mydigitalstructure._scope.route.target != undefined)
+											{
+												mydigitalstructure._scope.route.target = mydigitalstructure._scope.app.options.startURI;
+											}
 										}
 										
 										if (mydigitalstructure._scope.app.options.logonSuffix != undefined)

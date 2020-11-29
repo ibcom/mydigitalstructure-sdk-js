@@ -1129,7 +1129,7 @@ mydigitalstructure._util =
 											mydigitalstructure._scope.app.options.startURI = mydigitalstructure._scope.app.options.startURI.replace('{{role}}', role);
 											mydigitalstructure._scope.app.options.startURIContext = mydigitalstructure._scope.app.options.startURIContext.replace('{{role}}', role);
 										}
-										
+
 										if (mydigitalstructure._scope.app.options.logonSuffix != undefined)
 										{
 											mydigitalstructure._scope.user.userlogonname = mydigitalstructure._scope.user.userlogonname.replace(mydigitalstructure._scope.app.options.logonSuffix, '')
