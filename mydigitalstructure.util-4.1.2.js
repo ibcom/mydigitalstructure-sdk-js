@@ -7930,6 +7930,23 @@ mydigitalstructure._util.factory.core = function (param)
 	});
 
 	mydigitalstructure._util.controller.add(
+	{
+		name: 'util-view-tab-show',
+		code: function (target, param)
+		{
+			if (target != undefined)
+			{
+				if (!_.startsWith(target, '#'))
+				{
+					target = '#' + target;
+				}
+
+				$('a[href="' + target + '"]').tab('show');
+			}
+		}
+	});
+
+	mydigitalstructure._util.controller.add(
 	[
 		{
 			name: 'util-local-cache-save',
