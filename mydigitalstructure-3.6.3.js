@@ -1623,6 +1623,7 @@ mydigitalstructure._util =
 					var callbackResponseProcessController = mydigitalstructure._util.param.get(param, 'callbackResponseProcessController').value;
 					var set = mydigitalstructure._util.param.get(param, 'set').value;
 					var all = mydigitalstructure._util.param.get(param, 'all', {default: false}).value;
+					var isFormData = mydigitalstructure._util.param.get(param, 'isFormData', {default: false}).value;
 
 					var sameAsLastSeconds = 5;
 					var sameAsLastCount = 1;
@@ -1830,6 +1831,8 @@ mydigitalstructure._util =
 								dataType: 'json',
 								cache: false,
 								data: data,
+								contentType: (isFormData?false:undefined),
+    							processData: (isFormData?false:undefined),
 								global: manageErrors,
 								error: function(response, status, xhr)
 								{	
