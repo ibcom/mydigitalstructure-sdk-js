@@ -7504,8 +7504,16 @@ mydigitalstructure._util.factory.core = function (param)
 
 										if (select.controller != undefined)
 										{
-											html.push('<td id="myds-view-table-select-{{id}}-container">' +
-												'<input type="checkbox" class="myds-view-table-select" id="myds-view-table-select-{{id}}"');
+											html.push('<td id="myds-view-table-select-{{id}}-container"');
+
+											if (select.iclass != undefined)
+											{
+												html.push(' class="' + select.class + '"');
+											}
+
+											html.push('><input type="checkbox" class="myds-view-table-select');
+
+											html.push('" id="myds-view-table-select-{{id}}"');
 
 											if (select.data != undefined)
 											{
