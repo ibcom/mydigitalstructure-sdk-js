@@ -7506,12 +7506,17 @@ mydigitalstructure._util.factory.core = function (param)
 										{
 											html.push('<td id="myds-view-table-select-{{id}}-container"');
 
-											if (select.iclass != undefined)
+											if (select.containerClass != undefined)
 											{
-												html.push(' class="' + select.class + '"');
+												html.push(' class="' + select.containerClass + '"');
 											}
 
 											html.push('><input type="checkbox" class="myds-view-table-select');
+
+											if (select.class != undefined)
+											{
+												html.push(' ' + select.class);
+											}
 
 											html.push('" id="myds-view-table-select-{{id}}"');
 
