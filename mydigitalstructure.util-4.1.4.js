@@ -7502,7 +7502,6 @@ mydigitalstructure._util.factory.core = function (param)
 										html.push('<tr' + (format.row.class==undefined?'':' class="' + format.row.class + '"') + 
 												(format.row.dataAll==undefined?' data-id={{id}}':' ' + format.row.dataAll) + '>');
 
-										//if (select.controller != undefined)
 										if (!_.isEmpty(select))
 										{
 											html.push('<td id="myds-view-table-select-{{id}}-container"');
@@ -7537,6 +7536,16 @@ mydigitalstructure._util.factory.core = function (param)
 											if (select.name != undefined)
 											{
 												html.push('" name="' + select.name + '"');
+											}
+
+											if (select.controller != undefined)
+											{
+												html.push('" data-controller="' + select.controller + '"');
+											}
+
+											if (select.scope != undefined)
+											{
+												html.push('" data-scope="' + select.scope + '"');
 											}
 
 											if (select.data != undefined)
