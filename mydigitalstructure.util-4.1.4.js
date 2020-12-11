@@ -7712,7 +7712,14 @@ mydigitalstructure._util.factory.core = function (param)
 
 													if (select.selectAll != false)
 													{
-														app.vq.add('<input class="myds-view-table-select-all" type="checkbox" id="' + context + '-select-all"' +
+														app.vq.add('<input class="myds-view-table-select-all', {queue: context});
+
+														if (select.class != undefined)
+														{
+															app.vq.add(' ' + select.class + '"', {queue: context});
+														}
+
+														app.vq.add('" type="checkbox" id="' + context + '-select-all"' +
 															' data-context="' + context + '"', {queue: context})
 
 														if (select.selected)
