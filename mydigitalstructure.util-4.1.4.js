@@ -7517,6 +7517,11 @@ mydigitalstructure._util.factory.core = function (param)
 												select.type = 'checkbox';
 											}
 
+											if (select.selectAll == undefined)
+											{
+												select.selectAll = (select.type == 'checkbox')
+											}
+
 											html.push('><input type="' + select.type + '" class="myds-view-table-select');
 
 											if (select.class != undefined)
@@ -7687,7 +7692,14 @@ mydigitalstructure._util.factory.core = function (param)
 
 												if (!_.isEmpty(select))
 												{
-													app.vq.add('<th>', {queue: context})
+													app.vq.add('<th', {queue: context});
+
+													if (select.containerClass != undefined)
+													{
+														app.vq.add(' class="' + select.containerClass + '"', {queue: context});
+													}
+
+													app.vq.add('>', {queue: context});
 
 													if (select.selectAll != false)
 													{
@@ -7700,6 +7712,10 @@ mydigitalstructure._util.factory.core = function (param)
 														}
 
 														app.vq.add('>', {queue: context});
+													}
+													else
+													{
+														app.vq.add(select.caption, {queue: context});
 													}
 
 													app.vq.add('</th>', {queue: context});
