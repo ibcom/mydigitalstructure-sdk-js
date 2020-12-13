@@ -7528,24 +7528,26 @@ mydigitalstructure._util.factory.core = function (param)
 												html.push(' ' + select.class);
 											}
 
+											html.push('"');
+
 											if (select.context != undefined)
 											{
-												html.push('" id="' + select.context + '-{{id}}"');
+												html.push(' id="' + select.context + '-{{id}}"');
 											}
 
 											if (select.name != undefined)
 											{
-												html.push('" name="' + select.name + '"');
+												html.push(' name="' + select.name + '"');
 											}
 
 											if (select.controller != undefined)
 											{
-												html.push('" data-controller="' + select.controller + '"');
+												html.push(' data-controller="' + select.controller + '"');
 											}
 
 											if (select.scope != undefined)
 											{
-												html.push('" data-scope="' + select.scope + '"');
+												html.push(' data-scope="' + select.scope + '"');
 											}
 
 											if (select.data != undefined)
