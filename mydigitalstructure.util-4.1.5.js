@@ -618,6 +618,15 @@ mydigitalstructure._util.view.handlers['myds-list'] = function (event)
 $(document).off('click', '.myds-list')
 .on('click', '.myds-list', mydigitalstructure._util.view.handlers['myds-list']);
 
+mydigitalstructure._util.view.handlers['myds-button-group'] = function (event)
+{
+	var element = $(this);
+	element.addClass("active").siblings('.myds-button-group').removeClass("active");
+}
+
+$(document).off('click', '.myds-button-group')
+.on('click', '.myds-button-group', mydigitalstructure._util.view.handlers['myds-button-group']);
+
 mydigitalstructure._util.view.handlers['myds-check'] = function (event)
 {
 	var controller = $(this).data('controller');
@@ -3356,8 +3365,8 @@ mydigitalstructure._util.view._refresh = function (param)
 
 	if (includeDates)
 	{
-		mydigitalstructure._util.view.datepicker({selector: '.myds-date', format: 'D MMM YYYY'})
-		mydigitalstructure._util.view.datepicker({selector: '.myds-date-time', format: 'D MMM YYYY LT'})
+		mydigitalstructure._util.view.datepicker({selector: '.myds-date:visible', format: 'D MMM YYYY'})
+		mydigitalstructure._util.view.datepicker({selector: '.myds-date-time:visible', format: 'D MMM YYYY LT'})
 	}
 
 	if (validate)
@@ -4806,19 +4815,22 @@ mydigitalstructure._util.menu =
 				}
 				else
 				{
-					var parentElement = $(element).parents('ul.nav-second-level');
-					if (!parentElement.parent().hasClass('active'))
+					_.each(['second', 'third'], function(numberLevel)
 					{
-						parentElement.parent().addClass('active');
-					}
+						var parentElement = $(element).parents('ul.nav-' + numberLevel + '-level');
+						if (!parentElement.parent().hasClass('active'))
+						{
+							parentElement.parent().addClass('active');
+						}
 
-					if (!parentElement.hasClass('in'))
-					{
-						parentElement.addClass('in');
-					}
-					
-					element.parent().addClass('active');
-					parentElement.parent().siblings().find('ul').removeClass('in');
+						if (!parentElement.hasClass('in'))
+						{
+							parentElement.addClass('in');
+						}
+						
+						element.parent().addClass('active');
+						parentElement.parent().siblings().find('ul').removeClass('in');
+					});
 				}
 			}
 		}
@@ -7423,7 +7435,14 @@ mydigitalstructure._util.factory.core = function (param)
 								{
 									var noDataText = options.noDataText;
 									if (noDataText == undefined) {noDataText = 'No data'}
-									app.vq.show('#' + container, '<div class="text-muted mx-auto text-center myds-no-data">' + noDataText + '</div>', {queue: context});
+
+									var noDataClass = '';
+									if (containerClass != undefined)
+									{
+										noDataClass = ' ' + containerClass
+									}
+									
+									app.vq.show('#' + container, '<div class="text-muted mx-auto text-center myds-no-data' + noDataClass + '">' + noDataText + '</div>', {queue: context});
 								} 
 								else
 								{	
