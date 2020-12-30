@@ -7772,6 +7772,11 @@ mydigitalstructure._util.factory.core = function (param)
 															app.vq.add(' checked="checked"', {queue: context});
 														}
 
+														if (select.controller != undefined)
+														{
+															app.vq.add(' data-controller="' + select.controller + '"', {queue: context});
+														}
+
 														app.vq.add('>', {queue: context});
 													}
 													else
