@@ -3522,13 +3522,16 @@ mydigitalstructure._util.controller.add(
 	name: 'util-view-date-clean',
 	code: function (date)
 	{
-		var param = 
+		if (date != undefined)
 		{
-			date: date,
-			clean: true
-		}
+			var param = 
+			{
+				date: date,
+				clean: true
+			}
 
-		return mydigitalstructure._util.view.dateFormat(param);
+			return mydigitalstructure._util.view.dateFormat(param);
+		}
 	}
 });
 
@@ -5479,6 +5482,11 @@ mydigitalstructure._util.factory.core = function (param)
 
 					if (context != undefined)
 					{
+						if (app.data[controller] != undefined)
+						{
+							app.data[controller]['context'] = context;
+						}
+
 						locationHash = locationHash + '/' + context
 					}
 
