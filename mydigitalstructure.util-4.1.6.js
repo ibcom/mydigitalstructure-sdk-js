@@ -3620,7 +3620,8 @@ mydigitalstructure._util.whoami = function (param)
 			about: mydigitalstructure._scope.app.build,
 			options: mydigitalstructure._scope.app.options
 		},
-		myForm: {}
+		myForm: {},
+		mySetup: mydigitalstructure._util.data.get({scope: 'util-setup'})
 	}
 
 	var form = [];
@@ -3685,6 +3686,7 @@ mydigitalstructure._util.whoami = function (param)
 	whoamiData.thisInstanceOfMe =
 	{
 		functionality: {},
+		data: {},
 		storage: 
 		{
 			cloud: 
@@ -3701,6 +3703,11 @@ mydigitalstructure._util.whoami = function (param)
 	whoamiData.thisInstanceOfMe.functionality.access = 
 	{
 		methods: _.keyBy(mydigitalstructure._cloud.log, '_method')
+	}
+
+	if (_.has(app, 'data'))
+	{
+		whoamiData.thisInstanceOfMe.data = app.data
 	}
 
 	var userRoleTitle = 'Template';

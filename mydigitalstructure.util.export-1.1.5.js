@@ -835,10 +835,6 @@ if (_.isObject(window.XLSX))
 				}
 				else
 				{
-					//var blob = new Blob(fileData.binary, {
-					//    type: ''
-					//});
-
 					var blob = new Blob([fileData.binary], {type: 'application/octet-stream'});
 
 					var formData = new FormData();
