@@ -6730,6 +6730,7 @@ mydigitalstructure._util.factory.core = function (param)
 			var fields = mydigitalstructure._util.param.get(param, 'fields').value;
 			var idField = mydigitalstructure._util.param.get(param, 'idField', {default: 'id'}).value;
 			var invokeChange = mydigitalstructure._util.param.get(param, 'invokeChange', {default: true}).value;
+			var clearOptions = mydigitalstructure._util.param.get(param, 'clearOptions', {default: true}).value;
 
 			if (defaultValue == undefined)
 			{
@@ -6818,6 +6819,11 @@ mydigitalstructure._util.factory.core = function (param)
 			if (element != undefined)
 			{
 				$(element).data('_objectfilters', filters);
+
+				if (object != undefined && clearOptions)
+				{
+					element.find('option').remove();
+				}
 
 				if (optionsExist == undefined)
 				{
@@ -7079,6 +7085,12 @@ mydigitalstructure._util.factory.core = function (param)
 					{
 						selectParam.minimumResultsForSearch = Infinity;
 					}
+
+				/*	if ($(element).data('select2Id') != undefined)
+					{
+						$(element).select2('destroy');
+						$(element).removeData('select2Id');
+					}*/
 
 					$(element).select2(selectParam);
 
