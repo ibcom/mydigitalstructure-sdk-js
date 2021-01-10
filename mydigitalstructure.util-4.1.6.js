@@ -6775,6 +6775,7 @@ mydigitalstructure._util.factory.core = function (param)
 				{
 					if (filter.value1 == undefined) {filter.value1 = filter.value}
 					if (filter.name == undefined) {filter.name = filter.field}
+					if (filter.comparison == undefined) {filter.comparison = 'EQUAL_TO'}
 				});
 			}
 
