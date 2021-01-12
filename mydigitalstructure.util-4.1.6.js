@@ -7054,21 +7054,27 @@ mydigitalstructure._util.factory.core = function (param)
 					    		else
 					    		{
 						    		_.each(response.data.rows, function (row)
-				               {
-				               	var text = [];
-				               	_.each(fields, function (field)
-				               	{
-				               		if (field.hidden != true)
-				               		{
-				               			text.push(row[field.name]);
-				               		}
-				               	})
+									{
+										var text = [];
+
+										_.each(fields, function (field)
+										{
+											if (field.hidden != true)
+											{
+												if (field.removeText != undefined)
+												{
+													row[field.name] = row[field.name].replace(field.removeText, '');
+												}
+
+												text.push(row[field.name]);
+											}
+										});
 
 										row.text = _.join(text, ' ');
 										row.id = row[idField];
-				               });
+									});
 
-				               results = response.data.rows;
+									results = response.data.rows;
 				            }
 
 						     return { results: results };
@@ -7086,12 +7092,6 @@ mydigitalstructure._util.factory.core = function (param)
 					{
 						selectParam.minimumResultsForSearch = Infinity;
 					}
-
-				/*	if ($(element).data('select2Id') != undefined)
-					{
-						$(element).select2('destroy');
-						$(element).removeData('select2Id');
-					}*/
 
 					$(element).select2(selectParam);
 
