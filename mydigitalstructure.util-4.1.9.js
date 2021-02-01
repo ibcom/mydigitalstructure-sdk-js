@@ -8220,6 +8220,17 @@ mydigitalstructure._util.factory.core = function (param)
 		}
 	});
 
+	mydigitalstructure._util.isSet = function (value) {return !_.isNotSet(value)}
+
+	mydigitalstructure._util.controller.add(
+	{
+		name: 'util-is-set',
+		code: function (param, response)
+		{
+			return mydigitalstructure._util.isSet(value)
+		}
+	});
+
 	app._util = mydigitalstructure._util;
 	app.invoke = mydigitalstructure._util.controller.invoke;
 	app.add = mydigitalstructure._util.controller.add;
@@ -8237,7 +8248,8 @@ mydigitalstructure._util.factory.core = function (param)
 		appAdd: mydigitalstructure._util.controller.add,
 		appParamSet: mydigitalstructure._util.param.set,
 		appParamGet: mydigitalstructure._util.param.get,
-		isNotSet: mydigitalstructure._util.isNotSet
+		isNotSet: mydigitalstructure._util.isNotSet,
+		isSet: mydigitalstructure._util.isSet
 	});
 
 	if (_.isObject(s))
