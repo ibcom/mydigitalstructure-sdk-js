@@ -8203,6 +8203,23 @@ mydigitalstructure._util.factory.core = function (param)
 		}
 	]);
 
+	mydigitalstructure._util.isNotSet = function (value)
+	{
+  		return (value === undefined ||
+          value === null ||
+          (typeof value === "object" && Object.keys(value).length === 0) ||
+          (typeof value === "string" && value.trim().length === 0))
+	}
+
+	mydigitalstructure._util.controller.add(
+	{
+		name: 'util-is-not-set',
+		code: function (param, response)
+		{
+			return mydigitalstructure._util.isNotSet(value)
+		}
+	});
+
 	app._util = mydigitalstructure._util;
 	app.invoke = mydigitalstructure._util.controller.invoke;
 	app.add = mydigitalstructure._util.controller.add;
@@ -8219,7 +8236,8 @@ mydigitalstructure._util.factory.core = function (param)
 		appInvoke: mydigitalstructure._util.controller.invoke,
 		appAdd: mydigitalstructure._util.controller.add,
 		appParamSet: mydigitalstructure._util.param.set,
-		appParamGet: mydigitalstructure._util.param.get
+		appParamGet: mydigitalstructure._util.param.get,
+		isNotSet: mydigitalstructure._util.isNotSet
 	});
 
 	if (_.isObject(s))
