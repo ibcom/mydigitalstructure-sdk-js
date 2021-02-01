@@ -7439,7 +7439,7 @@ mydigitalstructure._util.factory.core = function (param)
 								callback: callback,
 								callbackParam: param,
 								includeMetadata: options.includeMetadata,
-								includeMetadataAdvanced: options.includeMetadataAdvanced
+								includeMetadataAdvanced: options.includeMetadataAdvanced,
 								includeMetadataSnapshot: options.includeMetadataSnapshot
 							});
 						}
