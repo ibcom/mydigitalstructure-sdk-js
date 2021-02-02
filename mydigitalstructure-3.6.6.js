@@ -641,6 +641,19 @@ mydigitalstructure.retrieve = function (param)
 							filter.comparison = 'EQUAL_TO'
 						}
 					}
+
+					if (filter.comparison = 'IN_LIST')
+					{
+						if (_.isArray(filter.value1))
+						{
+							filter.value1 = _.join(filter.value1, ',');
+						}
+
+						if (filter.value1 == '' || filter.value1 == undefined)
+						{
+							filter.value1 = '-1';
+						}
+					}
 				});
 			}
 
