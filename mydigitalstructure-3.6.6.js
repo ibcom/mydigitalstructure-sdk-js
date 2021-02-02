@@ -642,7 +642,7 @@ mydigitalstructure.retrieve = function (param)
 						}
 					}
 
-					if (filter.comparison = 'IN_LIST')
+					if (filter.comparison == 'IN_LIST')
 					{
 						if (_.isArray(filter.value1))
 						{
